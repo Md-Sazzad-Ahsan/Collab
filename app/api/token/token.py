@@ -2,9 +2,9 @@
 import requests
 import json
 
-API_KEY_SECRET = "mirotalksfu_default_secret"
-MIROTALK_URL = "https://sfu.mirotalk.com/api/v1/token"
-#MIROTALK_URL = "http://localhost:3010/api/v1/token"
+API_KEY_SECRET = "meetversesfu_default_secret"
+MEETVERSE_URL = "https://sfu.meetverse.com/api/v1/token"
+#MEETVERSE_URL = "http://localhost:3010/api/v1/token"
 
 headers = {
     "authorization": API_KEY_SECRET,
@@ -19,7 +19,7 @@ data = {
 }
 
 response = requests.post(
-    MIROTALK_URL, 
+    MEETVERSE_URL, 
     headers=headers, 
     json=data
 )

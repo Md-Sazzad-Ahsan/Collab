@@ -64,12 +64,12 @@ body:
       render: shell
   - type: markdown
     attributes:
-      value: "**Please indicate whether the problem is reproducible on sfu.mirotalk.com.**"
+      value: "**Please indicate whether the problem is reproducible on sfu.meetverse.com.**"
 
   - type: dropdown
     attributes:
       label: Reproducibility
-      description: Is the bug reproducible on sfu.mirotalk.com?
+      description: Is the bug reproducible on sfu.meetverse.com?
       options:
         - '--'
         - 'Yes'
@@ -79,7 +79,7 @@ body:
   - type: textarea
     attributes:
       label: Additional context
-      description: Please provide more details in case they apply (such as the MiroTalk SFU version you are running, if you are hosting your own server).
+      description: Please provide more details in case they apply (such as the MeetVerse version you are running, if you are hosting your own server).
   - type: markdown
     attributes:
       value: |

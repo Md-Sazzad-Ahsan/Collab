@@ -1,7 +1,7 @@
-# MiroTalk SFU - Self Hosting
+# MeetVerse - Self Hosting
 
-### How can I self-host MiroTalk SFU on my own server?
+### How can I self-host MeetVerse on my own server?
 
-[https://docs.mirotalk.com/mirotalk-sfu/self-hosting/](https://docs.mirotalk.com/mirotalk-sfu/self-hosting/)
+[https://docs.meetverse.com/meetverse-sfu/self-hosting/](https://docs.meetverse.com/meetverse-sfu/self-hosting/)
 
 ---

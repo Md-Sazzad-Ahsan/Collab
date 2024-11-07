@@ -47,13 +47,13 @@ dev dependencies: {
 */
 
 /**
- * MiroTalk SFU - Server component
+ * MeetVerse - Server component
  *
- * @link    GitHub: https://github.com/miroslavpejic85/mirotalksfu
- * @link    Official Live demo: https://sfu.mirotalk.com
+ * @link    GitHub: https://github.com/miroslavpejic85/meetverse
+ * @link    Official Live demo: https://sfu.meetverse.com
  * @license For open source use: AGPLv3
- * @license For commercial or closed source, contact us at license.mirotalk@gmail.com or purchase directly via CodeCanyon
- * @license CodeCanyon: https://codecanyon.net/item/mirotalk-sfu-webrtc-realtime-video-conferences/40769970
+ * @license For commercial or closed source, contact us at license.meetverse@gmail.com or purchase directly via CodeCanyon
+ * @license CodeCanyon: https://codecanyon.net/item/meetverse-sfu-webrtc-realtime-video-conferences/40769970
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
  * @version 1.6.24
  *
@@ -133,7 +133,7 @@ const io = socketIo(httpsServer, {
 const host = 'https://' + 'localhost' + ':' + config.server.listen.port; // config.server.listen.ip
 
 const jwtCfg = {
-    JWT_KEY: (config.jwt && config.jwt.key) || 'mirotalksfu_jwt_secret',
+    JWT_KEY: (config.jwt && config.jwt.key) || 'meetversesfu_jwt_secret',
     JWT_EXP: (config.jwt && config.jwt.exp) || '1h',
 };
 
@@ -192,7 +192,7 @@ if (enabled && commands.length > 0 && token) {
 // Stats
 const defaultStats = {
     enabled: true,
-    src: 'https://stats.mirotalk.com/script.js',
+    src: 'https://stats.meetverse.com/script.js',
     id: '41d26670-f275-45bb-af82-3ce91fe57756',
 };
 
@@ -500,8 +500,8 @@ function startServer() {
 
             log.debug('Direct Join', req.query);
 
-            // http://localhost:3010/join?room=test&roomPassword=0&name=mirotalksfu&audio=1&video=1&screen=0&hide=0&notify=1
-            // http://localhost:3010/join?room=test&roomPassword=0&name=mirotalksfu&audio=1&video=1&screen=0&hide=0&notify=0&token=token
+            // http://localhost:3010/join?room=test&roomPassword=0&name=meetverse&audio=1&video=1&screen=0&hide=0&notify=1
+            // http://localhost:3010/join?room=test&roomPassword=0&name=meetverse&audio=1&video=1&screen=0&hide=0&notify=0&token=token
 
             const { room, roomPassword, name, audio, video, screen, hide, notify, token, isPresenter } = checkXSS(
                 req.query,
@@ -638,7 +638,7 @@ function startServer() {
         res.sendFile(views.privacy);
     });
 
-    // mirotalk about
+    // meetverse about
     app.get(['/about'], (req, res) => {
         res.sendFile(views.about);
     });
@@ -910,7 +910,7 @@ function startServer() {
         const { host, authorization } = req.headers;
         const api = new ServerApi(host, authorization);
         if (!api.isAuthorized()) {
-            log.debug('MiroTalk get meetings - Unauthorized', {
+            log.debug('MeetVerse get meetings - Unauthorized', {
                 header: req.headers,
                 body: req.body,
             });
@@ -920,7 +920,7 @@ function startServer() {
         const meetings = api.getMeetings(roomList);
         res.json({ meetings: meetings });
         // log.debug the output if all done
-        log.debug('MiroTalk get meetings - Authorized', {
+        log.debug('MeetVerse get meetings - Authorized', {
             header: req.headers,
             body: req.body,
             meetings: meetings,
@@ -939,7 +939,7 @@ function startServer() {
         const { host, authorization } = req.headers;
         const api = new ServerApi(host, authorization);
         if (!api.isAuthorized()) {
-            log.debug('MiroTalk get meeting - Unauthorized', {
+            log.debug('MeetVerse get meeting - Unauthorized', {
                 header: req.headers,
                 body: req.body,
             });
@@ -949,7 +949,7 @@ function startServer() {
         const meetingURL = api.getMeetingURL();
         res.json({ meeting: meetingURL });
         // log.debug the output if all done
-        log.debug('MiroTalk get meeting - Authorized', {
+        log.debug('MeetVerse get meeting - Authorized', {
             header: req.headers,
             body: req.body,
             meeting: meetingURL,
@@ -968,7 +968,7 @@ function startServer() {
         const { host, authorization } = req.headers;
         const api = new ServerApi(host, authorization);
         if (!api.isAuthorized()) {
-            log.debug('MiroTalk get join - Unauthorized', {
+            log.debug('MeetVerse get join - Unauthorized', {
                 header: req.headers,
                 body: req.body,
             });
@@ -978,7 +978,7 @@ function startServer() {
         const joinURL = api.getJoinURL(req.body);
         res.json({ join: joinURL });
         // log.debug the output if all done
-        log.debug('MiroTalk get join - Authorized', {
+        log.debug('MeetVerse get join - Authorized', {
             header: req.headers,
             body: req.body,
             join: joinURL,
@@ -997,7 +997,7 @@ function startServer() {
         const { host, authorization } = req.headers;
         const api = new ServerApi(host, authorization);
         if (!api.isAuthorized()) {
-            log.debug('MiroTalk get token - Unauthorized', {
+            log.debug('MeetVerse get token - Unauthorized', {
                 header: req.headers,
                 body: req.body,
             });
@@ -1007,7 +1007,7 @@ function startServer() {
         const token = api.getToken(req.body);
         res.json({ token: token });
         // log.debug the output if all done
-        log.debug('MiroTalk get token - Authorized', {
+        log.debug('MeetVerse get token - Authorized', {
             header: req.headers,
             body: req.body,
             token: token,
@@ -2183,50 +2183,115 @@ function startServer() {
                 : room.sendTo(data.to_peer_id, 'message', data);
         });
 
+        // socket.on('getChatGPT', async ({ time, room, name, prompt, context }, cb) => {
+        //     if (!roomExists(socket)) return;
+
+        //     if (!config.chatGPT.enabled) return cb({ message: 'ChatGPT seems disabled, try later!' });
+
+        //     // https://platform.openai.com/docs/api-reference/completions/create
+        //     try {
+        //         // Add the prompt to the context
+        //         context.push({ role: 'user', content: prompt });
+        //         // Call OpenAI's API to generate response
+        //         const completion = await chatGPT.chat.completions.create({
+        //             model: config.chatGPT.model || 'gpt-3.5-turbo',
+        //             messages: context,
+        //             max_tokens: config.chatGPT.max_tokens,
+        //             temperature: config.chatGPT.temperature,
+        //         });
+        //         // Extract message from completion
+        //         const message = completion.choices[0].message.content.trim();
+        //         // Add response to context
+        //         context.push({ role: 'assistant', content: message });
+        //         // Log conversation details
+        //         log.info('ChatGPT', {
+        //             time: time,
+        //             room: room,
+        //             name: name,
+        //             context: context,
+        //         });
+        //         // Callback response to client
+        //         cb({ message: message, context: context });
+        //     } catch (error) {
+        //         if (error.name === 'APIError') {
+        //             log.error('ChatGPT', {
+        //                 name: error.name,
+        //                 status: error.status,
+        //                 message: error.message,
+        //                 code: error.code,
+        //                 type: error.type,
+        //             });
+        //             cb({ message: error.message });
+        //         } else {
+        //             // Non-API error
+        //             log.error('ChatGPT', error);
+        //             cb({ message: error.message });
+        //         }
+        //     }
+        // });
+
         socket.on('getChatGPT', async ({ time, room, name, prompt, context }, cb) => {
-            if (!roomExists(socket)) return;
-
-            if (!config.chatGPT.enabled) return cb({ message: 'ChatGPT seems disabled, try later!' });
-
-            // https://platform.openai.com/docs/api-reference/completions/create
+            if (!roomList.has(socket.room_id)) return;
+            if (!true) return cb({ message: 'ChatGPT seems disabled, try later!' });
+        
             try {
                 // Add the prompt to the context
                 context.push({ role: 'user', content: prompt });
-                // Call OpenAI's API to generate response
-                const completion = await chatGPT.chat.completions.create({
-                    model: config.chatGPT.model || 'gpt-3.5-turbo',
-                    messages: context,
-                    max_tokens: config.chatGPT.max_tokens,
-                    temperature: config.chatGPT.temperature,
+        
+                // Send a request to Ollama's API to generate a response with hardcoded values
+                const response = await fetch('http://localhost:11434/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'llama3.2',       // Hardcoded model
+                        prompt: prompt,          // Use the prompt directly as Ollama expects it
+                        stream: true             // Enable streaming
+                    })
                 });
-                // Extract message from completion
-                const message = completion.choices[0].message.content.trim();
-                // Add response to context
-                context.push({ role: 'assistant', content: message });
+        
+                if (!response.ok) throw new Error(`API returned status: ${response.status}`);
+        
+                let fullMessage = '';
+                
+                // Read the stream in chunks to handle real-time streaming response
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let done = false;
+                
+                while (!done) {
+                    const { value, done: streamDone } = await reader.read();
+                    done = streamDone;
+                    if (value) {
+                        // Decode and parse each chunk of data
+                        const chunk = decoder.decode(value, { stream: true });
+                        
+                        // Assuming each line in the stream is a complete JSON object
+                        const json = JSON.parse(chunk);
+                        
+                        // Append response text to the full message as it streams in
+                        if (json.response) fullMessage += json.response;
+                        
+                        // If streaming is done, end the loop
+                        if (json.done) break;
+                    }
+                }
+        
+                // Add the final response to the context
+                context.push({ role: 'assistant', content: fullMessage.trim() });
+        
                 // Log conversation details
-                log.info('ChatGPT', {
+                log.info('Ollama', {
                     time: time,
                     room: room,
                     name: name,
                     context: context,
                 });
-                // Callback response to client
-                cb({ message: message, context: context });
+        
+                // Callback response to client with the complete message
+                cb({ message: fullMessage.trim(), context: context });
             } catch (error) {
-                if (error.name === 'APIError') {
-                    log.error('ChatGPT', {
-                        name: error.name,
-                        status: error.status,
-                        message: error.message,
-                        code: error.code,
-                        type: error.type,
-                    });
-                    cb({ message: error.message });
-                } else {
-                    // Non-API error
-                    log.error('ChatGPT', error);
-                    cb({ message: error.message });
-                }
+                log.error('Ollama', error);
+                cb({ message: error.message });
             }
         });
 

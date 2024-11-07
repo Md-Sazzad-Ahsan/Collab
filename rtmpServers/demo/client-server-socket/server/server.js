@@ -15,10 +15,10 @@ const rtmpCfg = {
     enabled: true,
     maxStreams: 1,
     server: 'rtmp://localhost:1935',
-    appName: 'mirotalk',
+    appName: 'meetverse',
     streamKey: '',
-    secret: 'mirotalkRtmpSecret', // Must match the key in node-media-server/src/config.js if play and publish are set to true, otherwise leave it ''
-    apiSecret: 'mirotalkRtmpApiSecret', // Must match the apiSecret specified in the Client side.
+    secret: 'meetverseRtmpSecret', // Must match the key in node-media-server/src/config.js if play and publish are set to true, otherwise leave it ''
+    apiSecret: 'meetverseRtmpApiSecret', // Must match the apiSecret specified in the Client side.
     expirationHours: 4,
 };
 

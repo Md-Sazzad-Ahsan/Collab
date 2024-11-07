@@ -133,7 +133,7 @@ if [ "$answer" != "${answer#[Yy]}" ] ;then
 
         log "Get latest official image from Docker Hub"
 
-        docker pull mirotalk/sfu:latest
+        docker pull meetverse/sfu:latest
     else
         log "Build image from source"
 

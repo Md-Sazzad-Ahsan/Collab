@@ -1,11 +1,11 @@
-# MiroTalk SFU - Ngrok
+# MeetVerse - Ngrok
 
 ### What is the purpose and functionality of Ngrok?
 
-[https://docs.mirotalk.com/ngrok/ngrok/](https://docs.mirotalk.com/ngrok/ngrok/)
+[https://docs.meetverse.com/ngrok/ngrok/](https://docs.meetverse.com/ngrok/ngrok/)
 
-### How to exposing MiroTalk SFU with Ngrok?
+### How to exposing MeetVerse with Ngrok?
 
-[https://docs.mirotalk.com/mirotalk-sfu/ngrok/](https://docs.mirotalk.com/mirotalk-sfu/ngrok/)
+[https://docs.meetverse.com/meetverse-sfu/ngrok/](https://docs.meetverse.com/meetverse-sfu/ngrok/)
 
 ---

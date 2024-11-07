@@ -9,7 +9,7 @@ We prefer a Coordinated Vulnerability Disclosure (CVD) to properly understand an
 
 Your report should include:
 
--   Product version ([GitHub](https://github.com/miroslavpejic85/mirotalksfu/commits/main) commit hash or [DockerHub](https://hub.docker.com/r/mirotalk/sfu) sha256 digest hash)
+-   Product version ([GitHub](https://github.com/miroslavpejic85/meetverse/commits/main) commit hash or [DockerHub](https://hub.docker.com/r/meetverse/sfu) sha256 digest hash)
 -   The affected component if possible (RoomClient.js, Server.js, etc.)
 -   A vulnerability description
 -   Reproduction steps

@@ -1,7 +1,7 @@
 {
-    "name": "mirotalk-rtmp-server-streamer",
+    "name": "meetverse-rtmp-server-streamer",
     "version": "1.0.0",
-    "description": "MiroTalk RTMP Server Streamer",
+    "description": "MeetVerse RTMP Server Streamer",
     "main": "server.js",
     "scripts": {
         "start": "node server.js",
@@ -9,7 +9,7 @@
         "nms-start": "docker-compose -f ../../../node-media-server/docker-compose.yml up -d",
         "nms-stop": "docker-compose -f ../../../node-media-server/docker-compose.yml down",
         "nms-restart": "docker-compose -f ../../../node-media-server/docker-compose.yml down && docker-compose -f ../../node-media-server/docker-compose.yml up -d",
-        "nms-logs": "docker logs -f mirotalk-nms"
+        "nms-logs": "docker logs -f meetverse-nms"
     },
     "keywords": [
         "rtmp",

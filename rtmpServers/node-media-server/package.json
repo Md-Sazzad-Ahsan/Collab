@@ -1,7 +1,7 @@
 {
-    "name": "mirotalk-rtmp-nms",
+    "name": "meetverse-rtmp-nms",
     "version": "1.0.0",
-    "description": "MiroTalk RTMP Node Media Server",
+    "description": "MeetVerse RTMP Node Media Server",
     "main": "server.js",
     "scripts": {
         "start": "node src/server.js",

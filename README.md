@@ -1,4 +1,4 @@
-<h1 align="center">MiroTalk SFU</h1>
+<h1 align="center">MeetVerse</h1>
 
 <br />
 
@@ -15,14 +15,14 @@
 <hr />
 
 <p align="center">
-    <a href="https://sfu.mirotalk.com/">Explore MiroTalk SFU</a>
+    <a href="https://sfu.meetverse.com/">Explore MeetVerse</a>
 </p>
 
 <hr />
 
 <p align="center">
-    <a href="https://sfu.mirotalk.com/">
-        <img src="public/images/mirotalksfu-header.gif">
+    <a href="https://sfu.meetverse.com/">
+        <img src="public/images/meetverse-header.gif">
     </a>
 </p>
 
@@ -102,7 +102,7 @@
 <br/>
 
 -   You can `directly join a room` by using link like:
--   https://sfu.mirotalk.com/join?room=test&roomPassword=0&name=mirotalksfu&audio=0&video=0&screen=0&notify=0
+-   https://sfu.meetverse.com/join?room=test&roomPassword=0&name=meetverse&audio=0&video=0&screen=0&notify=0
 
     | Params       | Type           | Description     |
     | ------------ | -------------- | --------------- |
@@ -123,7 +123,7 @@
 
 <br/>
 
-When [host.protected](https://docs.mirotalk.com/mirotalk-sfu/host-protection/) or `host.user_auth` is enabled, the host/users can provide a valid token for direct joining the room as specified in the `app/src/config.js` file.
+When [host.protected](https://docs.meetverse.com/meetverse-sfu/host-protection/) or `host.user_auth` is enabled, the host/users can provide a valid token for direct joining the room as specified in the `app/src/config.js` file.
 
 | Params           | Value                                                                            | Description                                                                            |
 | ---------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
@@ -163,7 +163,7 @@ To embed a meeting within `your service or app` using an iframe, you can use the
 ```html
 <iframe
     allow="camera; microphone; display-capture; fullscreen; clipboard-read; clipboard-write; web-share; autoplay"
-    src="https://sfu.mirotalk.com/newroom"
+    src="https://sfu.meetverse.com/newroom"
     style="height: 100vh; width: 100vw; border: 0px;"
 ></iframe>
 ```
@@ -175,7 +175,7 @@ To embed a meeting within `your service or app` using an iframe, you can use the
 
 <br/>
 
--   Before running MiroTalk SFU, ensure you have `Node.js` and all [requirements](https://mediasoup.org/documentation/v3/mediasoup/installation/#requirements) installed. This project has been tested with Node version [18.X](https://nodejs.org/en/download).
+-   Before running MeetVerse, ensure you have `Node.js` and all [requirements](https://mediasoup.org/documentation/v3/mediasoup/installation/#requirements) installed. This project has been tested with Node version [18.X](https://nodejs.org/en/download).
 
 -   Requirements install example for `Ubuntu 24.04 LTS`
 
@@ -195,7 +195,7 @@ $ apt install -y ffmpeg
 
 ---
 
-Install `NodeJS 18.X` and `npm` using [Node Version Manager](https://docs.mirotalk.com/nvm/nvm/)
+Install `NodeJS 18.X` and `npm` using [Node Version Manager](https://docs.meetverse.com/nvm/nvm/)
 
 ---
 
@@ -203,9 +203,9 @@ Install `NodeJS 18.X` and `npm` using [Node Version Manager](https://docs.mirota
 
 ```bash
 # Clone this repo
-$ git clone https://github.com/miroslavpejic85/mirotalksfu.git
-# Go to to dir mirotalksfu
-$ cd mirotalksfu
+$ git clone https://github.com/miroslavpejic85/meetverse.git
+# Go to to dir meetverse
+$ cd meetverse
 # Copy app/src/config.template.js in app/src/config.js and edit it if needed
 $ cp app/src/config.template.js app/src/config.js
 # Install dependencies - be patient, the first time will take a few minutes, in the meantime have a good coffee ;)
@@ -222,7 +222,7 @@ $ PORT=3011 npm start
 
 > \[!NOTE]
 >
-> To run `MiroTalk SFU` on a `Windows operating system`, you can follow the instructions provided in [this documentation](https://github.com/miroslavpejic85/mirotalksfu/issues/99#issuecomment-1586073853).
+> To run `MeetVerse` on a `Windows operating system`, you can follow the instructions provided in [this documentation](https://github.com/miroslavpejic85/meetverse/issues/99#issuecomment-1586073853).
 
 </details>
 
@@ -233,14 +233,14 @@ $ PORT=3011 npm start
 
 ![docker](public/images/docker.png)
 
--   Repository [docker hub](https://hub.docker.com/r/mirotalk/sfu)
+-   Repository [docker hub](https://hub.docker.com/r/meetverse/sfu)
 -   Install [docker engine](https://docs.docker.com/engine/install/) and [docker compose](https://docs.docker.com/compose/install/)
 
 ```bash
 # Clone this repo
-$ git clone https://github.com/miroslavpejic85/mirotalksfu.git
-# Go to to dir mirotalksfu
-$ cd mirotalksfu
+$ git clone https://github.com/miroslavpejic85/meetverse.git
+# Go to to dir meetverse
+$ cd meetverse
 # Copy app/src/config.template.js in app/src/config.js IMPORTANT (edit it according to your needs)
 $ cp app/src/config.template.js app/src/config.js
 # Copy docker-compose.template.yml in docker-compose.yml and edit it if needed
@@ -264,26 +264,26 @@ $ docker-compose down
 
 -   `Ngrok/HTTPS:` You can start a video conference directly from your local PC and make it accessible from any device outside your network by following [these instructions](docs/ngrok.md), or expose it directly on [HTTPS](app/ssl/README.md).
 
--   `Self-hosting:` For `self-hosting MiroTalk SFU` on your own dedicated server, please refer to [this comprehensive guide](docs/self-hosting.md). It will provide you with all the necessary instructions to get your MiroTalk SFU instance up and running smoothly.
+-   `Self-hosting:` For `self-hosting MeetVerse` on your own dedicated server, please refer to [this comprehensive guide](docs/self-hosting.md). It will provide you with all the necessary instructions to get your MeetVerse instance up and running smoothly.
 
--   `Rest API:` The [API documentation](https://docs.mirotalk.com/mirotalk-sfu/api/) uses [swagger](https://swagger.io/) at https://localhost:3010/api/v1/docs or check it on live [here](https://sfu.mirotalk.com/api/v1/docs).
+-   `Rest API:` The [API documentation](https://docs.meetverse.com/meetverse-sfu/api/) uses [swagger](https://swagger.io/) at https://localhost:3010/api/v1/docs or check it on live [here](https://sfu.meetverse.com/api/v1/docs).
 
 ```bash
 # The response will give you the active meetings (default disabled).
-$ curl -X GET "http://localhost:3010/api/v1/meetings" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json"
-$ curl -X GET "https://sfu.mirotalk.com/api/v1/meetings" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json"
+$ curl -X GET "http://localhost:3010/api/v1/meetings" -H "authorization: meetversesfu_default_secret" -H "Content-Type: application/json"
+$ curl -X GET "https://sfu.meetverse.com/api/v1/meetings" -H "authorization: meetversesfu_default_secret" -H "Content-Type: application/json"
 # The response will give you a entrypoint / Room URL for your meeting.
-$ curl -X POST "http://localhost:3010/api/v1/meeting" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json"
-$ curl -X POST "https://sfu.mirotalk.com/api/v1/meeting" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json"
+$ curl -X POST "http://localhost:3010/api/v1/meeting" -H "authorization: meetversesfu_default_secret" -H "Content-Type: application/json"
+$ curl -X POST "https://sfu.meetverse.com/api/v1/meeting" -H "authorization: meetversesfu_default_secret" -H "Content-Type: application/json"
 # The response will give you a entrypoint / URL for the direct join to the meeting.
-$ curl -X POST "http://localhost:3010/api/v1/join" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json" --data '{"room":"test","roomPassword":"false","name":"mirotalksfu","audio":"false","video":"false","screen":"false","notify":"false"}'
-$ curl -X POST "https://sfu.mirotalk.com/api/v1/join" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json" --data '{"room":"test","roomPassword":"false","name":"mirotalksfu","audio":"false","video":"false","screen":"false","notify":"false"}'
+$ curl -X POST "http://localhost:3010/api/v1/join" -H "authorization: meetversesfu_default_secret" -H "Content-Type: application/json" --data '{"room":"test","roomPassword":"false","name":"meetverse","audio":"false","video":"false","screen":"false","notify":"false"}'
+$ curl -X POST "https://sfu.meetverse.com/api/v1/join" -H "authorization: meetversesfu_default_secret" -H "Content-Type: application/json" --data '{"room":"test","roomPassword":"false","name":"meetverse","audio":"false","video":"false","screen":"false","notify":"false"}'
 # The response will give you a entrypoint / URL for the direct join to the meeting with a token.
-$ curl -X POST "http://localhost:3010/api/v1/join" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json" --data '{"room":"test","roomPassword":"false","name":"mirotalksfu","audio":"false","video":"false","screen":"false","notify":"false","token":{"username":"username","password":"password","presenter":"true", "expire":"1h"}}'
-$ curl -X POST "https://sfu.mirotalk.com/api/v1/join" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json" --data '{"room":"test","roomPassword":"false","name":"mirotalksfu","audio":"false","video":"false","screen":"false","notify":"false","token":{"username":"username","password":"password","presenter":"true", "expire":"1h"}}'
+$ curl -X POST "http://localhost:3010/api/v1/join" -H "authorization: meetversesfu_default_secret" -H "Content-Type: application/json" --data '{"room":"test","roomPassword":"false","name":"meetverse","audio":"false","video":"false","screen":"false","notify":"false","token":{"username":"username","password":"password","presenter":"true", "expire":"1h"}}'
+$ curl -X POST "https://sfu.meetverse.com/api/v1/join" -H "authorization: meetversesfu_default_secret" -H "Content-Type: application/json" --data '{"room":"test","roomPassword":"false","name":"meetverse","audio":"false","video":"false","screen":"false","notify":"false","token":{"username":"username","password":"password","presenter":"true", "expire":"1h"}}'
 # The response will give you a valid token for a meeting (default diabled)
-$ curl -X POST "http://localhost:3010/api/v1/token" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json" --data '{"username":"username","password":"password","presenter":"true", "expire":"1h"}'
-$ curl -X POST "https://sfu.mirotalk.com/api/v1/token" -H "authorization: mirotalksfu_default_secret" -H "Content-Type: application/json" --data '{"username":"username","password":"password","presenter":"true", "expire":"1h"}'
+$ curl -X POST "http://localhost:3010/api/v1/token" -H "authorization: meetversesfu_default_secret" -H "Content-Type: application/json" --data '{"username":"username","password":"password","presenter":"true", "expire":"1h"}'
+$ curl -X POST "https://sfu.meetverse.com/api/v1/token" -H "authorization: meetversesfu_default_secret" -H "Content-Type: application/json" --data '{"username":"username","password":"password","presenter":"true", "expire":"1h"}'
 ```
 
 </details>
@@ -309,7 +309,7 @@ Experience also top-tier German web hosting – dedicated servers, VPS, and web 
 
 ---
 
-To set up your own instance of `MiroTalk SFU` on a dedicated cloud server, please refer to our comprehensive [self-hosting documentation](https://docs.mirotalk.com/mirotalk-sfu/self-hosting/). This guide will walk you through the process step by step, ensuring a smooth and successful deployment.
+To set up your own instance of `MeetVerse` on a dedicated cloud server, please refer to our comprehensive [self-hosting documentation](https://docs.meetverse.com/meetverse-sfu/self-hosting/). This guide will walk you through the process step by step, ensuring a smooth and successful deployment.
 
 </details>
 
@@ -331,9 +331,9 @@ For personal use, you can start with a single $5 a month cloud server and scale 
 
 <a target="_blank" href="https://hetzner.cloud/?ref=XdRifCzCK3bn"><img src="public/sponsors/Hetzner.png" style="width: 220px;"></a>
 
-https://sfu.mirotalk.com
+https://sfu.meetverse.com
 
-[![mirotalksfu-qr](public/images/mirotalksfu-qr.png)](https://sfu.mirotalk.com/)
+[![meetverse-qr](public/images/meetverse-qr.png)](https://sfu.meetverse.com/)
 
 </details>
 
@@ -365,9 +365,9 @@ https://sfu.mirotalk.com
 
 [![AGPLv3](public/images/AGPLv3.png)](LICENSE)
 
-MiroTalk SFU is free and open-source under the terms of AGPLv3 (GNU Affero General Public License v3.0). Please `respect the license conditions`, In particular `modifications need to be free as well and made available to the public`. Get a quick overview of the license at [Choose an open source license](https://choosealicense.com/licenses/agpl-3.0/).
+MeetVerse is free and open-source under the terms of AGPLv3 (GNU Affero General Public License v3.0). Please `respect the license conditions`, In particular `modifications need to be free as well and made available to the public`. Get a quick overview of the license at [Choose an open source license](https://choosealicense.com/licenses/agpl-3.0/).
 
-To obtain a [MiroTalk SFU license](https://docs.mirotalk.com/license/licensing-options/) with terms different from the AGPLv3, you can conveniently make your [purchase on CodeCanyon](https://codecanyon.net/item/mirotalk-sfu-webrtc-realtime-video-conferences/40769970). This allows you to tailor the licensing conditions to better suit your specific requirements.
+To obtain a [MeetVerse license](https://docs.meetverse.com/license/licensing-options/) with terms different from the AGPLv3, you can conveniently make your [purchase on CodeCanyon](https://codecanyon.net/item/meetverse-sfu-webrtc-realtime-video-conferences/40769970). This allows you to tailor the licensing conditions to better suit your specific requirements.
 
 </details>
 
@@ -376,7 +376,7 @@ To obtain a [MiroTalk SFU license](https://docs.mirotalk.com/license/licensing-o
 
 <br/>
 
-Do you find MiroTalk SFU indispensable for your needs? Join us in supporting this transformative project by [becoming a backer or sponsor](https://github.com/sponsors/miroslavpejic85). By doing so, not only will your logo prominently feature here, but you'll also drive the growth and sustainability of MiroTalk SFU. Your support is vital in ensuring that this valuable platform continues to thrive and remain accessible for all. Make an impact – back MiroTalk SFU today and be part of this exciting journey!
+Do you find MeetVerse indispensable for your needs? Join us in supporting this transformative project by [becoming a backer or sponsor](https://github.com/sponsors/miroslavpejic85). By doing so, not only will your logo prominently feature here, but you'll also drive the growth and sustainability of MeetVerse. Your support is vital in ensuring that this valuable platform continues to thrive and remain accessible for all. Make an impact – back MeetVerse today and be part of this exciting journey!
 
 |                                                                                   |                                                                                        |
 | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
@@ -398,41 +398,41 @@ Do you find MiroTalk SFU indispensable for your needs? Join us in supporting thi
 
 </details>
 
-## Diving into Additional MiroTalk Projects:
+## Diving into Additional MeetVerse Projects:
 
 <details>
-<summary>MiroTalk P2P</summary>
+<summary>MeetVerse P2P</summary>
 
 <br/>
 
-Try also [MiroTalk P2P](https://github.com/miroslavpejic85/mirotalk) `peer to peer` real-time video conferences, optimized for small groups. `Unlimited time, unlimited concurrent rooms` each having 5-8 participants.
+Try also [MeetVerse P2P](https://github.com/miroslavpejic85/meetverse) `peer to peer` real-time video conferences, optimized for small groups. `Unlimited time, unlimited concurrent rooms` each having 5-8 participants.
 
 </details>
 
 <details>
-<summary>MiroTalk C2C</summary>
+<summary>MeetVerse C2C</summary>
 
 <br>
 
-Try also [MiroTalk C2C](https://github.com/miroslavpejic85/mirotalkc2c) `peer to peer` real-time video conferences, optimized for cam 2 cam. `Unlimited time, unlimited concurrent rooms` each having 2 participants.
+Try also [MeetVerse C2C](https://github.com/miroslavpejic85/meetversec2c) `peer to peer` real-time video conferences, optimized for cam 2 cam. `Unlimited time, unlimited concurrent rooms` each having 2 participants.
 
 </details>
 
 <details>
-<summary>MiroTalk BRO</summary>
+<summary>MeetVerse BRO</summary>
 
 <br>
 
-Try also [MiroTalk BRO](https://github.com/miroslavpejic85/mirotalkbro) `Live broadcast` (peer to peer) live video, audio and screen stream to all connected users (viewers). `Unlimited time, unlimited concurrent rooms` each having a broadcast and many viewers.
+Try also [MeetVerse BRO](https://github.com/miroslavpejic85/meetversebro) `Live broadcast` (peer to peer) live video, audio and screen stream to all connected users (viewers). `Unlimited time, unlimited concurrent rooms` each having a broadcast and many viewers.
 
 </details>
 
 <details>
-<summary>MiroTalk WEB</summary>
+<summary>MeetVerse WEB</summary>
 
 <br>
 
-Try also [MiroTalk WEB](https://github.com/miroslavpejic85/mirotalkwebrtc) a platform that allows for the management of an `unlimited number of users`. Each user must register with their email, username, and password, after which they gain access to their `personal dashboard`. Within the dashboard, users can `manage their rooms and schedule meetings` using the desired version of MiroTalk on a specified date and time. Invitations to these meetings can be sent via email, shared through the web browser, or sent via SMS.
+Try also [MeetVerse WEB](https://github.com/miroslavpejic85/meetversewebrtc) a platform that allows for the management of an `unlimited number of users`. Each user must register with their email, username, and password, after which they gain access to their `personal dashboard`. Within the dashboard, users can `manage their rooms and schedule meetings` using the desired version of MeetVerse on a specified date and time. Invitations to these meetings can be sent via email, shared through the web browser, or sent via SMS.
 
 </details>
 

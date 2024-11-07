@@ -1,13 +1,13 @@
 version: '3'
 
 services:
-    mirotalksfu:
-        image: mirotalk/sfu:latest
+    meetverse:
+        image: meetverse/sfu:latest
         build:
             context: .
             dockerfile: Dockerfile
-        container_name: mirotalksfu
-        hostname: mirotalksfu
+        container_name: meetverse
+        hostname: meetverse
         restart: unless-stopped
         volumes:
             - ./app/src/config.js:/src/app/src/config.js:ro

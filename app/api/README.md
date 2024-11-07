@@ -2,14 +2,14 @@
 
 ## Create a meeting
 
-Create a meeting with a `HTTP request` containing the `API_KEY` sent to MiroTalk’s server. The response contains a `meeting` URL that can be `embedded` in your client within an `iframe`.
+Create a meeting with a `HTTP request` containing the `API_KEY` sent to MeetVerse’s server. The response contains a `meeting` URL that can be `embedded` in your client within an `iframe`.
 
 The `API_KEY` is defined in the `app/src/config.js`, change it with your own.
 
 ```js
 api: {
     // app/api
-    keySecret: 'mirotalksfu_default_secret',
+    keySecret: 'meetversesfu_default_secret',
 }
 ```
 
@@ -44,7 +44,7 @@ Embedding a meeting into a `service` or `app` requires using an `iframe` with th
 ```html
 <iframe
     allow="camera; microphone; display-capture; fullscreen; clipboard-read; clipboard-write; web-share; autoplay"
-    src="https://sfu.mirotalk.com/join/your_room_name"
+    src="https://sfu.meetverse.com/join/your_room_name"
     style="height: 100vh; width: 100vw; border: 0px;"
 ></iframe>
 ```
@@ -56,7 +56,7 @@ Develop your `website` or `application`, and bring `video meetings` in with a si
 ```html
 <iframe
     allow="camera; microphone; display-capture; fullscreen; clipboard-read; clipboard-write; web-share; autoplay"
-    src="https://sfu.mirotalk.com/newroom"
+    src="https://sfu.meetverse.com/newroom"
     style="height: 100vh; width: 100vw; border: 0px;"
 ></iframe>
 ```

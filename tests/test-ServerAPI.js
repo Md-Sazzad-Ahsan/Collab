@@ -159,12 +159,12 @@ describe('test-ServerAPI', () => {
             result.should.equal('jwtToken');
 
             signStub
-                .calledWith({ data: 'encryptedPayload' }, 'mirotalksfu_jwt_secret', { expiresIn: '1h' })
+                .calledWith({ data: 'encryptedPayload' }, 'meetversesfu_jwt_secret', { expiresIn: '1h' })
                 .should.be.true();
             encryptStub
                 .calledWith(
                     JSON.stringify({ username: 'user', password: 'pass', presenter: 'true' }),
-                    'mirotalksfu_jwt_secret',
+                    'meetversesfu_jwt_secret',
                 )
                 .should.be.true();
 

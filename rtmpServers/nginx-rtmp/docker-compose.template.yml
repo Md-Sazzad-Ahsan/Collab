@@ -1,10 +1,10 @@
 version: '3'
 
 services:
-    mirotalk-rtmp:
-        container_name: mirotalk-rtmp
+    meetverse-rtmp:
+        container_name: meetverse-rtmp
         #image: tiangolo/nginx-rtmp
-        image: mirotalk/rtmp:latest
+        image: meetverse/rtmp:latest
         volumes:
             - ./nginx.conf/:/etc/nginx/nginx.conf/:ro
             - ./stat.xsl/:/usr/share/nginx/html/stat.xsl/:ro
