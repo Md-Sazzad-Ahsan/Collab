@@ -4320,10 +4320,17 @@ class RoomClient {
         this.collectMessages(time, getFromName, getMsg);
 
         console.log('Append message to:', { to_id: getToId, to_name: getToName });
-
+        const typingIndicator = document.createElement('div');
+        typingIndicator.id = 'typing-indicator';
+        typingIndicator.innerHTML = 'ChatGPT is typing...';
+        if (fromName === "ChatGPT") {
+            const indicator = document.getElementById('typing-indicator');
+            chatGPTMessages.removeChild(indicator);
+        }
         switch (getToId) {
             case 'ChatGPT':
                 chatGPTMessages.insertAdjacentHTML('beforeend', newMessageHTML);
+                if(fromName !== "ChatGPT") chatGPTMessages.insertAdjacentElement('beforeend', typingIndicator);
                 break;
             case 'all':
                 chatPublicMessages.insertAdjacentHTML('beforeend', newMessageHTML);

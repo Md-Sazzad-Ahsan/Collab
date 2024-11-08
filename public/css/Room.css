@@ -59,6 +59,17 @@ body {
 /*--------------------------------------------------------------
 # Loading...
 --------------------------------------------------------------*/
+#typing-indicator {
+    display: inline-block;
+    margin-left: 10px; /* Adjust spacing as needed */
+    padding: 5px 10px;
+    /* background-color: #f1f1f1; Optional background */
+    border-radius: 10px;
+    font-style: italic;
+    color: #a8a2a2;
+    float: right; /* Align the typing indicator to the right */
+    clear: both; /* Start on a new line after the last message */
+}
 
 #loadingDiv {
     color: #fff;
