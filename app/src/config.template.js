@@ -2,6 +2,25 @@
 
 const os = require('os');
 
+// #############################
+// HELPERS
+// #############################
+
+const platform = os.platform();
+
+function getFFmpegPath(platform) {
+    switch (platform) {
+        case 'darwin':
+            return '/usr/local/bin/ffmpeg'; // macOS
+        case 'linux':
+            return '/usr/bin/ffmpeg'; // Linux
+        case 'win32':
+            return 'C:\\ffmpeg\\bin\\ffmpeg.exe'; // Windows
+        default:
+            return '/usr/bin/ffmpeg'; // Centos or others...
+    }
+}
+
 // https://api.ipify.org
 
 function getIPv4() {
@@ -17,9 +36,33 @@ function getIPv4() {
     return '0.0.0.0'; // Default to 0.0.0.0 if no external IPv4 address found
 }
 
-const IPv4 = getIPv4(); // Replace it with the Server Public IPv4 in production.
+/*
+    IPv4 Configuration Guide:
+        1. Localhost Setup:
+            - For local development with Docker, replace `getIPv4()` with '127.0.0.1'.
+        2. Production Setup:
+            - Replace `getIPv4()` with the 'Public Static IPv4 Address' of the server hosting this application.
+            - For AWS EC2 instances, replace `getIPv4()` with the 'Elastic IP' associated with the instance. 
+            This ensures the public IP remains consistent across instance reboots.
+    Note: Always enclose the IP address in single quotes ''.
+*/
+const IPv4 = getIPv4(); // Replace with the appropriate IPv4 address for your environment.
+
+/*
+    Set the port range for WebRTC communication. This range is used for the dynamic allocation of UDP ports for media streams.
+        - Each participant requires 2 ports: one for audio and one for video.
+        - The default configuration supports up to 50 participants (50 * 2 ports = 100 ports).
+        - To support more participants, simply increase the port range.
+    Note: 
+    - When running in Docker, use 'network mode: host' for improved performance.
+    - Alternatively, enable 'webRtcServerActive: true' mode for better scalability.
+*/
+const rtcMinPort = 40000;
+const rtcMaxPort = 40100;
 
 const numWorkers = require('os').cpus().length;
+
+const ffmpegPath = getFFmpegPath(platform);
 
 module.exports = {
     console: {
@@ -31,6 +74,7 @@ module.exports = {
         colors: true,
     },
     server: {
+        hostUrl: '', // default to http://localhost:port
         listen: {
             // app listen on
             ip: '0.0.0.0',
@@ -69,14 +113,15 @@ module.exports = {
                 - fromUrl: Enable or disable the RTMP streaming from Url. Set to 'true' to enable, 'false' to disable.
                 - fromStream: Enable or disable the RTMP Streamer. Set to 'true' to enable, 'false' to disable.
                 - maxStreams: Specifies the maximum number of simultaneous streams permitted for File, URL, and Stream. The default value is 1.
-                - server: The URL of the RTMP server. Leave empty to use the built-in meetverse RTMP server (rtmp://localhost:1935). Change the URL to connect to a different RTMP server.
+                - server: The URL of the RTMP server. Leave empty to use the built-in MeetVerse RTMP server (rtmp://localhost:1935). Change the URL to connect to a different RTMP server.
                 - appName: The application name for the RTMP stream. Default is 'meetverse'.
                 - streamKey: The stream key for the RTMP stream. Leave empty if not required.
                 - secret: The secret key for RTMP streaming. Must match the secret in rtmpServers/node-media-server/src/config.js. Leave empty if no authentication is needed.
-                - apiSecret: The API secret for streaming WebRTC to RTMP through the meetverse API.
+                - apiSecret: The API secret for streaming WebRTC to RTMP through the MeetVerse API.
                 - expirationHours: The number of hours before the RTMP URL expires. Default is 4 hours.
                 - dir: Directory where your video files are stored to be streamed via RTMP.
-                - ffmpeg: Path of the ffmpeg installation on the system (which ffmpeg)
+                - ffmpegPath: Path of the ffmpeg installation on the system (which ffmpeg)
+                - platform: 'darwin', 'linux', 'win32', etc.
 
                 Important: Before proceeding, make sure your RTMP server is up and running. 
                 For more information, refer to the documentation here: https://docs.meetverse.com/meetverse-sfu/rtmp/.
@@ -97,7 +142,8 @@ module.exports = {
             apiSecret: 'meetverseRtmpApiSecret',
             expirationHours: 4,
             dir: 'rtmp',
-            ffmpeg: '/usr/bin/ffmpeg',
+            ffmpegPath: ffmpegPath,
+            platform: platform,
         },
     },
     middleware: {
@@ -113,9 +159,10 @@ module.exports = {
     },
     api: {
         // Default secret key for app/api
-        keySecret: 'meetversesfu_default_secret',
+        keySecret: 'meetverse_default_secret',
         // Define which endpoints are allowed
         allowed: {
+            stats: true,
             meetings: false,
             meeting: true,
             join: true,
@@ -130,7 +177,7 @@ module.exports = {
             JWT https://jwt.io/
             Securely manages credentials for host configurations and user authentication, enhancing security and streamlining processes.
          */
-        key: 'meetversesfu_jwt_secret',
+        key: 'meetverse_jwt_secret',
         exp: '1h',
     },
     oidc: {
@@ -144,12 +191,17 @@ module.exports = {
             For those seeking an open-source solution, check out: https://github.com/panva/node-oidc-provider
         */
         enabled: false,
+        peer_name: {
+            force: true, // Enforce using profile data for peer_name
+            email: true, // Use email as peer_name
+            name: false, // Don't use full name (family_name + given_name)
+        },
         config: {
             issuerBaseURL: 'https://server.example.com',
             baseURL: `http://localhost:${process.env.PORT ? process.env.PORT : 3010}`, // https://sfu.meetverse.com
             clientID: 'clientID',
             clientSecret: 'clientSecret',
-            secret: 'meetversesfu-oidc-secret',
+            secret: 'meetverse-oidc-secret',
             authorizationParams: {
                 response_type: 'code',
                 scope: 'openid profile email',
@@ -209,8 +261,8 @@ module.exports = {
                 By default, the presenter is identified as the first participant to join the room, distinguished by their username and UUID. 
                 Additional layers can be added to specify valid presenters and co-presenters by setting designated usernames.
             */
-            'Miroslav Pejic',
-            'miroslav.pejic.85@gmail.com',
+            'Akib Hossain Omi',
+            'akibhossainomi2000@gmail.com',
         ],
         join_first: true, // Set to true for traditional behavior, false to prioritize presenters
     },
@@ -221,7 +273,7 @@ module.exports = {
             2. Create your account
             3. Generate your APIKey https://platform.openai.com/account/api-keys
         */
-        enabled: true,
+        enabled: false,
         basePath: 'https://api.openai.com/v1/',
         apiKey: '',
         model: 'gpt-3.5-turbo',
@@ -235,11 +287,11 @@ module.exports = {
             2. Create your account
             3. Generate your APIKey https://app.heygen.com/settings?nav=API
          */
-        enabled: true,
+        enabled: false,
         basePath: 'https://api.heygen.com',
-        apiKey: 'NGMxZjRhODEyNDA2NGVhOThlNmNlOGQxN2MzNjI1NzEtMTczMDk2NjU4Ng==',
+        apiKey: '',
         systemLimit:
-            'You are a streaming avatar from MEETVERSE, an industry-leading product that specialize in videos communications.',
+            'You are a streaming avatar from MeetVerse, an industry-leading product that specialize in videos communications.',
     },
     email: {
         /*
@@ -274,6 +326,14 @@ module.exports = {
         DSN: '',
         tracesSampleRate: 0.5,
     },
+    webhook: {
+        /*
+            Enable or disable webhook functionality.
+            Set `enabled` to `true` to activate webhook sending of socket events (join, exitRoom, disconnect)
+        */
+        enabled: false,
+        url: 'https://your-site.com/webhook-endpoint',
+    },
     mattermost: {
         /*
         Mattermost: https://mattermost.com
@@ -284,7 +344,7 @@ module.exports = {
                 - Callback URLs: Enter the URL for your Express server (e.g., `https://yourserver.com/mattermost`).
                 - Request Method: Select POST.
                 - Enable Autocomplete: Check the box for Autocomplete.
-                - Autocomplete Description: Provide a brief description (e.g., `Get MEETVERSE meeting room`).
+                - Autocomplete Description: Provide a brief description (e.g., `Get MeetVerse meeting room`).
             3. Save the slash command and copy the generated token (YourMattermostToken).   
         */
         enabled: false,
@@ -371,32 +431,40 @@ module.exports = {
     },
     ui: {
         /*
-            Customize your meetverse instance
+            Customize your MeetVerse instance
+            Branding and customizations require a license: https://codecanyon.net/item/meetverse-sfu-webrtc-realtime-video-conferences/40769970
         */
         brand: {
             app: {
-                name: 'MEETVERSE',
-                title: 'MEETVERSE<br />Free browser based Real-time video calls.<br />Simple, Secure, Fast.',
+                language: 'en', // https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes
+                name: 'MeetVerse',
+                title: 'MeetVerse<br />Free browser based Real-time video calls.<br />Simple, Secure, Fast.',
                 description:
                     'Start your next video call with a single click. No download, plug-in, or login is required. Just get straight to talking, messaging, and sharing your screen.',
+                joinDescription: 'Pick a room name.<br />How about this one?',
+                joinButtonLabel: 'JOIN ROOM',
+                joinLastLabel: 'Your recent room:',
             },
             site: {
-                title: 'MEETVERSE, Free Video Calls, Messaging and Screen Sharing',
+                title: 'MeetVerse, Free Video Calls, Messaging and Screen Sharing',
                 icon: '../images/logo.svg',
                 appleTouchIcon: '../images/logo.svg',
+                newRoomTitle: 'Pick name. <br />Share URL. <br />Start conference.',
+                newRoomDescription:
+                    "Each room has its disposable URL. Just pick a room name and share your custom URL. It's that easy.",
             },
             meta: {
                 description:
-                    'MEETVERSE powered by WebRTC and mediasoup, Real-time Simple Secure Fast video calls, messaging and screen sharing capabilities in the browser.',
+                    'MeetVerse powered by WebRTC and mediasoup, Real-time Simple Secure Fast video calls, messaging and screen sharing capabilities in the browser.',
                 keywords:
                     'webrtc, miro, mediasoup, mediasoup-client, self hosted, voip, sip, real-time communications, chat, messaging, meet, webrtc stun, webrtc turn, webrtc p2p, webrtc sfu, video meeting, video chat, video conference, multi video chat, multi video conference, peer to peer, p2p, sfu, rtc, alternative to, zoom, microsoft teams, google meet, jitsi, meeting',
             },
             og: {
                 type: 'app-webrtc',
-                siteName: 'MEETVERSE',
+                siteName: 'MeetVerse',
                 title: 'Click the link to make a call.',
-                description: 'MEETVERSE calling provides real-time video calls, messaging and screen sharing.',
-                image: 'https://sfu.meetverse.com/images/meetversesfu.png',
+                description: 'MeetVerse calling provides real-time video calls, messaging and screen sharing.',
+                image: 'https://sfu.meetverse.com/images/meetverse.png',
                 url: 'https://sfu.meetverse.com',
             },
             html: {
@@ -427,6 +495,7 @@ module.exports = {
                 raiseHandButton: true,
                 transcriptionButton: true,
                 whiteboardButton: true,
+                documentPiPButton: true,
                 snapshotRoomButton: true,
                 emojiRoomButton: true,
                 settingsButton: true,
@@ -446,6 +515,7 @@ module.exports = {
                 tabRecording: true,
                 host_only_recording: true, // presenter
                 pushToTalk: true,
+                keyboardShortcuts: true,
             },
             producerVideo: {
                 videoPictureInPicture: true,
@@ -524,8 +594,8 @@ module.exports = {
         // Worker settings
         numWorkers: numWorkers,
         worker: {
-            rtcMinPort: 40000,
-            rtcMaxPort: 40100,
+            rtcMinPort: rtcMinPort,
+            rtcMaxPort: rtcMaxPort,
             disableLiburing: false, // https://github.com/axboe/liburing
             logLevel: 'error',
             logTags: ['info', 'ice', 'dtls', 'rtp', 'srtp', 'rtcp', 'rtx', 'bwe', 'score', 'simulcast', 'svc', 'sctp'],
@@ -554,7 +624,16 @@ module.exports = {
                     mimeType: 'video/VP9',
                     clockRate: 90000,
                     parameters: {
-                        'profile-id': 2,
+                        'profile-id': 0, // Default profile for wider compatibility
+                        'x-google-start-bitrate': 1000,
+                    },
+                },
+                {
+                    kind: 'video',
+                    mimeType: 'video/VP9',
+                    clockRate: 90000,
+                    parameters: {
+                        'profile-id': 2, // High profile for modern devices
                         'x-google-start-bitrate': 1000,
                     },
                 },
@@ -564,7 +643,7 @@ module.exports = {
                     clockRate: 90000,
                     parameters: {
                         'packetization-mode': 1,
-                        'profile-level-id': '4d0032',
+                        'profile-level-id': '42e01f', // Baseline profile for compatibility
                         'level-asymmetry-allowed': 1,
                         'x-google-start-bitrate': 1000,
                     },
@@ -575,7 +654,7 @@ module.exports = {
                     clockRate: 90000,
                     parameters: {
                         'packetization-mode': 1,
-                        'profile-level-id': '42e01f',
+                        'profile-level-id': '4d0032', // High profile for modern devices
                         'level-asymmetry-allowed': 1,
                         'x-google-start-bitrate': 1000,
                     },
@@ -586,38 +665,38 @@ module.exports = {
         webRtcServerActive: false,
         webRtcServerOptions: {
             listenInfos: [
-                // { protocol: 'udp', ip: '0.0.0.0', announcedAddress: IPv4, port: 40000 },
-                // { protocol: 'tcp', ip: '0.0.0.0', announcedAddress: IPv4, port: 40000 },
+                // { protocol: 'udp', ip: '0.0.0.0', announcedAddress: IPv4, port: rtcMinPort },
+                // { protocol: 'tcp', ip: '0.0.0.0', announcedAddress: IPv4, port: rtcMinPort },
                 {
                     protocol: 'udp',
                     ip: '0.0.0.0',
                     announcedAddress: IPv4,
-                    portRange: { min: 40000, max: 40000 + numWorkers },
+                    portRange: { min: rtcMinPort, max: rtcMinPort + numWorkers },
                 },
                 {
                     protocol: 'tcp',
                     ip: '0.0.0.0',
                     announcedAddress: IPv4,
-                    portRange: { min: 40000, max: 40000 + numWorkers },
+                    portRange: { min: rtcMinPort, max: rtcMinPort + numWorkers },
                 },
             ],
         },
         // WebRtcTransportOptions
         webRtcTransport: {
             listenInfos: [
-                // { protocol: 'udp', ip: IPv4, portRange: { min: 40000, max: 40100 } },
-                // { protocol: 'tcp', ip: IPv4, portRange: { min: 40000, max: 40100 } },
+                // { protocol: 'udp', ip: IPv4, portRange: { min: rtcMinPort, max: rtcMaxPort } },
+                // { protocol: 'tcp', ip: IPv4, portRange: { min: rtcMinPort, max: rtcMaxPort } },
                 {
                     protocol: 'udp',
                     ip: '0.0.0.0',
                     announcedAddress: IPv4,
-                    portRange: { min: 40000, max: 40100 },
+                    portRange: { min: rtcMinPort, max: rtcMaxPort },
                 },
                 {
                     protocol: 'tcp',
                     ip: '0.0.0.0',
                     announcedAddress: IPv4,
-                    portRange: { min: 40000, max: 40100 },
+                    portRange: { min: rtcMinPort, max: rtcMaxPort },
                 },
             ],
             initialAvailableOutgoingBitrate: 1000000,
@@ -625,7 +704,5 @@ module.exports = {
             maxSctpMessageSize: 262144,
             maxIncomingBitrate: 1500000,
         },
-        //announcedAddress: replace by 'public static IPV4 address' https://api.ipify.org (type string --> 'xx.xxx.xxx.xx' not xx.xxx.xxx.xx)
-        //announcedAddress: '' will be auto-detected on server start, for docker localPC set '127.0.0.1' otherwise the 'public static IPV4 address'
     },
 };

@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap');
 
 .container {
+    position: fixed !important;
     padding: 2px !important;
     /* overflow-y: auto;
     overflow-x: hidden; */
@@ -140,7 +141,7 @@
 }
 
 .all-participants-img:hover {
-    background-color: #86c541;
+    background-color: #1d8ecd;
     transition: all 0.3s ease-in-out;
 }
 
@@ -210,14 +211,16 @@
 
 /* chat message bubble */
 .chat .chat-history .message {
+    position: relative;
+    display: inline-block;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
     color: #fff;
     padding: 18px 20px;
     line-height: 26px;
     font-size: 16px;
     max-width: 100%;
     border-radius: 7px;
-    display: inline-block;
-    position: relative;
     /* border: 1px solid lime;  */
 }
 

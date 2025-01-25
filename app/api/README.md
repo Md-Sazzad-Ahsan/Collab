@@ -9,7 +9,7 @@ The `API_KEY` is defined in the `app/src/config.js`, change it with your own.
 ```js
 api: {
     // app/api
-    keySecret: 'meetversesfu_default_secret',
+    keySecret: 'meetverse_default_secret',
 }
 ```
 

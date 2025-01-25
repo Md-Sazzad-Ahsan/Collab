@@ -1,0 +1,19 @@
+{
+    "name": "meetverse-webhook",
+    "version": "1.0.0",
+    "description": "MeetVerse WebHook endpoint example",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "keywords": [
+        "webhook",
+        "server"
+    ],
+    "author": "Akib Hossain Omi",
+    "license": "AGPLv3",
+    "dependencies": {
+        "express": "4.21.2",
+        "body-parser": "1.20.3"
+    }
+}

@@ -1,11 +1,11 @@
 <?php
 
-$API_KEY_SECRET = "meetversesfu_default_secret";
-$MEETVERSE_URL = "https://sfu.meetverse.com/api/v1/token";
-#$MEETVERSE_URL = "http://localhost:3010/api/v1/token";
+$API_KEY_SECRET = "meetverse_default_secret";
+$MIROTALK_URL = "https://sfu.meetverse.com/api/v1/token";
+#$MIROTALK_URL = "http://localhost:3010/api/v1/token";
 
 $ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, $MEETVERSE_URL);
+curl_setopt($ch, CURLOPT_URL, $MIROTALK_URL);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 curl_setopt($ch, CURLOPT_POST, 1);
 

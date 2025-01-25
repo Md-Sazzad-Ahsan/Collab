@@ -11,7 +11,7 @@
         "cloud",
         "recording"
     ],
-    "author": "Miroslav Pejic",
+    "author": "Akib Hossain Omi",
     "license": "AGPLv3",
     "dependencies": {
         "cors": "2.8.5",

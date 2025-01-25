@@ -2,9 +2,9 @@
 import requests
 import json
 
-API_KEY_SECRET = "meetversesfu_default_secret"
-MEETVERSE_URL = "https://sfu.meetverse.com/api/v1/join"
-# MEETVERSE_URL = "http://localhost:3010/api/v1/join"
+API_KEY_SECRET = "meetverse_default_secret"
+MIROTALK_URL = "https://sfu.meetverse.com/api/v1/join"
+# MIROTALK_URL = "http://localhost:3010/api/v1/join"
 
 headers = {
     "authorization": API_KEY_SECRET,
@@ -20,6 +20,7 @@ data = {
     "screen": "true",
     "hide": "false",
     "notify": "true",
+    "duration": "unlimited",
     "token": {
         "username": "username",
         "password": "password",
@@ -29,7 +30,7 @@ data = {
 }
 
 response = requests.post(
-    MEETVERSE_URL,
+    MIROTALK_URL,
     headers=headers,
     json=data,
 )

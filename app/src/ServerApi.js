@@ -6,7 +6,7 @@ const CryptoJS = require('crypto-js');
 const config = require('./config');
 const { v4: uuidV4 } = require('uuid');
 
-const JWT_KEY = (config.jwt && config.jwt.key) || 'meetversesfu_jwt_secret';
+const JWT_KEY = (config.jwt && config.jwt.key) || 'meetverse_jwt_secret';
 const JWT_EXP = (config.jwt && config.jwt.exp) || '1h';
 
 module.exports = class ServerApi {
@@ -19,6 +19,12 @@ module.exports = class ServerApi {
     isAuthorized() {
         if (this._authorization != this._api_key_secret) return false;
         return true;
+    }
+
+    getStats(roomList, timestamp = new Date().toISOString()) {
+        const totalUsers = Array.from(roomList.values()).reduce((total, room) => total + room.peers.size, 0);
+        const totalRooms = roomList.size;
+        return { timestamp, totalRooms, totalUsers };
     }
 
     getMeetings(roomList) {
@@ -62,7 +68,7 @@ module.exports = class ServerApi {
 
     getJoinURL(data) {
         // Get data
-        const { room, roomPassword, name, audio, video, screen, hide, notify, token } = data;
+        const { room, roomPassword, name, audio, video, screen, hide, notify, duration, token } = data;
 
         const roomValue = room || uuidV4();
         const nameValue = name || 'User-' + this.getRandomNumber();
@@ -72,6 +78,7 @@ module.exports = class ServerApi {
         const screenValue = screen || false;
         const hideValue = hide || false;
         const notifyValue = notify || false;
+        const durationValue = duration || 'unlimited';
         const jwtToken = token ? '&token=' + this.getToken(token) : '';
 
         const joinURL =
@@ -86,6 +93,7 @@ module.exports = class ServerApi {
             `&screen=${screenValue}` +
             `&hide=${hideValue}` +
             `&notify=${notifyValue}` +
+            `&duration=${durationValue}` +
             jwtToken;
 
         return joinURL;

@@ -1,5 +1,3 @@
-version: '3'
-
 services:
     meetverse-nms:
         container_name: meetverse-nms

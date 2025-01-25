@@ -156,9 +156,24 @@ function typeWriter() {
 }
 
 const roomName = document.getElementById('roomName');
+
 if (roomName) {
     roomName.value = '';
-    typeWriter();
+
+    if (window.sessionStorage.roomID) {
+        roomName.value = window.sessionStorage.roomID;
+        window.sessionStorage.roomID = false;
+        joinRoom();
+    } else {
+        typeWriter();
+    }
+
+    roomName.onkeyup = (e) => {
+        if (e.keyCode === 13) {
+            e.preventDefault();
+            joinRoom();
+        }
+    };
 }
 
 // ####################################################################
@@ -168,6 +183,7 @@ if (roomName) {
 const lastRoomContainer = document.getElementById('lastRoomContainer');
 const lastRoom = document.getElementById('lastRoom');
 const lastRoomName = window.localStorage.lastRoom ? window.localStorage.lastRoom : '';
+
 if (lastRoomContainer && lastRoom && lastRoomName) {
     lastRoomContainer.style.display = 'inline-flex';
     lastRoom.setAttribute('href', '/join/?room=' + lastRoomName);
@@ -196,13 +212,6 @@ if (adultCnt) {
     };
 }
 
-document.getElementById('roomName').onkeyup = (e) => {
-    if (e.keyCode === 13) {
-        e.preventDefault();
-        joinRoom();
-    }
-};
-
 function genRoom() {
     document.getElementById('roomName').value = getUUID4();
 }
@@ -218,11 +227,11 @@ function joinRoom() {
     const roomValid = isValidRoomName(roomName);
 
     if (!roomName) {
-        alert('Room name empty!\nPlease pick a room name.');
+        popup('warning', 'Room name empty!\nPlease pick a room name.');
         return;
     }
     if (!roomValid) {
-        alert('Invalid Room name!\nPath traversal pattern detected!');
+        popup('warning', 'Invalid Room name!\nPath traversal pattern detected!');
         return;
     }
 

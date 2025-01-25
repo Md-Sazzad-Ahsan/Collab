@@ -2,9 +2,9 @@
 import requests
 import json
 
-API_KEY_SECRET = "meetversesfu_default_secret"
-MEETVERSE_URL = "https://sfu.meetverse.com/api/v1/meetings"
-#MEETVERSE_URL = "http://localhost:3010/api/v1/meetings"
+API_KEY_SECRET = "meetverse_default_secret"
+MIROTALK_URL = "https://sfu.meetverse.com/api/v1/meetings"
+#MIROTALK_URL = "http://localhost:3010/api/v1/meetings"
 
 headers = {
     "authorization": API_KEY_SECRET,
@@ -12,7 +12,7 @@ headers = {
 }
 
 response = requests.get(
-    MEETVERSE_URL,
+    MIROTALK_URL,
     headers=headers
 )
 

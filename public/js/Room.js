@@ -2,26 +2,29 @@
 
 if (location.href.substr(0, 5) !== 'https') location.href = 'https' + location.href.substr(4, location.href.length - 4);
 
-/**
- * MeetVerse - Room component
- *
- * @link    GitHub: https://github.com/miroslavpejic85/meetverse
- * @link    Official Live demo: https://sfu.meetverse.com
- * @license For open source use: AGPLv3
- * @license For commercial or closed source, contact us at license.meetverse@gmail.com or purchase directly via CodeCanyon
- * @license CodeCanyon: https://codecanyon.net/item/meetverse-sfu-webrtc-realtime-video-conferences/40769970
- * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.6.24
- *
- */
-
 // ####################################################
 // STATIC SETTINGS
 // ####################################################
 
 console.log('Window Location', window.location);
 
-const socket = io({ transports: ['websocket'] });
+const userAgent = navigator.userAgent;
+const parser = new UAParser(userAgent);
+const parserResult = parser.getResult();
+const deviceType = parserResult.device.type || 'desktop';
+const isMobileDevice = deviceType === 'mobile';
+const isTabletDevice = deviceType === 'tablet';
+const isIPadDevice = parserResult.device.model?.toLowerCase() === 'ipad';
+const isDesktopDevice = deviceType === 'desktop';
+const thisInfo = getInfo();
+
+const isEmbedded = window.self !== window.top;
+const showDocumentPipBtn = !isEmbedded && 'documentPictureInPicture' in window;
+
+const socket = io({
+    transports: ['websocket'],
+    reconnection: isDesktopDevice,
+});
 
 let survey = {
     enabled: true,
@@ -60,11 +63,6 @@ const _PEER = {
 const initUser = document.getElementById('initUser');
 const initVideoContainerClass = document.querySelector('.init-video-container');
 const bars = document.querySelectorAll('.volume-bar');
-
-const userAgent = navigator.userAgent.toLowerCase();
-const isTabletDevice = isTablet(userAgent);
-const isIPadDevice = isIpad(userAgent);
-const thisInfo = getInfo();
 
 const Base64Prefix = 'data:application/pdf;base64,';
 
@@ -191,6 +189,7 @@ let chatMessagesId = 0;
 
 let room_id = getRoomId();
 let room_password = getRoomPassword();
+let room_duration = getRoomDuration();
 let peer_name = getPeerName();
 let peer_uuid = getPeerUUID();
 let peer_token = getPeerToken();
@@ -205,6 +204,8 @@ let isPushToTalkActive = false;
 let isSpaceDown = false;
 let isPitchBarEnabled = true;
 let isSoundEnabled = true;
+let isKeepButtonsVisible = false;
+let isShortcutsEnabled = false;
 let isBroadcastingEnabled = false;
 let isLobbyEnabled = false;
 let isLobbyOpen = false;
@@ -225,6 +226,11 @@ let isChatGPTOn = false;
 let isSpeechSynthesisSupported = 'speechSynthesis' in window;
 let joinRoomWithoutAudioVideo = true;
 let joinRoomWithScreen = false;
+
+let audio = false;
+let video = false;
+let screen = false;
+let hand = false;
 
 let recTimer = null;
 let recElapsedTime = null;
@@ -274,7 +280,7 @@ function initClient() {
     transcription = new Transcription();
     transcription.init();
 
-    if (!DetectRTC.isMobileDevice) {
+    if (!isMobileDevice) {
         refreshMainButtonsToolTipPlacement();
         setTippy('closeEmojiPickerContainer', 'Close', 'bottom');
         setTippy('mySettingsCloseBtn', 'Close', 'bottom');
@@ -299,6 +305,7 @@ function initClient() {
         setTippy('switchPitchBar', 'Toggle audio pitch bar', 'right');
         setTippy('switchSounds', 'Toggle the sounds notifications', 'right');
         setTippy('switchShare', "Show 'Share Room' popup on join", 'right');
+        setTippy('switchKeepButtonsVisible', 'Keep buttons always visible', 'right');
         setTippy('roomId', 'Room name (click to copy)', 'right');
         setTippy('sessionTime', 'Session time', 'right');
         setTippy('recordingImage', 'Toggle recording', 'right');
@@ -378,7 +385,7 @@ function initClient() {
 // ####################################################
 
 function refreshMainButtonsToolTipPlacement() {
-    if (!DetectRTC.isMobileDevice) {
+    if (!isMobileDevice) {
         //
         const position = BtnsBarPosition.options[BtnsBarPosition.selectedIndex].value;
         const placement = position == 'vertical' ? 'right' : 'top';
@@ -395,8 +402,8 @@ function refreshMainButtonsToolTipPlacement() {
         setTippy('editorButton', 'Toggle the editor', placement);
         setTippy('transcriptionButton', 'Toggle transcription', placement);
         setTippy('whiteboardButton', 'Toggle the whiteboard', placement);
+        setTippy('documentPiPButton', 'Toggle Document picture in picture', placement);
         setTippy('snapshotRoomButton', 'Snapshot screen, window, or tab', placement);
-        setTippy('settingsButton', 'Toggle the settings', placement);
         setTippy('restartICEButton', 'Restart ICE', placement);
         setTippy('aboutButton', 'About this project', placement);
 
@@ -412,6 +419,7 @@ function refreshMainButtonsToolTipPlacement() {
         setTippy('raiseHandButton', 'Raise your hand', bPlacement);
         setTippy('lowerHandButton', 'Lower your hand', bPlacement);
         setTippy('chatButton', 'Toggle the chat', bPlacement);
+        setTippy('settingsButton', 'Toggle the settings', bPlacement);
         setTippy('exitButton', 'Leave room', bPlacement);
     }
 }
@@ -441,12 +449,20 @@ function setTippy(elem, content, placement, allowHTML = false) {
 }
 
 // ####################################################
+// HELPERS
+// ####################################################
+
+function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return filterXSS(urlParams.get(param));
+}
+
+// ####################################################
 // GET ROOM ID
 // ####################################################
 
 function getRoomId() {
-    let qs = new URLSearchParams(window.location.search);
-    let queryRoomId = filterXSS(qs.get('room'));
+    let queryRoomId = getQueryParam('room');
     let roomId = queryRoomId ? queryRoomId : location.pathname.substring(6);
     if (roomId == '') {
         roomId = makeId(12);
@@ -732,12 +748,11 @@ function hasVideoTrack(mediaStream) {
 }
 
 // ####################################################
-// API CHECK
+// QUERY PARAMS CHECK
 // ####################################################
 
 function getScreen() {
-    let qs = new URLSearchParams(window.location.search);
-    let screen = filterXSS(qs.get('screen'));
+    let screen = getQueryParam('screen');
     if (screen) {
         screen = screen.toLowerCase();
         let queryScreen = screen === '1' || screen === 'true';
@@ -751,8 +766,7 @@ function getScreen() {
 }
 
 function getNotify() {
-    let qs = new URLSearchParams(window.location.search);
-    let notify = filterXSS(qs.get('notify'));
+    let notify = getQueryParam('notify');
     if (notify) {
         notify = notify.toLowerCase();
         let queryNotify = notify === '1' || notify === 'true';
@@ -767,8 +781,7 @@ function getNotify() {
 }
 
 function getHideMeActive() {
-    let qs = new URLSearchParams(window.location.search);
-    let hide = filterXSS(qs.get('hide'));
+    let hide = getQueryParam('hide');
     let queryHideMe = false;
     if (hide) {
         hide = hide.toLowerCase();
@@ -779,8 +792,7 @@ function getHideMeActive() {
 }
 
 function isPeerPresenter() {
-    let qs = new URLSearchParams(window.location.search);
-    let presenter = filterXSS(qs.get('isPresenter'));
+    let presenter = getQueryParam('isPresenter');
     if (presenter) {
         presenter = presenter.toLowerCase();
         let queryPresenter = presenter === '1' || presenter === 'true';
@@ -794,8 +806,7 @@ function isPeerPresenter() {
 }
 
 function getPeerName() {
-    const qs = new URLSearchParams(window.location.search);
-    const name = filterXSS(qs.get('name'));
+    const name = getQueryParam('name');
     if (isHtml(name)) {
         console.log('Direct join', { name: 'Invalid name' });
         return 'Invalid name';
@@ -815,8 +826,7 @@ function getPeerUUID() {
 
 function getPeerToken() {
     if (window.sessionStorage.peer_token) return window.sessionStorage.peer_token;
-    let qs = new URLSearchParams(window.location.search);
-    let token = filterXSS(qs.get('token'));
+    let token = getQueryParam('token');
     let queryToken = false;
     if (token) {
         queryToken = token;
@@ -826,8 +836,7 @@ function getPeerToken() {
 }
 
 function getRoomPassword() {
-    let qs = new URLSearchParams(window.location.search);
-    let roomPassword = filterXSS(qs.get('roomPassword'));
+    let roomPassword = getQueryParam('roomPassword');
     if (roomPassword) {
         let queryNoRoomPassword = roomPassword === '0' || roomPassword === 'false';
         if (queryNoRoomPassword) {
@@ -837,6 +846,62 @@ function getRoomPassword() {
         return roomPassword;
     }
     return false;
+}
+
+function getRoomDuration() {
+    const roomDuration = getQueryParam('duration');
+
+    if (isValidDuration(roomDuration)) {
+        if (roomDuration === 'unlimited') {
+            console.log('The room has no time limit');
+            return roomDuration;
+        }
+        const timeLimit = timeToMilliseconds(roomDuration);
+        setTimeout(() => {
+            sound('eject');
+            Swal.fire({
+                background: swalBackground,
+                position: 'center',
+                title: 'Time Limit Reached',
+                text: 'The room has reached its time limit and will close shortly',
+                icon: 'warning',
+                timer: 6000, // 6 seconds
+                timerProgressBar: true,
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+                willClose: () => {
+                    rc.exitRoom(true);
+                },
+            });
+        }, timeLimit);
+
+        console.log('Direct join', { duration: roomDuration, timeLimit: timeLimit });
+        return roomDuration;
+    }
+    return 'unlimited';
+}
+
+function timeToMilliseconds(timeString) {
+    const [hours, minutes, seconds] = timeString.split(':').map(Number);
+    return (hours * 3600 + minutes * 60 + seconds) * 1000;
+}
+
+function isValidDuration(duration) {
+    if (duration === 'unlimited') return true;
+
+    // Check if the format is HH:MM:SS
+    const regex = /^(\d{2}):(\d{2}):(\d{2})$/;
+    const match = duration.match(regex);
+    if (!match) return false;
+    const [hours, minutes, seconds] = match.slice(1).map(Number);
+    // Validate ranges: hours, minutes, and seconds
+    if (hours < 0 || minutes < 0 || minutes > 59 || seconds < 0 || seconds > 59) {
+        return false;
+    }
+    return true;
 }
 
 // ####################################################
@@ -875,26 +940,22 @@ function getPeerInfo() {
         peer_recording: isRecording,
         peer_video_privacy: isVideoPrivacyActive,
         peer_hand: false,
-        is_desktop_device: !DetectRTC.isMobileDevice && !isTabletDevice && !isIPadDevice,
-        is_mobile_device: DetectRTC.isMobileDevice,
+        is_desktop_device: isDesktopDevice,
+        is_mobile_device: isMobileDevice,
         is_tablet_device: isTabletDevice,
         is_ipad_pro_device: isIPadDevice,
-        os_name: DetectRTC.osName,
-        os_version: DetectRTC.osVersion,
-        browser_name: DetectRTC.browser.name,
-        browser_version: DetectRTC.browser.version,
+        os_name: parserResult.os.name,
+        os_version: parserResult.os.version,
+        browser_name: parserResult.browser.name,
+        browser_version: parserResult.browser.version,
         user_agent: userAgent,
     };
 }
 
 function getInfo() {
-    const parser = new UAParser(userAgent);
-
     try {
-        const parserResult = parser.getResult();
         console.log('Info', parserResult);
 
-        // Filter out properties with 'Unknown' values
         const filterUnknown = (obj) => {
             const filtered = {};
             for (const [key, value] of Object.entries(obj)) {
@@ -932,7 +993,6 @@ function getInfo() {
 async function whoAreYou() {
     console.log('04 ----> Who are you?');
 
-    hide(loadingDiv);
     document.body.style.background = 'var(--body-bg)';
 
     try {
@@ -960,6 +1020,7 @@ async function whoAreYou() {
     }
 
     if (peer_name) {
+        hide(loadingDiv);
         checkMedia();
         getPeerInfo();
         joinRoom(peer_name, room_id);
@@ -994,6 +1055,36 @@ async function whoAreYou() {
         hide(initStartScreenButton);
     }
 
+    // Fetch the OIDC profile and manage peer_name
+    let force_peer_name = false;
+
+    try {
+        const { data: profile } = await axios.get('/profile', { timeout: 5000 });
+
+        if (profile) {
+            console.log('AXIOS GET OIDC Profile retrieved successfully', profile);
+
+            // Define peer_name based on the profile properties and preferences
+            const peerNamePreference = profile.peer_name || {};
+            default_name =
+                (peerNamePreference.email && profile.email) ||
+                (peerNamePreference.name && profile.name) ||
+                default_name;
+
+            // Set localStorage and force_peer_name if applicable
+            if (default_name && peerNamePreference.force) {
+                window.localStorage.peer_name = default_name;
+                force_peer_name = true;
+            } else {
+                console.warn('AXIOS GET Profile retrieved but missing required peer name fields');
+            }
+        } else {
+            console.warn('AXIOS GET Profile data is empty or undefined');
+        }
+    } catch (error) {
+        console.error('AXIOS OIDC Error fetching profile', error.message || error);
+    }
+
     initUser.classList.toggle('hidden');
 
     Swal.fire({
@@ -1010,6 +1101,9 @@ async function whoAreYou() {
         customClass: { popup: 'init-modal-size' },
         showClass: { popup: 'animate__animated animate__fadeInDown' },
         hideClass: { popup: 'animate__animated animate__fadeOutUp' },
+        willOpen: () => {
+            hide(loadingDiv);
+        },
         inputValidator: (name) => {
             if (!name) return 'Please enter your email or name';
             if (name.length > 30) return 'Name must be max 30 char';
@@ -1033,6 +1127,11 @@ async function whoAreYou() {
         getPeerInfo();
         joinRoom(peer_name, room_id);
     });
+
+    if (force_peer_name) {
+        getId('usernameInput').disabled = true;
+        hide(initUsernameEmojiButton);
+    }
 
     if (!isVideoAllowed) {
         elemDisplay('initVideo', false);
@@ -1078,7 +1177,7 @@ async function handleAudioVideo() {
         hide(initVideoButton);
         hide(initVideoAudioRefreshButton);
     }
-    if (isAudioAllowed && isVideoAllowed && !DetectRTC.isMobileDevice) show(initVideoAudioRefreshButton);
+    if (isAudioAllowed && isVideoAllowed && !isMobileDevice) show(initVideoAudioRefreshButton);
     setColor(initAudioVideoButton, isAudioVideoAllowed ? 'white' : 'red');
     setColor(initAudioButton, isAudioAllowed ? 'white' : 'red');
     setColor(initVideoButton, isVideoAllowed ? 'white' : 'red');
@@ -1117,9 +1216,8 @@ function initVideoContainerShow(show = true) {
 }
 
 function checkMedia() {
-    let qs = new URLSearchParams(window.location.search);
-    let audio = filterXSS(qs.get('audio'));
-    let video = filterXSS(qs.get('video'));
+    let audio = getQueryParam('audio');
+    let video = getQueryParam('video');
     if (audio) {
         audio = audio.toLowerCase();
         let queryPeerAudio = audio === '1' || audio === 'true';
@@ -1196,10 +1294,6 @@ async function shareRoom(useNavigator = false) {
 // ####################################################
 // ROOM UTILITY
 // ####################################################
-
-function isDesktopDevice() {
-    return !DetectRTC.isMobileDevice && !isTabletDevice && !isIPadDevice;
-}
 
 function makeRoomQR() {
     let qr = new QRious({
@@ -1344,10 +1438,10 @@ function roomIsReady() {
     show(chatCleanTextButton);
     show(chatPasteButton);
     show(chatSendButton);
-    if (isDesktopDevice()) {
+    if (isDesktopDevice) {
         show(whiteboardGridBtn);
     }
-    if (DetectRTC.isMobileDevice) {
+    if (isMobileDevice) {
         hide(initVideoAudioRefreshButton);
         hide(refreshVideoDevices);
         hide(refreshAudioDevices);
@@ -1396,13 +1490,14 @@ function roomIsReady() {
             show(startRtmpURLButton) &&
             show(streamerRtmpButton);
     }
-    if (DetectRTC.browser.name != 'Safari') {
+    if (!parserResult.browser.name.toLowerCase().includes('safari')) {
         document.onfullscreenchange = () => {
             if (!document.fullscreenElement) rc.isDocumentOnFullScreen = false;
         };
         show(fullScreenButton);
     }
     BUTTONS.main.whiteboardButton && show(whiteboardButton);
+    if (BUTTONS.main.documentPiPButton && showDocumentPipBtn) show(documentPiPButton);
     BUTTONS.main.settingsButton && show(settingsButton);
     isAudioAllowed ? show(stopAudioButton) : BUTTONS.main.startAudioButton && show(startAudioButton);
     isVideoAllowed ? show(stopVideoButton) : BUTTONS.main.startVideoButton && show(startVideoButton);
@@ -1413,7 +1508,7 @@ function roomIsReady() {
     BUTTONS.settings.sendEmailInvitation && show(sendEmailInvitation);
     if (rc.recording.recSyncServerRecording) show(roomRecordingServer);
     BUTTONS.main.aboutButton && show(aboutButton);
-    if (!DetectRTC.isMobileDevice) show(pinUnpinGridDiv);
+    if (!isMobileDevice) show(pinUnpinGridDiv);
     if (!isSpeechSynthesisSupported) hide(speechMsgDiv);
     handleButtons();
     handleSelects();
@@ -1452,6 +1547,10 @@ function disable(elem, disabled) {
 
 function setColor(elem, color) {
     elem.style.color = color;
+}
+
+function getColor(elem) {
+    return elem.style.color;
 }
 
 // ####################################################
@@ -1590,6 +1689,9 @@ function handleButtons() {
     tabProfileBtn.onclick = (e) => {
         rc.openTab(e, 'tabProfile');
     };
+    tabShortcutsBtn.onclick = (e) => {
+        rc.openTab(e, 'tabShortcuts');
+    };
     tabStylingBtn.onclick = (e) => {
         rc.openTab(e, 'tabStyling');
     };
@@ -1628,14 +1730,14 @@ function handleButtons() {
         sound('ring', true);
     };
     roomId.onclick = () => {
-        DetectRTC.isMobileDevice ? shareRoom(true) : copyRoomURL();
+        isMobileDevice ? shareRoom(true) : copyRoomURL();
     };
     roomSendEmail.onclick = () => {
         shareRoomByEmail();
     };
     chatButton.onclick = () => {
         rc.toggleChat();
-        if (DetectRTC.isMobileDevice) {
+        if (isMobileDevice) {
             rc.toggleShowParticipants();
         }
     };
@@ -1717,6 +1819,9 @@ function handleButtons() {
     };
     transcriptionMinBtn.onclick = () => {
         transcription.minimize();
+    };
+    transcriptionAllBtn.onclick = () => {
+        transcription.startAll();
     };
     transcriptionGhostBtn.onclick = () => {
         transcription.toggleBg();
@@ -1816,7 +1921,7 @@ function handleButtons() {
     };
     toggleExtraButton.onclick = () => {
         toggleExtraButtons();
-        if (!DetectRTC.isMobileDevice) {
+        if (!isMobileDevice) {
             isToggleExtraBtnClicked = true;
             setTimeout(() => {
                 isToggleExtraBtnClicked = false;
@@ -1824,7 +1929,7 @@ function handleButtons() {
         }
     };
     toggleExtraButton.onmouseover = () => {
-        if (isToggleExtraBtnClicked || DetectRTC.isMobileDevice) return;
+        if (isToggleExtraBtnClicked || isMobileDevice) return;
         if (control.style.display === 'none') {
             toggleExtraButtons();
         }
@@ -1914,6 +2019,9 @@ function handleButtons() {
         rc.shareVideo('all');
     };
     videoCloseBtn.onclick = () => {
+        if (rc._moderator.media_cant_sharing) {
+            return userLog('warning', 'The moderator does not allow you close this media', 'top-end', 6000);
+        }
         rc.closeVideo(true);
     };
     sendAbortBtn.onclick = () => {
@@ -1927,6 +2035,9 @@ function handleButtons() {
     };
     whiteboardButton.onclick = () => {
         toggleWhiteboard();
+    };
+    documentPiPButton.onclick = () => {
+        rc.toggleDocumentPIP();
     };
     snapshotRoomButton.onclick = () => {
         rc.snapshotRoom();
@@ -2016,7 +2127,7 @@ function handleButtons() {
 // ####################################################
 
 function setButtonsInit() {
-    if (!DetectRTC.isMobileDevice) {
+    if (!isMobileDevice) {
         setTippy('initAudioButton', 'Toggle the audio', 'top');
         setTippy('initVideoButton', 'Toggle the video', 'top');
         setTippy('initAudioVideoButton', 'Toggle the audio & video', 'top');
@@ -2028,7 +2139,7 @@ function setButtonsInit() {
     if (!isAudioAllowed) hide(initAudioButton);
     if (!isVideoAllowed) hide(initVideoButton);
     if (!isAudioAllowed || !isVideoAllowed) hide(initAudioVideoButton);
-    if ((!isAudioAllowed && !isVideoAllowed) || DetectRTC.isMobileDevice) hide(initVideoAudioRefreshButton);
+    if ((!isAudioAllowed && !isVideoAllowed) || isMobileDevice) hide(initVideoAudioRefreshButton);
     isAudioVideoAllowed = isAudioAllowed && isVideoAllowed;
 }
 
@@ -2286,7 +2397,7 @@ async function toggleScreenSharing() {
 }
 
 function handleCameraMirror(video) {
-    if (isDesktopDevice()) {
+    if (isDesktopDevice) {
         // Desktop devices...
         if (!video.classList.contains('mirror')) {
             video.classList.toggle('mirror');
@@ -2408,6 +2519,14 @@ function handleSelects() {
         rc.roomMessage('notify', notify);
         localStorageSettings.share_on_join = notify;
         lS.setSettings(localStorageSettings);
+        e.target.blur();
+    };
+    switchKeepButtonsVisible.onchange = (e) => {
+        isButtonsBarOver = isKeepButtonsVisible = e.currentTarget.checked;
+        localStorageSettings.keep_buttons_visible = isButtonsBarOver;
+        lS.setSettings(localStorageSettings);
+        const status = isButtonsBarOver ? 'enabled' : 'disabled';
+        userLog('info', `Buttons always visible ${status}`, 'top-end');
         e.target.blur();
     };
     // audio options
@@ -2620,6 +2739,14 @@ function handleSelects() {
         lS.setSettings(localStorageSettings);
         e.target.blur();
     };
+    switchEveryoneCantMediaSharing.onchange = (e) => {
+        const mediaCantSharing = e.currentTarget.checked;
+        rc.updateRoomModerator({ type: 'media_cant_sharing', status: mediaCantSharing });
+        rc.roomMessage('media_cant_sharing', mediaCantSharing);
+        localStorageSettings.moderator_media_cant_sharing = mediaCantSharing;
+        lS.setSettings(localStorageSettings);
+        e.target.blur();
+    };
     switchDisconnectAllOnLeave.onchange = (e) => {
         const disconnectAll = e.currentTarget.checked;
         rc.roomMessage('disconnect_all_on_leave', disconnectAll);
@@ -2627,6 +2754,176 @@ function handleSelects() {
         lS.setSettings(localStorageSettings);
         e.target.blur();
     };
+
+    // handle Shortcuts
+    handleKeyboardShortcuts();
+}
+
+// ####################################################
+// KEYBOARD SHORTCUTS
+// ####################################################
+
+function handleKeyboardShortcuts() {
+    if (!isDesktopDevice || !BUTTONS.settings.keyboardShortcuts) {
+        elemDisplay('tabShortcutsBtn', false);
+        setKeyboardShortcuts(false);
+    } else {
+        switchShortcuts.onchange = (e) => {
+            const status = setKeyboardShortcuts(e.currentTarget.checked);
+            userLog('info', `Keyboard shortcuts ${status}`, 'top-end');
+            e.target.blur();
+        };
+
+        document.addEventListener('keydown', (event) => {
+            if (
+                !isShortcutsEnabled ||
+                rc.isChatOpen ||
+                wbIsOpen ||
+                rc.isEditorOpen ||
+                (!isPresenter && isBroadcastingEnabled)
+            )
+                return;
+
+            const key = event.key.toLowerCase(); // Convert to lowercase for simplicity
+            console.log(`Detected shortcut: ${key}`);
+
+            const { audio_cant_unmute, video_cant_unhide, screen_cant_share } = rc._moderator;
+            const notPresenter = isRulesActive && !isPresenter;
+
+            switch (key) {
+                case 'a':
+                    if (notPresenter && !audio && (audio_cant_unmute || !BUTTONS.main.startAudioButton)) {
+                        userLog('warning', 'The presenter has disabled your ability to enable audio', 'top-end');
+                        break;
+                    }
+                    audio ? stopAudioButton.click() : startAudioButton.click();
+                    break;
+                case 'v':
+                    if (notPresenter && !video && (video_cant_unhide || !BUTTONS.main.startVideoButton)) {
+                        userLog('warning', 'The presenter has disabled your ability to enable video', 'top-end');
+                        break;
+                    }
+                    video ? stopVideoButton.click() : startVideoButton.click();
+                    break;
+                case 's':
+                    if (notPresenter && !screen && (screen_cant_share || !BUTTONS.main.startScreenButton)) {
+                        userLog('warning', 'The presenter has disabled your ability to share the screen', 'top-end');
+                        break;
+                    }
+                    screen ? stopScreenButton.click() : startScreenButton.click();
+                    break;
+                case 'h':
+                    if (notPresenter && !BUTTONS.main.raiseHandButton) {
+                        userLog('warning', 'The presenter has disabled your ability to raise your hand', 'top-end');
+                        break;
+                    }
+                    hand ? lowerHandButton.click() : raiseHandButton.click();
+                    break;
+                case 'c':
+                    if (notPresenter && !BUTTONS.main.chatButton) {
+                        userLog('warning', 'The presenter has disabled your ability to open the chat', 'top-end');
+                        break;
+                    }
+                    chatButton.click();
+                    break;
+                case 'o':
+                    if (notPresenter && !BUTTONS.main.settingsButton) {
+                        userLog('warning', 'The presenter has disabled your ability to open the settings', 'top-end');
+                        break;
+                    }
+                    settingsButton.click();
+                    break;
+                case 'x':
+                    if (notPresenter && !BUTTONS.main.hideMeButton) {
+                        userLog('warning', 'The presenter has disabled your ability to hide yourself', 'top-end');
+                        break;
+                    }
+                    hideMeButton.click();
+                    break;
+                case 'r':
+                    if (notPresenter && (hostOnlyRecording || !BUTTONS.settings.tabRecording)) {
+                        userLog('warning', 'The presenter has disabled your ability to start recording', 'top-end');
+                        break;
+                    }
+                    isRecording ? stopRecButton.click() : startRecButton.click();
+                    break;
+                case 'j':
+                    if (notPresenter && !BUTTONS.main.emojiRoomButton) {
+                        userLog('warning', 'The presenter has disabled your ability to open the room emoji', 'top-end');
+                        break;
+                    }
+                    emojiRoomButton.click();
+                    break;
+                case 'k':
+                    if (notPresenter && !BUTTONS.main.transcriptionButton) {
+                        userLog('warning', 'The presenter has disabled your ability to start transcription', 'top-end');
+                        break;
+                    }
+                    transcriptionButton.click();
+                    break;
+                case 'p':
+                    if (notPresenter && !BUTTONS.main.pollButton) {
+                        userLog('warning', 'The presenter has disabled your ability to start a poll', 'top-end');
+                        break;
+                    }
+                    pollButton.click();
+                    break;
+                case 'e':
+                    if (notPresenter && !BUTTONS.main.editorButton) {
+                        userLog('warning', 'The presenter has disabled your ability to open the editor', 'top-end');
+                        break;
+                    }
+                    editorButton.click();
+                    break;
+                case 'w':
+                    if (notPresenter && !BUTTONS.main.whiteboardButton) {
+                        userLog('warning', 'The presenter has disabled your ability to open the whiteboard', 'top-end');
+                        break;
+                    }
+                    whiteboardButton.click();
+                    break;
+                case 'd':
+                    if (!showDocumentPipBtn) {
+                        userLog('warning', 'The document PIP is not supported in this browser', 'top-end');
+                        break;
+                    }
+                    if (notPresenter && !BUTTONS.main.documentPiPButton) {
+                        userLog(
+                            'warning',
+                            'The presenter has disabled your ability to open the document PIP',
+                            'top-end',
+                        );
+                        break;
+                    }
+                    documentPiPButton.click();
+                    break;
+                case 't':
+                    if (notPresenter && !BUTTONS.main.snapshotRoomButton) {
+                        userLog('warning', 'The presenter has disabled your ability to take a snapshot', 'top-end');
+                        break;
+                    }
+                    snapshotRoomButton.click();
+                    break;
+                case 'f':
+                    if (notPresenter && !BUTTONS.settings.fileSharing) {
+                        userLog('warning', 'The presenter has disabled your ability to share files', 'top-end');
+                        break;
+                    }
+                    fileShareButton.click();
+                    break;
+                //...
+                default:
+                    console.log(`Unhandled shortcut key: ${key}`);
+            }
+        });
+    }
+}
+
+function setKeyboardShortcuts(enabled) {
+    isShortcutsEnabled = enabled;
+    localStorageSettings.keyboard_shortcuts = isShortcutsEnabled;
+    lS.setSettings(localStorageSettings);
+    return isShortcutsEnabled ? 'enabled' : 'disabled';
 }
 
 // ####################################################
@@ -2635,7 +2932,7 @@ function handleSelects() {
 
 function handleInputs() {
     chatMessage.onkeyup = (e) => {
-        if (e.keyCode === 13 && (DetectRTC.isMobileDevice || !e.shiftKey)) {
+        if (e.keyCode === 13 && (isMobileDevice || !e.shiftKey)) {
             e.preventDefault();
             chatSendButton.click();
         }
@@ -2767,6 +3064,7 @@ function handleRoomEmojiPicker() {
             type: 'roomEmoji',
             peer_name: peer_name,
             emoji: data.native,
+            shortcodes: data.shortcodes,
             broadcast: true,
         };
         if (rc.thereAreParticipants()) {
@@ -2842,12 +3140,16 @@ function loadSettingsFromLocalStorage() {
     rc.speechInMessages = localStorageSettings.speech_in_msg;
     isPitchBarEnabled = localStorageSettings.pitch_bar;
     isSoundEnabled = localStorageSettings.sounds;
+    isKeepButtonsVisible = localStorageSettings.keep_buttons_visible;
+    isShortcutsEnabled = localStorageSettings.keyboard_shortcuts;
     showChatOnMsg.checked = rc.showChatOnMessage;
     transcriptShowOnMsg.checked = transcription.showOnMessage;
     speechIncomingMsg.checked = rc.speechInMessages;
     switchPitchBar.checked = isPitchBarEnabled;
     switchSounds.checked = isSoundEnabled;
     switchShare.checked = notify;
+    switchKeepButtonsVisible.checked = isKeepButtonsVisible;
+    switchShortcuts.checked = isShortcutsEnabled;
 
     recPrioritizeH264 = localStorageSettings.rec_prioritize_h264;
     switchH264Recording.checked = recPrioritizeH264;
@@ -2925,12 +3227,14 @@ function handleRoomClientEvents() {
         hide(raiseHandButton);
         show(lowerHandButton);
         setColor(lowerHandIcon, 'lime');
+        hand = true;
     });
     rc.on(RoomClient.EVENTS.lowerHand, () => {
         console.log('Room event: Client lower hand');
         hide(lowerHandButton);
         show(raiseHandButton);
         setColor(lowerHandIcon, 'white');
+        hand = false;
     });
     rc.on(RoomClient.EVENTS.startAudio, () => {
         console.log('Room event: Client start audio');
@@ -2938,6 +3242,7 @@ function handleRoomClientEvents() {
         show(stopAudioButton);
         setColor(startAudioButton, 'red');
         setAudioButtonsDisabled(false);
+        audio = true;
     });
     rc.on(RoomClient.EVENTS.pauseAudio, () => {
         console.log('Room event: Client pause audio');
@@ -2945,12 +3250,14 @@ function handleRoomClientEvents() {
         show(startAudioButton);
         setColor(startAudioButton, 'red');
         setAudioButtonsDisabled(false);
+        audio = false;
     });
     rc.on(RoomClient.EVENTS.resumeAudio, () => {
         console.log('Room event: Client resume audio');
         hide(startAudioButton);
         show(stopAudioButton);
         setAudioButtonsDisabled(false);
+        audio = true;
     });
     rc.on(RoomClient.EVENTS.stopAudio, () => {
         console.log('Room event: Client stop audio');
@@ -2958,6 +3265,7 @@ function handleRoomClientEvents() {
         show(startAudioButton);
         setAudioButtonsDisabled(false);
         stopMicrophoneProcessing();
+        audio = false;
     });
     rc.on(RoomClient.EVENTS.startVideo, () => {
         console.log('Room event: Client start video');
@@ -2967,6 +3275,7 @@ function handleRoomClientEvents() {
         setVideoButtonsDisabled(false);
         hideClassElements('videoMenuBar');
         // if (isParticipantsListOpen) getRoomParticipants();
+        video = true;
     });
     rc.on(RoomClient.EVENTS.pauseVideo, () => {
         console.log('Room event: Client pause video');
@@ -2975,6 +3284,7 @@ function handleRoomClientEvents() {
         setColor(startVideoButton, 'red');
         setVideoButtonsDisabled(false);
         hideClassElements('videoMenuBar');
+        video = false;
     });
     rc.on(RoomClient.EVENTS.resumeVideo, () => {
         console.log('Room event: Client resume video');
@@ -2983,6 +3293,7 @@ function handleRoomClientEvents() {
         setVideoButtonsDisabled(false);
         isVideoPrivacyActive = false;
         hideClassElements('videoMenuBar');
+        video = true;
     });
     rc.on(RoomClient.EVENTS.stopVideo, () => {
         console.log('Room event: Client stop video');
@@ -2992,6 +3303,7 @@ function handleRoomClientEvents() {
         isVideoPrivacyActive = false;
         hideClassElements('videoMenuBar');
         // if (isParticipantsListOpen) getRoomParticipants();
+        video = false;
     });
     rc.on(RoomClient.EVENTS.startScreen, () => {
         console.log('Room event: Client start screen');
@@ -2999,18 +3311,21 @@ function handleRoomClientEvents() {
         show(stopScreenButton);
         hideClassElements('videoMenuBar');
         // if (isParticipantsListOpen) getRoomParticipants();
+        screen = true;
     });
     rc.on(RoomClient.EVENTS.pauseScreen, () => {
         console.log('Room event: Client pause screen');
         hide(startScreenButton);
         show(stopScreenButton);
         hideClassElements('videoMenuBar');
+        screen = false;
     });
     rc.on(RoomClient.EVENTS.resumeScreen, () => {
         console.log('Room event: Client resume screen');
         hide(stopScreenButton);
         show(startScreenButton);
         hideClassElements('videoMenuBar');
+        screen = true;
     });
     rc.on(RoomClient.EVENTS.stopScreen, () => {
         console.log('Room event: Client stop screen');
@@ -3018,12 +3333,12 @@ function handleRoomClientEvents() {
         show(startScreenButton);
         hideClassElements('videoMenuBar');
         // if (isParticipantsListOpen) getRoomParticipants();
+        screen = false;
     });
     rc.on(RoomClient.EVENTS.roomLock, () => {
         console.log('Room event: Client lock room');
         hide(lockRoomButton);
         show(unlockRoomButton);
-        setColor(unlockRoomButton, 'red');
         isRoomLocked = true;
     });
     rc.on(RoomClient.EVENTS.roomUnlock, () => {
@@ -3125,7 +3440,7 @@ function leaveFeedback() {
         background: swalBackground,
         imageUrl: image.feedback,
         title: 'Leave a feedback',
-        text: 'Do you want to rate your MeetVerse experience?',
+        text: 'Do you want to rate your MiroTalk experience?',
         confirmButtonText: `Yes`,
         denyButtonText: `No`,
         showClass: { popup: 'animate__animated animate__fadeInDown' },
@@ -3216,8 +3531,8 @@ function showButtons() {
     if (
         isButtonsBarOver ||
         isButtonsVisible ||
-        (rc.isMobileDevice && rc.isChatOpen) ||
-        (rc.isMobileDevice && rc.isMySettingsOpen)
+        (isMobileDevice && rc.isChatOpen) ||
+        (isMobileDevice && rc.isMySettingsOpen)
     )
         return;
     toggleExtraButton.innerHTML = icons.down;
@@ -3226,11 +3541,18 @@ function showButtons() {
 }
 
 function checkButtonsBar() {
-    if (!isButtonsBarOver) {
-        control.style.display = 'none';
+    if (localStorageSettings.keep_buttons_visible) {
+        control.style.display = 'flex';
         toggleExtraButton.innerHTML = icons.up;
-        bottomButtons.style.display = 'none';
-        isButtonsVisible = false;
+        bottomButtons.style.display = 'flex';
+        isButtonsVisible = true;
+    } else {
+        if (!isButtonsBarOver) {
+            control.style.display = 'none';
+            toggleExtraButton.innerHTML = icons.up;
+            bottomButtons.style.display = 'none';
+            isButtonsVisible = false;
+        }
     }
     setTimeout(() => {
         checkButtonsBar();
@@ -3315,6 +3637,10 @@ function isTablet(userAgent) {
 
 function isIpad(userAgent) {
     return /macintosh/.test(userAgent) && 'ontouchend' in document;
+}
+
+function isDesktop() {
+    return !isMobileDevice && !isTabletDevice && !isIPadDevice;
 }
 
 function openURL(url, blank = false) {
@@ -3996,7 +4322,7 @@ function getParticipantsList(peers) {
 
     // CHAT-GPT
     if (chatGPT) {
-        const chatgpt_active = !rc.isChatOpen && rc.chatPeerName === 'ChatGPT' ? ' active' : '';
+        const chatgpt_active = rc.chatPeerName === 'ChatGPT' ? ' active' : '';
 
         li = `
         <li 
@@ -4017,7 +4343,7 @@ function getParticipantsList(peers) {
         </li>`;
     }
 
-    const public_chat_active = !rc.isChatOpen && rc.chatPeerName === 'all' ? ' active' : '';
+    const public_chat_active = rc.chatPeerName === 'all' ? ' active' : '';
 
     // ALL
     li += `
@@ -4100,7 +4426,7 @@ function getParticipantsList(peers) {
         const peer_id = peer_info.peer_id;
         const avatarImg = getParticipantAvatar(peer_name);
 
-        const peer_chat_active = !rc.isChatOpen && rc.chatPeerId === peer_id ? ' active' : '';
+        const peer_chat_active = rc.chatPeerId === peer_id ? ' active' : '';
 
         // NOT ME
         if (socket.id !== peer_id) {
@@ -4256,7 +4582,7 @@ function getParticipantsList(peers) {
 
 function setParticipantsTippy(peers) {
     //
-    if (!DetectRTC.isMobileDevice) {
+    if (!isMobileDevice) {
         setTippy('muteAllButton', 'Mute all participants', 'top');
         setTippy('hideAllButton', 'Hide all participants', 'top');
         setTippy('stopAllButton', 'Stop screen share to all participants', 'top');
@@ -4503,6 +4829,7 @@ function adaptAspectRatio(participantsCount) {
     // desktop aspect ratio
     switch (participantsCount) {
         case 1:
+        //case 2:
         case 3:
         case 4:
         case 7:
@@ -4548,7 +4875,7 @@ function adaptAspectRatio(participantsCount) {
         desktop = 1; // (4:3)
         mobile = 3; // (1:1)
     }
-    BtnAspectRatio.selectedIndex = DetectRTC.isMobileDevice ? mobile : desktop;
+    BtnAspectRatio.selectedIndex = isMobileDevice ? mobile : desktop;
     setAspectRatio(BtnAspectRatio.selectedIndex);
 }
 
@@ -4564,34 +4891,12 @@ function showAbout() {
         imageUrl: image.about,
         customClass: { image: 'img-about' },
         position: 'center',
-        title: 'WebRTC SFU v1.6.24',
+        title: 'MEETVERSE',
         html: `
         <br />
         <div id="about">
-            <button 
-                id="support-button" 
-                data-umami-event="Support button" 
-                onclick="window.open('https://codecanyon.net/user/miroslavpejic85')">
-                <i class="fas fa-heart"></i> 
-                Support
-            </button>
-            <br /><br /><br />
-            Author: <a 
-                id="linkedin-button" 
-                data-umami-event="Linkedin button" 
-                href="https://www.linkedin.com/in/miroslav-pejic-976a07101/" target="_blank"> 
-                Miroslav Pejic
-            </a>
-            <br /><br />
-            Email:<a 
-                id="email-button" 
-                data-umami-event="Email button" 
-                href="mailto:miroslav.pejic.85@gmail.com?subject=MeetVerse info"> 
-                miroslav.pejic.85@gmail.com
-            </a>
-            <br /><br />
             <hr />
-            <span>&copy; 2024 MeetVerse, all rights reserved</span>
+            <span>&copy; 2025 MeetVerse, all rights reserved</span>
             <hr />
         </div>
         `,
