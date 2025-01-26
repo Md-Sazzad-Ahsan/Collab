@@ -4337,7 +4337,7 @@ function getParticipantsList(peers) {
                 alt="avatar"
             />
             <div class="about">
-                <div class="name">ChatGPT</div>
+                <div class="name">AI Assistant</div>
                 <div class="status"><i class="fa fa-circle online"></i> online</div>
             </div>
         </li>`;

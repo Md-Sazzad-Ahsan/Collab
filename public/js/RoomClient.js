@@ -90,7 +90,7 @@ const image = {
     feedback: '../images/feedback.png',
     lobby: '../images/lobby.png',
     email: '../images/email.png',
-    chatgpt: '../images/chatgpt.png',
+    chatgpt: '../images/chatbot.png',
     all: '../images/all.png',
     forbidden: '../images/forbidden.png',
     broadcasting: '../images/broadcasting.png',
