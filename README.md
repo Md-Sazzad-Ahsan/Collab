@@ -6,7 +6,7 @@ Meetverse is a Node.js application that allows users to connect and collaborate 
 
 Before running the project, make sure you have the following installed:
 
-- **Node.js** (v14 or later) – [Download Node.js](https://nodejs.org/)
+- **Node.js** (v14 or later) – [Download Node.js](https://nodejs.org)
 - **npm** (Node Package Manager) – Typically installed with Node.js
 
 ## Installation and Running the Application
