@@ -273,7 +273,7 @@ module.exports = {
             2. Create your account
             3. Generate your APIKey https://platform.openai.com/account/api-keys
         */
-        enabled: false,
+        enabled: true,
         basePath: 'https://api.openai.com/v1/',
         apiKey: '',
         model: 'gpt-3.5-turbo',
@@ -287,11 +287,11 @@ module.exports = {
             2. Create your account
             3. Generate your APIKey https://app.heygen.com/settings?nav=API
          */
-        enabled: false,
-        basePath: 'https://api.heygen.com',
-        apiKey: '',
-        systemLimit:
-            'You are a streaming avatar from MeetVerse, an industry-leading product that specialize in videos communications.',
+            enabled: true,
+            basePath: 'https://api.heygen.com',
+            apiKey: 'NGMxZjRhODEyNDA2NGVhOThlNmNlOGQxN2MzNjI1NzEtMTczMDk2NjU4Ng==',
+            systemLimit:
+                'You are a streaming avatar from MEETVERSE, an industry-leading product that specialize in videos communications.',
     },
     email: {
         /*
@@ -684,19 +684,17 @@ module.exports = {
         // WebRtcTransportOptions
         webRtcTransport: {
             listenInfos: [
-                // { protocol: 'udp', ip: IPv4, portRange: { min: rtcMinPort, max: rtcMaxPort } },
-                // { protocol: 'tcp', ip: IPv4, portRange: { min: rtcMinPort, max: rtcMaxPort } },
                 {
                     protocol: 'udp',
                     ip: '0.0.0.0',
-                    announcedAddress: IPv4,
-                    portRange: { min: rtcMinPort, max: rtcMaxPort },
+                    announcedAddress: 'YOUR_PUBLIC_IP', // Replace with your public IP or null
+                    portRange: { min: 40000, max: 41000 },
                 },
                 {
                     protocol: 'tcp',
                     ip: '0.0.0.0',
-                    announcedAddress: IPv4,
-                    portRange: { min: rtcMinPort, max: rtcMaxPort },
+                    announcedAddress: 'YOUR_PUBLIC_IP', // Replace with your public IP or null
+                    portRange: { min: 40000, max: 41000 },
                 },
             ],
             initialAvailableOutgoingBitrate: 1000000,

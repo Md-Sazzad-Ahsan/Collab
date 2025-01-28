@@ -4540,7 +4540,7 @@ class RoomClient {
         const messageData = myMessage ? 'text-start' : 'text-end';
         const timeAndName = myMessage
             ? `<span class="message-data-time">${time}, ${getFromName} ( me ) </span>`
-            : `<span class="message-data-time">${time}, ${getFromName} </span>`;
+            : `<span class="message-data-time">${time}, ${getFromName==='ChatGPT'?'AI Assistant':getFromName} </span>`;
 
         const formatMessage = this.formatMsg(getMsg);
         const speechButton = this.isSpeechSynthesisSupported
@@ -4593,7 +4593,7 @@ class RoomClient {
         console.log('Append message to:', { to_id: getToId, to_name: getToName });
         const typingIndicator = document.createElement('div');
         typingIndicator.id = 'typing-indicator';
-        typingIndicator.innerHTML = 'ChatGPT is typing...';
+        typingIndicator.innerHTML = 'AI Assistant is typing...';
         if (fromName === "ChatGPT") {
             const indicator = document.getElementById('typing-indicator');
             chatGPTMessages.removeChild(indicator);
@@ -8284,7 +8284,7 @@ class RoomClient {
                     <img src="${imgSrc}" alt="avatar" />
                 </a>
                 <div class="chat-about">
-                    <h6 class="mb-0">${truncatedTitle}</h6>
+                    <h6 class="mb-0">${truncatedTitle==='ChatGPT'?'AI Assistant':truncatedTitle}</h6>
                     <span class="status">
                         <i class="fa fa-circle ${status}"></i> ${status} ${participants}
                     </span>
