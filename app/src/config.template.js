@@ -113,18 +113,18 @@ module.exports = {
                 - fromUrl: Enable or disable the RTMP streaming from Url. Set to 'true' to enable, 'false' to disable.
                 - fromStream: Enable or disable the RTMP Streamer. Set to 'true' to enable, 'false' to disable.
                 - maxStreams: Specifies the maximum number of simultaneous streams permitted for File, URL, and Stream. The default value is 1.
-                - server: The URL of the RTMP server. Leave empty to use the built-in MeetVerse RTMP server (rtmp://localhost:1935). Change the URL to connect to a different RTMP server.
-                - appName: The application name for the RTMP stream. Default is 'meetverse'.
+                - server: The URL of the RTMP server. Leave empty to use the built-in Collab RTMP server (rtmp://localhost:1935). Change the URL to connect to a different RTMP server.
+                - appName: The application name for the RTMP stream. Default is 'collab'.
                 - streamKey: The stream key for the RTMP stream. Leave empty if not required.
                 - secret: The secret key for RTMP streaming. Must match the secret in rtmpServers/node-media-server/src/config.js. Leave empty if no authentication is needed.
-                - apiSecret: The API secret for streaming WebRTC to RTMP through the MeetVerse API.
+                - apiSecret: The API secret for streaming WebRTC to RTMP through the Collab API.
                 - expirationHours: The number of hours before the RTMP URL expires. Default is 4 hours.
                 - dir: Directory where your video files are stored to be streamed via RTMP.
                 - ffmpegPath: Path of the ffmpeg installation on the system (which ffmpeg)
                 - platform: 'darwin', 'linux', 'win32', etc.
 
                 Important: Before proceeding, make sure your RTMP server is up and running. 
-                For more information, refer to the documentation here: https://docs.meetverse.com/meetverse-sfu/rtmp/.
+                For more information, refer to the documentation here: https://docs.collab.com/collab-sfu/rtmp/.
                 You can start the server by running the following command:
                 - Start: npm run nms-start - Start the RTMP server.
                 - Stop: npm run npm-stop - Stop the RTMP server.
@@ -136,10 +136,10 @@ module.exports = {
             fromStream: true,
             maxStreams: 1,
             server: 'rtmp://localhost:1935',
-            appName: 'meetverse',
+            appName: 'collab',
             streamKey: '',
-            secret: 'meetverseRtmpSecret',
-            apiSecret: 'meetverseRtmpApiSecret',
+            secret: 'collabRtmpSecret',
+            apiSecret: 'collabRtmpApiSecret',
             expirationHours: 4,
             dir: 'rtmp',
             ffmpegPath: ffmpegPath,
@@ -159,7 +159,7 @@ module.exports = {
     },
     api: {
         // Default secret key for app/api
-        keySecret: 'meetverse_default_secret',
+        keySecret: 'collab_default_secret',
         // Define which endpoints are allowed
         allowed: {
             stats: true,
@@ -177,7 +177,7 @@ module.exports = {
             JWT https://jwt.io/
             Securely manages credentials for host configurations and user authentication, enhancing security and streamlining processes.
          */
-        key: 'meetverse_jwt_secret',
+        key: 'collab_jwt_secret',
         exp: '1h',
     },
     oidc: {
@@ -198,10 +198,10 @@ module.exports = {
         },
         config: {
             issuerBaseURL: 'https://server.example.com',
-            baseURL: `http://localhost:${process.env.PORT ? process.env.PORT : 3010}`, // https://sfu.meetverse.com
+            baseURL: `http://localhost:${process.env.PORT ? process.env.PORT : 3010}`, // https://sfu.collab.com
             clientID: 'clientID',
             clientSecret: 'clientSecret',
-            secret: 'meetverse-oidc-secret',
+            secret: 'collab-oidc-secret',
             authorizationParams: {
                 response_type: 'code',
                 scope: 'openid profile email',
@@ -229,11 +229,11 @@ module.exports = {
         users_api_room_allowed: 'http://localhost:9000/api/v1/user/isRoomAllowed',
         users_api_rooms_allowed: 'http://localhost:9000/api/v1/user/roomsAllowed',
         api_room_exists: 'http://localhost:9000/api/v1/room/exists',
-        //users_api_endpoint: 'https://webrtc.meetverse.com/api/v1/user/isAuth',
-        //users_api_room_allowed: 'https://webrtc.meetverse.com/api/v1/user/isRoomAllowed',
-        //users_api_rooms_allowed: 'https://webrtc.meetverse.com/api/v1/user/roomsAllowed',
-        //api_room_exists: 'https://webrtc.meetverse.com//api/v1/room/exists',
-        users_api_secret_key: 'meetverseweb_default_secret',
+        //users_api_endpoint: 'https://webrtc.collab.com/api/v1/user/isAuth',
+        //users_api_room_allowed: 'https://webrtc.collab.com/api/v1/user/isRoomAllowed',
+        //users_api_rooms_allowed: 'https://webrtc.collab.com/api/v1/user/roomsAllowed',
+        //api_room_exists: 'https://webrtc.collab.com//api/v1/room/exists',
+        users_api_secret_key: 'collabweb_default_secret',
         users: [
             {
                 username: 'username',
@@ -291,7 +291,7 @@ module.exports = {
             basePath: 'https://api.heygen.com',
             apiKey: 'NGMxZjRhODEyNDA2NGVhOThlNmNlOGQxN2MzNjI1NzEtMTczMDk2NjU4Ng==',
             systemLimit:
-                'You are a streaming avatar from MEETVERSE, an industry-leading product that specialize in videos communications.',
+                'You are a streaming avatar from COLLAB, an industry-leading product that specialize in videos communications.',
     },
     email: {
         /*
@@ -303,7 +303,7 @@ module.exports = {
         port: 587,
         username: 'your_username',
         password: 'your_password',
-        sendTo: 'sfu.meetverse@gmail.com',
+        sendTo: 'sfu.collab@gmail.com',
     },
     ngrok: {
         /* 
@@ -344,7 +344,7 @@ module.exports = {
                 - Callback URLs: Enter the URL for your Express server (e.g., `https://yourserver.com/mattermost`).
                 - Request Method: Select POST.
                 - Enable Autocomplete: Check the box for Autocomplete.
-                - Autocomplete Description: Provide a brief description (e.g., `Get MeetVerse meeting room`).
+                - Autocomplete Description: Provide a brief description (e.g., `Get Collab meeting room`).
             3. Save the slash command and copy the generated token (YourMattermostToken).   
         */
         enabled: false,
@@ -396,7 +396,7 @@ module.exports = {
             {
                 name: '/sfu',
                 message: 'Here is your SFU meeting room:',
-                baseUrl: 'https://sfu.meetverse.com/join/',
+                baseUrl: 'https://sfu.collab.com/join/',
             },
         ],
     },
@@ -431,14 +431,14 @@ module.exports = {
     },
     ui: {
         /*
-            Customize your MeetVerse instance
-            Branding and customizations require a license: https://codecanyon.net/item/meetverse-sfu-webrtc-realtime-video-conferences/40769970
+            Customize your Collab instance
+            Branding and customizations require a license: https://codecanyon.net/item/collab-sfu-webrtc-realtime-video-conferences/40769970
         */
         brand: {
             app: {
                 language: 'en', // https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes
-                name: 'MeetVerse',
-                title: 'MeetVerse<br />Free browser based Real-time video calls.<br />Simple, Secure, Fast.',
+                name: 'Collab',
+                title: 'Collab<br />Free browser based Real-time video calls.<br />Simple, Secure, Fast.',
                 description:
                     'Start your next video call with a single click. No download, plug-in, or login is required. Just get straight to talking, messaging, and sharing your screen.',
                 joinDescription: 'Pick a room name.<br />How about this one?',
@@ -446,26 +446,26 @@ module.exports = {
                 joinLastLabel: 'Your recent room:',
             },
             site: {
-                title: 'MeetVerse, Free Video Calls, Messaging and Screen Sharing',
-                icon: '../images/logo.svg',
-                appleTouchIcon: '../images/logo.svg',
+                title: 'Collab, Free Video Calls, Messaging and Screen Sharing',
+                icon: '../images/collab.png',
+                appleTouchIcon: '../images/collab.png',
                 newRoomTitle: 'Pick name. <br />Share URL. <br />Start conference.',
                 newRoomDescription:
                     "Each room has its disposable URL. Just pick a room name and share your custom URL. It's that easy.",
             },
             meta: {
                 description:
-                    'MeetVerse powered by WebRTC and mediasoup, Real-time Simple Secure Fast video calls, messaging and screen sharing capabilities in the browser.',
+                    'Collab powered by WebRTC and mediasoup, Real-time Simple Secure Fast video calls, messaging and screen sharing capabilities in the browser.',
                 keywords:
-                    'webrtc, miro, mediasoup, mediasoup-client, self hosted, voip, sip, real-time communications, chat, messaging, meet, webrtc stun, webrtc turn, webrtc p2p, webrtc sfu, video meeting, video chat, video conference, multi video chat, multi video conference, peer to peer, p2p, sfu, rtc, alternative to, zoom, microsoft teams, google meet, jitsi, meeting',
+                    'webrtc, collab, mediasoup, mediasoup-client, self hosted, voip, sip, real-time communications, chat, messaging, meet, webrtc stun, webrtc turn, webrtc p2p, webrtc sfu, video meeting, video chat, video conference, multi video chat, multi video conference, peer to peer, p2p, sfu, rtc, alternative to, zoom, microsoft teams, google meet, jitsi, meeting',
             },
             og: {
                 type: 'app-webrtc',
-                siteName: 'MeetVerse',
+                siteName: 'Collab',
                 title: 'Click the link to make a call.',
-                description: 'MeetVerse calling provides real-time video calls, messaging and screen sharing.',
-                image: 'https://sfu.meetverse.com/images/meetverse.png',
-                url: 'https://sfu.meetverse.com',
+                description: 'Collab calling provides real-time video calls, messaging and screen sharing.',
+                image: 'https://sfu.collab.com/images/collab.png',
+                url: 'https://sfu.collab.com',
             },
             html: {
                 features: true,
@@ -587,7 +587,7 @@ module.exports = {
             We use our Self-hosted Umami to track aggregated usage statistics in order to improve our service.
         */
         enabled: true,
-        src: 'https://stats.meetverse.com/script.js',
+        src: 'https://stats.collab.com/script.js',
         id: '41d26670-f275-45bb-af82-3ce91fe57756',
     },
     mediasoup: {

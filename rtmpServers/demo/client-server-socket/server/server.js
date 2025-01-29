@@ -15,10 +15,10 @@ const rtmpCfg = {
     enabled: true,
     maxStreams: 1,
     server: 'rtmp://localhost:1935',
-    appName: 'meetverse',
+    appName: 'collab',
     streamKey: '',
-    secret: 'meetverseRtmpSecret', // Must match the key in node-media-server/src/config.js if play and publish are set to true, otherwise leave it ''
-    apiSecret: 'meetverseRtmpApiSecret', // Must match the apiSecret specified in the Client side.
+    secret: 'collabRtmpSecret', // Must match the key in node-media-server/src/config.js if play and publish are set to true, otherwise leave it ''
+    apiSecret: 'collabRtmpApiSecret', // Must match the apiSecret specified in the Client side.
     expirationHours: 4,
 };
 

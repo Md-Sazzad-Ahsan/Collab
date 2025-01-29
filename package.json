@@ -1,5 +1,5 @@
 {
-    "name": "meetverse",
+    "name": "collab",
     "version": "1.7.13",
     "description": "WebRTC SFU browser-based video calls",
     "main": "Server.js",
@@ -10,28 +10,28 @@
         "debug": "DEBUG='mediasoup*' node app/src/Server.js",
         "compile": "npx browserify public/sfu/MediasoupClientCompile.js -o public/sfu/MediasoupClient.js",
         "lint": "npx prettier --write .",
-        "docker-build": "docker build --tag meetverse/sfu:latest .",
+        "docker-build": "docker build --tag collab/sfu:latest .",
         "docker-rmi": "docker images |grep '<none>' |awk '{print $3}' |xargs docker rmi",
-        "docker-push": "docker push meetverse/sfu:latest",
-        "docker-pull": "docker pull meetverse/sfu:latest",
-        "docker-rmc": "docker container rm meetverse --force",
-        "docker-run": "docker run -d -p 40000-40100:40000-40100 -p 3010:3010 -v ./app/src/config.js:/src/app/src/config.js:ro --name meetverse meetverse/sfu:latest",
-        "docker-run-vm": "docker run -d -p 40000-40100:40000-40100 -p 3010:3010 -v ./app/:/src/app/:ro -v ./public/:/src/public/:ro --name meetverse meetverse/sfu:latest",
-        "docker-start": "docker start meetverse",
-        "docker-stop": "docker stop meetverse",
+        "docker-push": "docker push collab/sfu:latest",
+        "docker-pull": "docker pull collab/sfu:latest",
+        "docker-rmc": "docker container rm collab --force",
+        "docker-run": "docker run -d -p 40000-40100:40000-40100 -p 3010:3010 -v ./app/src/config.js:/src/app/src/config.js:ro --name collab collab/sfu:latest",
+        "docker-run-vm": "docker run -d -p 40000-40100:40000-40100 -p 3010:3010 -v ./app/:/src/app/:ro -v ./public/:/src/public/:ro --name collab collab/sfu:latest",
+        "docker-start": "docker start collab",
+        "docker-stop": "docker stop collab",
         "rtmp-start": "docker-compose -f rtmpServers/nginx-rtmp/docker-compose.yml up -d",
         "rtmp-stop": "docker-compose -f rtmpServers/nginx-rtmp/docker-compose.yml down",
         "rtmp-restart": "docker-compose -f rtmpServers/nginx-rtmp/docker-compose.yml down && docker-compose -f rtmpServers/nginx-rtmp/docker-compose.yml up -d",
-        "rtmp-logs": "docker logs -f meetverse-rtmp",
+        "rtmp-logs": "docker logs -f collab-rtmp",
         "nms-node-start": "node rtmpServers/node-media-server/src/server.js",
         "nms-start": "docker-compose -f rtmpServers/node-media-server/docker-compose.yml up -d",
         "nms-stop": "docker-compose -f rtmpServers/node-media-server/docker-compose.yml down",
         "nms-restart": "docker-compose -f rtmpServers/node-media-server/docker-compose.yml down && docker-compose -f rtmpServers/node-media-server/docker-compose.yml up -d",
-        "nms-logs": "docker logs -f meetverse-nms"
+        "nms-logs": "docker logs -f collab-nms"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/AkibHossainOmi/meetverse"
+        "url": "git+https://github.com/AkibHossainOmi/collab"
     },
     "keywords": [
         "webrtc",

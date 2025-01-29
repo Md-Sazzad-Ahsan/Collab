@@ -80,7 +80,7 @@ function sendEmail(subject, body) {
 
 function getJoinRoomSubject(data) {
     const { room_id } = data;
-    return `MeetVerse - New user Join to Room ${room_id}`;
+    return `Collab - New user Join to Room ${room_id}`;
 }
 function getJoinRoomBody(data) {
     const { peer_name, room_id, domain, os, browser } = data;

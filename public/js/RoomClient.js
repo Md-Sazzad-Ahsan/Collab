@@ -66,8 +66,8 @@ const icons = {
 };
 
 const image = {
-    about: '../images/meetverse-logo.gif',
-    avatar: '../images/meetverse-logo.png',
+    about: '../images/collab-logo.gif',
+    avatar: '../images/collab-logo.png',
     audio: '../images/audio.gif',
     poster: '../images/loader.gif',
     rec: '../images/rec.png',
@@ -6066,7 +6066,7 @@ class RoomClient {
         Swal.fire({
             allowOutsideClick: false,
             background: swalBackground,
-            imageAlt: 'meetverse-file-sharing',
+            imageAlt: 'collab-file-sharing',
             imageUrl: image.share,
             position: 'center',
             title: 'Share file',
@@ -6368,7 +6368,7 @@ class RoomClient {
                     title: 'Received file',
                     text: this.incomingFileInfo.fileName + ' size ' + this.bytesToSize(this.incomingFileInfo.fileSize),
                     imageUrl: e.target.result,
-                    imageAlt: 'meetverse-file-img-download',
+                    imageAlt: 'collab-file-img-download',
                     showDenyButton: true,
                     confirmButtonText: `Save`,
                     denyButtonText: `Cancel`,

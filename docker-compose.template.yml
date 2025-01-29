@@ -1,8 +1,8 @@
 services:
-    meetverse:
-        image: meetverse/sfu:latest
-        container_name: meetverse
-        hostname: meetverse
+    collab:
+        image: collab/sfu:latest
+        container_name: collab
+        hostname: collab
         restart: unless-stopped
         volumes:
             - ./app/src/config.js:/src/app/src/config.js:ro

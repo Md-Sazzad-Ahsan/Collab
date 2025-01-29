@@ -1,8 +1,8 @@
 swagger: '2.0'
 
 info:
-    title: MeetVerse API
-    description: API description for external applications that integrate with MeetVerse.
+    title: Collab API
+    description: API description for external applications that integrate with Collab.
     version: 1.0.1
 
 basePath: /api/v1
@@ -161,7 +161,7 @@ definitions:
                 default: false
             name:
                 type: string
-                default: 'meetverse'
+                default: 'collab'
             audio:
                 type: boolean
                 default: false

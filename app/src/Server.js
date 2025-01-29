@@ -75,7 +75,7 @@ const io = socketIo(server, {
 const host = config.server.hostUrl || `http://localhost:${config.server.listen.port}`;
 
 const jwtCfg = {
-    JWT_KEY: (config.jwt && config.jwt.key) || 'meetverse_jwt_secret',
+    JWT_KEY: (config.jwt && config.jwt.key) || 'collab_jwt_secret',
     JWT_EXP: (config.jwt && config.jwt.exp) || '1h',
 };
 
@@ -140,7 +140,7 @@ if (enabled && commands.length > 0 && token) {
 // Stats
 const defaultStats = {
     enabled: true,
-    src: 'https://stats.meetverse.com/script.js',
+    src: 'https://stats.collab.com/script.js',
     id: '41d26670-f275-45bb-af82-3ce91fe57756',
 };
 
@@ -461,8 +461,8 @@ function startServer() {
 
             log.debug('Direct Join', req.query);
 
-            // http://localhost:3010/join?room=test&roomPassword=0&name=meetverse&audio=1&video=1&screen=0&hide=0&notify=1&duration=00:00:30
-            // http://localhost:3010/join?room=test&roomPassword=0&name=meetverse&audio=1&video=1&screen=0&hide=0&notify=0&token=token
+            // http://localhost:3010/join?room=test&roomPassword=0&name=collab&audio=1&video=1&screen=0&hide=0&notify=1&duration=00:00:30
+            // http://localhost:3010/join?room=test&roomPassword=0&name=collab&audio=1&video=1&screen=0&hide=0&notify=0&token=token
 
             const { room, roomPassword, name, audio, video, screen, hide, notify, duration, token, isPresenter } =
                 checkXSS(req.query);
@@ -605,7 +605,7 @@ function startServer() {
         res.sendFile(views.privacy);
     });
 
-    // meetverse about
+    // collab about
     app.get(['/about'], (req, res) => {
         res.sendFile(views.about);
     });
@@ -895,7 +895,7 @@ function startServer() {
             const api = new ServerApi(host, authorization);
 
             if (!api.isAuthorized()) {
-                log.debug('MeetVerse get meetings - Unauthorized', {
+                log.debug('Collab get meetings - Unauthorized', {
                     header: req.headers,
                     body: req.body,
                 });
@@ -912,7 +912,7 @@ function startServer() {
             });
 
             // log.debug the output if all done
-            log.debug('MeetVerse get stats - Authorized', {
+            log.debug('Collab get stats - Authorized', {
                 header: req.headers,
                 body: req.body,
                 timestamp,
@@ -937,7 +937,7 @@ function startServer() {
         const { host, authorization } = req.headers;
         const api = new ServerApi(host, authorization);
         if (!api.isAuthorized()) {
-            log.debug('MeetVerse get meetings - Unauthorized', {
+            log.debug('Collab get meetings - Unauthorized', {
                 header: req.headers,
                 body: req.body,
             });
@@ -947,7 +947,7 @@ function startServer() {
         const meetings = api.getMeetings(roomList);
         res.json({ meetings: meetings });
         // log.debug the output if all done
-        log.debug('MeetVerse get meetings - Authorized', {
+        log.debug('Collab get meetings - Authorized', {
             header: req.headers,
             body: req.body,
             meetings: meetings,
@@ -966,7 +966,7 @@ function startServer() {
         const { host, authorization } = req.headers;
         const api = new ServerApi(host, authorization);
         if (!api.isAuthorized()) {
-            log.debug('MeetVerse get meeting - Unauthorized', {
+            log.debug('Collab get meeting - Unauthorized', {
                 header: req.headers,
                 body: req.body,
             });
@@ -976,7 +976,7 @@ function startServer() {
         const meetingURL = api.getMeetingURL();
         res.json({ meeting: meetingURL });
         // log.debug the output if all done
-        log.debug('MeetVerse get meeting - Authorized', {
+        log.debug('Collab get meeting - Authorized', {
             header: req.headers,
             body: req.body,
             meeting: meetingURL,
@@ -995,7 +995,7 @@ function startServer() {
         const { host, authorization } = req.headers;
         const api = new ServerApi(host, authorization);
         if (!api.isAuthorized()) {
-            log.debug('MeetVerse get join - Unauthorized', {
+            log.debug('Collab get join - Unauthorized', {
                 header: req.headers,
                 body: req.body,
             });
@@ -1005,7 +1005,7 @@ function startServer() {
         const joinURL = api.getJoinURL(req.body);
         res.json({ join: joinURL });
         // log.debug the output if all done
-        log.debug('MeetVerse get join - Authorized', {
+        log.debug('Collab get join - Authorized', {
             header: req.headers,
             body: req.body,
             join: joinURL,
@@ -1024,7 +1024,7 @@ function startServer() {
         const { host, authorization } = req.headers;
         const api = new ServerApi(host, authorization);
         if (!api.isAuthorized()) {
-            log.debug('MeetVerse get token - Unauthorized', {
+            log.debug('Collab get token - Unauthorized', {
                 header: req.headers,
                 body: req.body,
             });
@@ -1034,7 +1034,7 @@ function startServer() {
         const token = api.getToken(req.body);
         res.json({ token: token });
         // log.debug the output if all done
-        log.debug('MeetVerse get token - Authorized', {
+        log.debug('Collab get token - Authorized', {
             header: req.headers,
             body: req.body,
             token: token,

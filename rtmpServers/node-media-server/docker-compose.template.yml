@@ -1,7 +1,7 @@
 services:
-    meetverse-nms:
-        container_name: meetverse-nms
-        image: meetverse/nms:latest
+    collab-nms:
+        container_name: collab-nms
+        image: collab/nms:latest
         volumes:
             - ./src/config.js/:/app/src/config.js/:ro
             # - /etc/letsencrypt/live/your-domain-name/fullchain.pem/:/app/src/cert.pem/:ro

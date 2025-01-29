@@ -218,12 +218,12 @@ describe('test-ServerAPI', () => {
             result.should.equal('jwtToken');
 
             signStub
-                .calledWith({ data: 'encryptedPayload' }, 'meetverse_jwt_secret', { expiresIn: '1h' })
+                .calledWith({ data: 'encryptedPayload' }, 'collab_jwt_secret', { expiresIn: '1h' })
                 .should.be.true();
             encryptStub
                 .calledWith(
                     JSON.stringify({ username: 'user', password: 'pass', presenter: 'true' }),
-                    'meetverse_jwt_secret',
+                    'collab_jwt_secret',
                 )
                 .should.be.true();
 

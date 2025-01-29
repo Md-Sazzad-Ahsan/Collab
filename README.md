@@ -1,6 +1,6 @@
-# Meetverse
+# Collab
 
-Meetverse is a Node.js application that allows users to connect and collaborate in a virtual meeting space. This README will guide you through setting up and running the project locally.
+Collab is a Node.js application that allows users to connect and collaborate in a virtual meeting space. This README will guide you through setting up and running the project locally.
 
 ## Prerequisites
 
@@ -14,8 +14,8 @@ Before running the project, make sure you have the following installed:
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/AkibHossainOmi/meetverse.git
-   cd meetverse
+   git clone https://github.com/AkibHossainOmi/collab.git
+   cd collab
    ```
 
 2. **Install dependencies:**

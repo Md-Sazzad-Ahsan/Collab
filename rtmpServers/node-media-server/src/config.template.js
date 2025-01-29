@@ -19,11 +19,11 @@ const config = {
     },
     auth: {
         api: true,
-        api_user: 'meetverse',
-        api_pass: 'meetverseRtmpPassword', // http://localhost:8081/admin
+        api_user: 'collab',
+        api_pass: 'collabRtmpPassword', // http://localhost:8081/admin
         play: false, // Require authentication for playing streams
         publish: false, // Require authentication for publishing streams
-        secret: 'meetverseRtmpSecret', // Check the sign.js file to generate a valid RTMP URL
+        secret: 'collabRtmpSecret', // Check the sign.js file to generate a valid RTMP URL
     },
 };
 

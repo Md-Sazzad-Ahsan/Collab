@@ -1,7 +1,7 @@
 {
-    "name": "meetverse-webhook",
+    "name": "collab-webhook",
     "version": "1.0.0",
-    "description": "MeetVerse WebHook endpoint example",
+    "description": "Collab WebHook endpoint example",
     "main": "server.js",
     "scripts": {
         "start": "node server.js"

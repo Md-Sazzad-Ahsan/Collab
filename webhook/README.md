@@ -2,7 +2,7 @@
 
 ![webhook](./webhooks.png)
 
-This example shows how to set up a server to listen for MeetVerse webhook events (join, exitRoom, disconnect).
+This example shows how to set up a server to listen for Collab webhook events (join, exitRoom, disconnect).
 
 ### Step 1: Enable Webhooks
 
@@ -35,7 +35,7 @@ webhook: {
 
 ### Step 3: Webhook Events
 
-MeetVerse sends HTTP `POST` requests to the specified URL with event data:
+Collab sends HTTP `POST` requests to the specified URL with event data:
 
 **Example Payload**:
 

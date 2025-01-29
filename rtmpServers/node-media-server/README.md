@@ -24,14 +24,14 @@ $ cp config.template.js config.js
 # Copy the docker.compose.yml
 $ cp docker-compose.template.yml docker-compose.yml
 
-# Pull the official meetverse rtmp image
-$ docker pull meetverse/nms:latest
+# Pull the official collab rtmp image
+$ docker pull collab/nms:latest
 
 # Create and start containers
 $ docker-compose up -d
 
 # Check the logs
-$ docker logs -f meetverse-nms
+$ docker logs -f collab-nms
 
 # To stop and remove resources
 $ docker-compose down

@@ -5,11 +5,11 @@ async function getMeetings() {
         // Use dynamic import with await
         const { default: fetch } = await import('node-fetch');
 
-        const API_KEY_SECRET = 'meetverse_default_secret';
-        const MIROTALK_URL = 'https://sfu.meetverse.com/api/v1/meetings';
-        //const MIROTALK_URL = 'http://localhost:3010/api/v1/meetings';
+        const API_KEY_SECRET = 'collab_default_secret';
+        const COLLAB_URL = 'https://sfu.collab.com/api/v1/meetings';
+        //const COLLAB_URL = 'http://localhost:3010/api/v1/meetings';
 
-        const response = await fetch(MIROTALK_URL, {
+        const response = await fetch(COLLAB_URL, {
             method: 'GET',
             headers: {
                 authorization: API_KEY_SECRET,

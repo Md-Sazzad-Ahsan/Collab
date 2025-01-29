@@ -3440,7 +3440,7 @@ function leaveFeedback() {
         background: swalBackground,
         imageUrl: image.feedback,
         title: 'Leave a feedback',
-        text: 'Do you want to rate your MiroTalk experience?',
+        text: 'Do you want to rate your Collab experience?',
         confirmButtonText: `Yes`,
         denyButtonText: `No`,
         showClass: { popup: 'animate__animated animate__fadeInDown' },
@@ -4891,12 +4891,12 @@ function showAbout() {
         imageUrl: image.about,
         customClass: { image: 'img-about' },
         position: 'center',
-        title: 'MEETVERSE',
+        title: 'COLLAB',
         html: `
         <br />
         <div id="about">
             <hr />
-            <span>&copy; 2025 MeetVerse, all rights reserved</span>
+            <span>&copy; 2025 Collab, all rights reserved</span>
             <hr />
         </div>
         `,

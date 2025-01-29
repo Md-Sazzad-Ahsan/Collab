@@ -2,7 +2,7 @@
 
 [What is self-signed-certificate](https://en.wikipedia.org/wiki/Self-signed_certificate)
 
-![meetverse-https](https.png)
+![collab-https](https.png)
 
 ```bash
 # install openssl 4 ubuntu

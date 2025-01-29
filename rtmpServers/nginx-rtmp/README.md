@@ -10,14 +10,14 @@ For running an `RTMP` (Real-Time Messaging Protocol) server in Docker, **Nginx w
 # Copy the docker.compose.yml
 $ cp docker-compose.template.yml docker-compose.yml
 
-# Pull the official meetverse rtmp image
-$ docker pull meetverse/rtmp:latest
+# Pull the official collab rtmp image
+$ docker pull collab/rtmp:latest
 
 # Create and start containers
 $ docker-compose up -d
 
 # Check the logs
-$ docker logs -f meetverse-rtmp
+$ docker logs -f collab-rtmp
 
 # To stop and remove resources
 $ docker-compose down

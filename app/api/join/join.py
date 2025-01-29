@@ -2,9 +2,9 @@
 import requests
 import json
 
-API_KEY_SECRET = "meetverse_default_secret"
-MIROTALK_URL = "https://sfu.meetverse.com/api/v1/join"
-# MIROTALK_URL = "http://localhost:3010/api/v1/join"
+API_KEY_SECRET = "collab_default_secret"
+COLLAB_URL = "https://sfu.collab.com/api/v1/join"
+# COLLAB_URL = "http://localhost:3010/api/v1/join"
 
 headers = {
     "authorization": API_KEY_SECRET,
@@ -14,7 +14,7 @@ headers = {
 data = {
     "room": "test",
     "roomPassword": "false",
-    "name": "meetverse",
+    "name": "collab",
     "audio": "true",
     "video": "true",
     "screen": "true",
@@ -30,7 +30,7 @@ data = {
 }
 
 response = requests.post(
-    MIROTALK_URL,
+    COLLAB_URL,
     headers=headers,
     json=data,
 )

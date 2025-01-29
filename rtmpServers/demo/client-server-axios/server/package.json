@@ -1,7 +1,7 @@
 {
-    "name": "meetverse-rtmp-streamer-server",
+    "name": "collab-rtmp-streamer-server",
     "version": "1.0.1",
-    "description": "MeetVerse RTMP Streamer Server",
+    "description": "Collab RTMP Streamer Server",
     "main": "server.js",
     "scripts": {
         "start": "node server.js",
@@ -9,7 +9,7 @@
         "nms-start": "docker-compose -f ../../../node-media-server/docker-compose.yml up -d",
         "nms-stop": "docker-compose -f ../../../node-media-server/docker-compose.yml down",
         "nms-restart": "docker-compose -f ../../../node-media-server/docker-compose.yml down && docker-compose -f ../../node-media-server/docker-compose.yml up -d",
-        "nms-logs": "docker logs -f meetverse-nms"
+        "nms-logs": "docker logs -f collab-nms"
     },
     "keywords": [
         "rtmp",

@@ -1,7 +1,7 @@
 {
-    "name": "meetverse-rtmp-nms",
+    "name": "collab-rtmp-nms",
     "version": "1.0.1",
-    "description": "MeetVerse RTMP Node Media Server",
+    "description": "Collab RTMP Node Media Server",
     "main": "server.js",
     "scripts": {
         "start": "node src/server.js",

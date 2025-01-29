@@ -37,8 +37,8 @@ const footer = document.getElementById('footer');
 let BRAND = {
     app: {
         language: 'en',
-        name: 'MeetVerse',
-        title: 'MeetVerse<br />Free browser based Real-time video calls.<br />Simple, Secure, Fast.',
+        name: 'Collab',
+        title: 'Collab<br />Free browser based Real-time video calls.<br />Simple, Secure, Fast.',
         description:
             'Start your next video call with a single click. No download, plug-in, or login is required. Just get straight to talking, messaging, and sharing your screen.',
         joinDescription: 'Pick a room name.<br />How about this one?',
@@ -46,26 +46,26 @@ let BRAND = {
         joinLastLabel: 'Your recent room:',
     },
     site: {
-        title: 'MeetVerse, Free Video Calls, Messaging and Screen Sharing',
-        icon: '../images/logo.svg',
-        appleTouchIcon: '../images/logo.svg',
+        title: 'Collab, Free Video Calls, Messaging and Screen Sharing',
+        icon: '../images/collab.png',
+        appleTouchIcon: '../images/collab.png',
         newRoomTitle: 'Pick name. <br />Share URL. <br />Start conference.',
         newRoomDescription:
             "Each room has its disposable URL. Just pick a room name and share your custom URL. It's that easy.",
     },
     meta: {
         description:
-            'MeetVerse powered by WebRTC and mediasoup, Real-time Simple Secure Fast video calls, messaging and screen sharing capabilities in the browser.',
+            'Collab powered by WebRTC and mediasoup, Real-time Simple Secure Fast video calls, messaging and screen sharing capabilities in the browser.',
         keywords:
-            'webrtc, miro, mediasoup, mediasoup-client, self hosted, voip, sip, real-time communications, chat, messaging, meet, webrtc stun, webrtc turn, webrtc p2p, webrtc sfu, video meeting, video chat, video conference, multi video chat, multi video conference, peer to peer, p2p, sfu, rtc, alternative to, zoom, microsoft teams, google meet, jitsi, meeting',
+            'webrtc, collab, mediasoup, mediasoup-client, self hosted, voip, sip, real-time communications, chat, messaging, meet, webrtc stun, webrtc turn, webrtc p2p, webrtc sfu, video meeting, video chat, video conference, multi video chat, multi video conference, peer to peer, p2p, sfu, rtc, alternative to, zoom, microsoft teams, google meet, jitsi, meeting',
     },
     og: {
         type: 'app-webrtc',
-        siteName: 'MeetVerse',
+        siteName: 'Collab',
         title: 'Click the link to make a call.',
-        description: 'MeetVerse calling provides real-time video calls, messaging and screen sharing.',
-        image: 'https://sfu.meetverse.com/images/meetverse.png',
-        url: 'https://sfu.meetverse.com',
+        description: 'Collab calling provides real-time video calls, messaging and screen sharing.',
+        image: 'https://sfu.collab.com/images/collab.png',
+        url: 'https://sfu.collab.com',
     },
     html: {
         features: true,

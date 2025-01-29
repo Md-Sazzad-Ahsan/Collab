@@ -16,7 +16,7 @@ npm start
 
 ## Edit config.js
 
-In the MeetVerse `app/src/config.js` file, change the endpoint to send recording chunks:
+In the Collab `app/src/config.js` file, change the endpoint to send recording chunks:
 
 ```js
 recording: {

@@ -138,7 +138,7 @@ if [ "$answer" != "${answer#[Yy]}" ] ;then
 
         log "Get latest official image from Docker Hub"
 
-        docker pull meetverse/sfu:latest
+        docker pull collab/sfu:latest
     else
         log "Build image from source"
 
