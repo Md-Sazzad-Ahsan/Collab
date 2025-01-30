@@ -1091,7 +1091,7 @@ async function whoAreYou() {
         allowOutsideClick: false,
         allowEscapeKey: false,
         background: swalBackground,
-        title: BRAND.app.name,
+        title: BRAND.app?.name,
         input: 'text',
         inputPlaceholder: 'Enter your email or name',
         inputAttributes: { maxlength: 32, id: 'usernameInput' },
@@ -1712,6 +1712,7 @@ function handleButtons() {
         showFreeAvatars = e.currentTarget.checked;
         rc.getAvatarList();
     };
+    avatarQuality.selectedIndex = 1;
     avatarQuality.onchange = (e) => {
         VideoAI.quality = e.target.value;
     };

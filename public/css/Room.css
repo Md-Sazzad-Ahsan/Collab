@@ -47,7 +47,13 @@ body {
 --------------------------------------------------------------*/
 
 .skiptranslate iframe,
-.goog-te-banner-frame.skiptranslate {
+.goog-te-banner-frame.skiptranslate,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+.VIpgJd-ZVi9od-aZ2wEe-OiiCO,
+#goog-gt-tt,
+#goog-gt-tt *,
+#goog-gt-vt,
+#goog-gt-vt * {
     display: none !important;
 }
 
@@ -423,13 +429,11 @@ body {
 
 #extraInfo {
     margin-left: 5px;
-    max-height: 400px;
 }
 
 #applyAudioOptionsButton {
-    width: 180px;
+    width: 100%;
     padding: 10px;
-    margin-left: 10px;
     font-size: 1rem;
     background: var(--body-bg);
     border: var(--border);
@@ -447,30 +451,40 @@ body {
 .settingsTable {
     width: 100%;
     color: #fff;
-    table-layout: fixed;
+    table-layout: auto;
     border-collapse: collapse;
     border-radius: 10px;
-    border-style: hidden;
     background: var(--body-bg);
 }
+
 .settingsTable td,
-th {
-    text-align: left;
+.settingsTable th {
     padding: 10px;
-    /* border: 1px solid grey; */
+    text-align: left;
 }
+
+.settingsTable td:first-child {
+    width: auto;
+}
+
+.settingsTable td:last-child {
+    width: 140px;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Optional alternating row background */
 /* .settingsTable tr:nth-child(even) {
     background: var(--select-bg);
 } */
+
 .settingsTable i {
     border: none;
     border-radius: 5px;
 }
-.custom-width {
-    width: auto;
-}
-.microphone-table-width {
-    width: 180px;
+
+.settingsTable select {
+    width: 100px !important;
 }
 
 /*--------------------------------------------------------------
@@ -489,8 +503,8 @@ th {
 }
 #shortcutsTable th,
 #shortcutsTable td {
-    border: var(--border);
     padding: 5px;
+    /* border: var(--border); */
 }
 #shortcutsTable th {
     background: var(--body-bg);
@@ -615,7 +629,7 @@ th {
 }
 
 .dropdown-menu button {
-    width: 240px;
+    min-width: 240px;
     padding: 8px 16px;
     align-items: center;
     justify-content: flex-start;
@@ -672,15 +686,11 @@ th {
 .tabActions {
     position: relative;
     width: 65%;
-    background-color: var(--body-bg);
-    min-height: 480px;
-    max-height: 768px;
-    overflow-x: hidden;
-    overflow-y: auto;
 }
 
 @media screen and (max-width: 830px) {
     .tab {
+        display: inline;
         width: 100%;
         min-height: auto;
         flex-direction: row;
@@ -695,12 +705,6 @@ th {
     }
 }
 
-@media screen and (max-width: 540px) {
-    .tab {
-        display: inline;
-    }
-}
-
 /* Style the buttons inside the tab */
 .tab button {
     margin: 3px;
@@ -708,7 +712,9 @@ th {
     float: left;
     text-align: left;
     color: #fff;
+    font-size: 1rem;
     border: var(--border);
+    border-radius: 5px;
     background-color: rgba(0, 0, 0, 0.2);
     outline: none;
     cursor: pointer;
@@ -717,7 +723,7 @@ th {
 
 /* Change background color of buttons on hover */
 .tab button:hover {
-    background-color: transparent;
+    background: var(--body-bg);
     transform: translateY(-3px);
 }
 
@@ -729,14 +735,15 @@ th {
 /* Style the tab content */
 .tabcontent {
     display: none;
+    margin-top: 15px;
     padding: 6px 12px;
+    width: 100%;
+    max-height: 585px;
+    min-height: 700px;
     border-top: none;
-}
-
-.tabcontent button i {
-    padding: 10px;
-    border: var(--border);
-    border-radius: 5px;
+    background-color: var(--body-bg);
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .tabcontent button {
@@ -747,6 +754,7 @@ th {
 
 .tabcontent button:hover {
     background: var(--body-bg);
+    transform: scale(1);
 }
 
 /* on open display devices tab */
@@ -1503,16 +1511,6 @@ progress {
 
 hr {
     background: #ffffff !important;
-}
-
-.wa {
-    width: 260px;
-}
-
-@media screen and (max-width: 500px) {
-    .wa {
-        width: 220px;
-    }
 }
 
 .ml-5 {
