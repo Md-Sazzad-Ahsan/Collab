@@ -469,12 +469,21 @@ module.exports = {
             },
             html: {
                 features: true,
-                teams: true, // Please keep me always visible, thank you!
+                teams: true,
                 tryEasier: true,
                 poweredBy: true,
                 sponsors: true,
                 advertisers: true,
                 footer: true,
+            },
+            about: {
+                imageUrl: '../images/collab.png',
+                title: `Collab`,
+                html: `
+                    <hr />
+                    <span>&copy; 2025 Collab, all rights reserved</span>
+                    <hr />
+                `,
             },
             //...
         },
@@ -499,7 +508,7 @@ module.exports = {
                 snapshotRoomButton: true,
                 emojiRoomButton: true,
                 settingsButton: true,
-                aboutButton: true, // Please keep me always visible, thank you!
+                aboutButton: true,
                 exitButton: true,
             },
             settings: {
