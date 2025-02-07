@@ -4890,24 +4890,20 @@ function showAbout() {
     Swal.fire({
         background: swalBackground,
         position: 'center',
-        imageUrl: BRAND.about?.imageUrl && BRAND.about.imageUrl.trim() !== '' 
-            ? BRAND.about.imageUrl 
-            : image.about,
+        imageUrl: BRAND.about?.imageUrl && BRAND.about.imageUrl.trim() !== '' ? BRAND.about.imageUrl : image.about,
         customClass: { image: 'img-about' },
-        title: BRAND.about?.title && BRAND.about.title.trim() !== '' 
-            ? BRAND.about.title 
-            : 'Collab',
+        title: BRAND.about?.title && BRAND.about.title.trim() !== '' ? BRAND.about.title : 'Collab',
         html: `
             <br />
             <div id="about">
                 ${
-                    BRAND.about?.html && BRAND.about.html.trim() !== '' 
-                        ? BRAND.about.html 
+                    BRAND.about?.html && BRAND.about.html.trim() !== ''
+                        ? BRAND.about.html
                         : `
-                    <hr />
-                    <span>&copy; 2025 Collab, all rights reserved</span>
-                    <hr />
-                `
+                            <hr />
+                            <span>&copy; 2025 Collab, all rights reserved</span>
+                            <hr />
+                        `
                 }
             </div>
         `,
