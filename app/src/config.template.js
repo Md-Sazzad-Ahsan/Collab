@@ -80,6 +80,7 @@ module.exports = {
             ip: '0.0.0.0',
             port: process.env.PORT || 3010,
         },
+        trustProxy: false,
         ssl: {
             // ssl/README.md
             cert: '../ssl/cert.pem',

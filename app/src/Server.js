@@ -76,6 +76,7 @@ const io = socketIo(server, {
 });
 
 const host = config.server.hostUrl || `http://localhost:${config.server.listen.port}`;
+const trustProxy = !!config.server.trustProxy;
 
 const jwtCfg = {
     JWT_KEY: (config.jwt && config.jwt.key) || 'collab_jwt_secret',
@@ -295,6 +296,7 @@ function OIDCAuth(req, res, next) {
 
 function startServer() {
     // Start the app
+    app.set('trust proxy', trustProxy);
     app.use(helmet.xssFilter()); // Enable XSS protection
     app.use(helmet.noSniff()); // Enable content type sniffing prevention
     app.use(express.static(dir.public));
