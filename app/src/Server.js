@@ -266,23 +266,33 @@ if (!announcedAddress && IPv4 === '0.0.0.0') {
 // Custom middleware function for OIDC authentication
 function OIDCAuth(req, res, next) {
     if (OIDC.enabled) {
+
+        function handleHostProtected(req) {
+            if (!hostCfg.protected) return;
+
+            const ip = authHost.getIP(req);
+            hostCfg.authenticated = true;
+            authHost.setAuthorizedIP(ip, true);
+            // Check...
+            log.debug('OIDC ------> Host protected', {
+                authenticated: hostCfg.authenticated,
+                authorizedIPs: authHost.getAuthorizedIPs(),
+            });
+        }
+
+        if (req.oidc.isAuthenticated()) {
+            log.debug('OIDC ------> User already Authenticated');
+            handleHostProtected(req);
+            return next();
+        }
+
         // Apply requiresAuth() middleware conditionally
         requiresAuth()(req, res, function () {
-            log.debug('[OIDC] ------> requiresAuth');
+            log.debug('OIDC ------> requiresAuth');
             // Check if user is authenticated
             if (req.oidc.isAuthenticated()) {
                 log.debug('[OIDC] ------> User isAuthenticated');
-                // User is authenticated
-                if (hostCfg.protected) {
-                    const ip = authHost.getIP(req);
-                    hostCfg.authenticated = true;
-                    authHost.setAuthorizedIP(ip, true);
-                    // Check...
-                    log.debug('[OIDC] ------> Host protected', {
-                        authenticated: hostCfg.authenticated,
-                        authorizedIPs: authHost.getAuthorizedIPs(),
-                    });
-                }
+                handleHostProtected(req);
                 next();
             } else {
                 // User is not authenticated
@@ -296,7 +306,7 @@ function OIDCAuth(req, res, next) {
 
 function startServer() {
     // Start the app
-    app.set('trust proxy', trustProxy);
+    app.set('trust proxy', trustProxy); // Enables trust for proxy headers (e.g., X-Forwarded-For) based on the trustProxy setting
     app.use(helmet.xssFilter()); // Enable XSS protection
     app.use(helmet.noSniff()); // Enable content type sniffing prevention
     app.use(express.static(dir.public));
@@ -364,6 +374,7 @@ function startServer() {
                 baseURL,
             };
         };
+
         // Apply the authentication middleware using dynamic baseURL configuration
         app.use((req, res, next) => {
             const host = req.headers.host;
@@ -1156,6 +1167,7 @@ function startServer() {
             // General Server Information
             server_listen: host,
             server_tunnel: tunnel,
+            trust_proxy: trustProxy,
 
             // Core Configurations
             cors_options: corsOptions,
