@@ -266,7 +266,6 @@ if (!announcedAddress && IPv4 === '0.0.0.0') {
 // Custom middleware function for OIDC authentication
 function OIDCAuth(req, res, next) {
     if (OIDC.enabled) {
-
         function handleHostProtected(req) {
             if (!hostCfg.protected) return;
 
@@ -307,7 +306,6 @@ function OIDCAuth(req, res, next) {
 function startServer() {
     // Start the app
     app.set('trust proxy', trustProxy); // Enables trust for proxy headers (e.g., X-Forwarded-For) based on the trustProxy setting
-    app.use(helmet.xssFilter()); // Enable XSS protection
     app.use(helmet.noSniff()); // Enable content type sniffing prevention
     app.use(express.static(dir.public));
     app.use(cors(corsOptions));
