@@ -346,7 +346,7 @@ function startServer() {
 
     // Remove trailing slashes in url handle bad requests
     app.use((err, req, res, next) => {
-        if (err instanceof SyntaxError || err.status === 400 || 'body' in err) {
+        if (err && (err instanceof SyntaxError || err.status === 400 || 'body' in err)) {
             log.error('Request Error', {
                 header: req.headers,
                 body: req.body,
@@ -354,21 +354,16 @@ function startServer() {
             });
             return res.status(400).send({ status: 404, message: err.message }); // Bad request
         }
-        
-        // Remove multiple leading slashes & normalize path
-        let cleanPath = req.path.replace(/^\/+/, ''); // Removes all leading slashes
-        let query = req.url.slice(req.path.length);
 
         // Prevent open redirect attacks by checking if the path is an external domain
+        const cleanPath = req.path.replace(/^\/+/, '');
         if (/^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}/.test(cleanPath)) {
             return res.status(400).send('Bad Request: Potential Open Redirect Detected');
         }
-
-        // If a trailing slash exists, redirect to a clean version
         if (req.path.endsWith('/') && req.path.length > 1) {
-            return res.redirect(301, '/' + cleanPath + query);
+            let query = req.url.substring(req.path.length).replace(/\/$/, ''); // Ensure query params don't end in '/'
+            return res.redirect(301, req.path.slice(0, -1) + query);
         }
-
         next();
     });
 
