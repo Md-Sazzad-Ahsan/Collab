@@ -80,6 +80,7 @@ const swalImageUrl = '../images/pricing-illustration.svg';
 
 // Media
 const sinkId = 'sinkId' in HTMLMediaElement.prototype;
+const MediaStreamTrackProcessorSupported = 'MediaStreamTrackProcessor' in window;
 
 // ####################################################
 // LOCAL STORAGE
@@ -178,6 +179,10 @@ const initSpeakerSelect = getId('initSpeakerSelect');
 // ####################################################
 // DYNAMIC SETTINGS
 // ####################################################
+
+let virtualBackgroundSelectedImage;
+let virtualBackgroundBlurLevel;
+let imageCounter = 0; // Virtual Background upload custom images
 
 let swalBackground = 'radial-gradient(#393939, #000000)'; //'rgba(0, 0, 0, 0.7)';
 
@@ -685,6 +690,9 @@ function setupInitButtons() {
         initVideo.classList.toggle('mirror');
         isInitVideoMirror = initVideo.classList.contains('mirror');
     };
+    initVirtualBackgroundButton.onclick = () => {
+        showImageSelector();
+    };
     initUsernameEmojiButton.onclick = () => {
         getId('usernameInput').value = '';
         toggleUsernameEmoji();
@@ -1019,6 +1027,15 @@ async function whoAreYou() {
         BUTTONS.main.startScreenButton && show(initStartScreenButton);
     }
 
+    // Virtual Background if supported (Chrome/Edge/Opera/Vivaldi/...)
+    if (
+        MediaStreamTrackProcessorSupported &&
+        (BUTTONS.settings.virtualBackground !== undefined ? BUTTONS.settings.virtualBackground : true)
+    ) {
+        show(initVirtualBackgroundButton);
+        show(videoVirtualBackground);
+    }
+
     if (peer_name) {
         hide(loadingDiv);
         checkMedia();
@@ -1160,6 +1177,8 @@ function handleVideo() {
     setColor(startVideoButton, isVideoAllowed ? 'white' : 'red');
     checkInitVideo(isVideoAllowed);
     lS.setInitConfig(lS.MEDIA_TYPE.video, isVideoAllowed);
+
+    
 }
 
 async function handleAudioVideo() {
@@ -1185,6 +1204,13 @@ async function handleAudioVideo() {
     setColor(startVideoButton, isVideoAllowed ? 'white' : 'red');
     await checkInitVideo(isVideoAllowed);
     checkInitAudio(isAudioAllowed);
+
+    elemDisplay('imageGrid', false);
+    isVideoAllowed &&
+    MediaStreamTrackProcessorSupported &&
+    (BUTTONS.settings.virtualBackground !== undefined ? BUTTONS.settings.virtualBackground : true)
+        ? show(initVirtualBackgroundButton)
+        : hide(initVirtualBackgroundButton);
 }
 
 async function checkInitVideo(isVideoAllowed) {
@@ -1213,6 +1239,7 @@ function checkInitAudio(isAudioAllowed) {
 
 function initVideoContainerShow(show = true) {
     initVideoContainerClass.style.width = show ? '100%' : 'auto';
+    initVideoContainerClass.style.padding = show ? '10px' : '0px';
 }
 
 function checkMedia() {
@@ -1510,6 +1537,12 @@ function roomIsReady() {
     BUTTONS.main.aboutButton && show(aboutButton);
     if (!isMobileDevice) show(pinUnpinGridDiv);
     if (!isSpeechSynthesisSupported) hide(speechMsgDiv);
+    if (
+        MediaStreamTrackProcessorSupported &&
+        (BUTTONS.settings.virtualBackground !== undefined ? BUTTONS.settings.virtualBackground : true)
+    ) {
+        rc.showVideoImageSelector();
+    }
     handleButtons();
     handleSelects();
     handleInputs();
@@ -2135,6 +2168,7 @@ function setButtonsInit() {
         setTippy('initStartScreenButton', 'Toggle screen sharing', 'top');
         setTippy('initStopScreenButton', 'Toggle screen sharing', 'top');
         setTippy('initVideoMirrorButton', 'Toggle video mirror', 'top');
+        setTippy('initVirtualBackgroundButton', 'Set Virtual Background or Blur', 'top');
         setTippy('initUsernameEmojiButton', 'Toggle username emoji', 'top');
     }
     if (!isAudioAllowed) hide(initAudioButton);
@@ -2253,7 +2287,7 @@ async function changeCamera(deviceId) {
     };
     await navigator.mediaDevices
         .getUserMedia(videoConstraints)
-        .then((camStream) => {
+        .then(async (camStream) => {
             initVideo.className = 'mirror';
             initVideo.srcObject = camStream;
             initStream = camStream;
@@ -2263,6 +2297,13 @@ async function changeCamera(deviceId) {
             );
             checkInitConfig();
             handleCameraMirror(initVideo);
+
+            await applyVirtualBackground(
+                initVideo,
+                initStream,
+                virtualBackgroundBlurLevel,
+                virtualBackgroundSelectedImage,
+            );
         })
         .catch((error) => {
             console.error('[Error] changeCamera', error);
@@ -2380,6 +2421,7 @@ async function toggleScreenSharing() {
                 disable(initVideoButton, true);
                 disable(initAudioVideoButton, true);
                 disable(initVideoAudioRefreshButton, true);
+                disable(initVirtualBackgroundButton, true);
             })
             .catch((error) => {
                 console.error('[Error] toggleScreenSharing', error);
@@ -2394,6 +2436,7 @@ async function toggleScreenSharing() {
         disable(initVideoButton, false);
         disable(initAudioVideoButton, false);
         disable(initVideoAudioRefreshButton, false);
+        disable(initVirtualBackgroundButton, false);
     }
 }
 
@@ -4878,6 +4921,109 @@ function adaptAspectRatio(participantsCount) {
     }
     BtnAspectRatio.selectedIndex = isMobileDevice ? mobile : desktop;
     setAspectRatio(BtnAspectRatio.selectedIndex);
+}
+
+// ####################################################
+// HANDLE INIT VIRTUAL BACKGROUND AND BLUR
+// ####################################################
+function showImageSelector() {
+    elemDisplay('imageGrid', true, 'grid');
+    if (imageGrid.innerHTML != '') return;
+    // Clear previous images
+    imageGrid.innerHTML = '';
+    // Get virtual background images from the `image` object
+    const virtualBackgrounds = Object.values(image.virtualBackground);
+    // Create clean virtual bg Image
+    const cleanVbImg = document.createElement('img');
+    cleanVbImg.id = 'initCleanVbImg';
+    cleanVbImg.src = image.user;
+    cleanVbImg.alt = 'Clean virtual background';
+    cleanVbImg.dataset.index = 'cleanVb';
+    cleanVbImg.addEventListener('click', async function () {
+        elemDisplay('imageGrid', false);
+        if (!virtualBackgroundBlurLevel && !virtualBackgroundSelectedImage) {
+            return;
+        }
+        virtualBackgroundBlurLevel = null;
+        virtualBackgroundSelectedImage = null;
+        initVideoSelect.onchange();
+    });
+    imageGrid.appendChild(cleanVbImg);
+    setTippy(cleanVbImg.id, 'Remove virtual background', 'top');
+    // Create High Blur Image
+    const highBlurImg = document.createElement('img');
+    highBlurImg.id = 'initHighBlurImg';
+    highBlurImg.src = image.blur;
+    highBlurImg.alt = 'High Blur';
+    highBlurImg.dataset.index = 'high';
+    highBlurImg.addEventListener('click', async function () {
+        await applyVirtualBackground(initVideo, initStream, 15);
+    });
+    imageGrid.appendChild(highBlurImg);
+    setTippy(highBlurImg.id, 'Blur', 'top');
+    // Create a button for uploading custom images
+    const uploadImg = document.createElement('img');
+    uploadImg.id = 'initUploadImg';
+    uploadImg.src = image.upload;
+    // Create an input element for custom image upload, hidden initially
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*'; // Only image files
+    fileInput.style.display = 'none'; // Hide the file input element
+    // Trigger file input when button is clicked
+    uploadImg.addEventListener('click', function () {
+        fileInput.click();
+    });
+    // Handle image selection
+    fileInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const customImg = document.createElement('img');
+                customImg.id = `customImage${imageCounter}`; // Assign a unique id
+                customImg.src = e.target.result;
+                customImg.alt = 'Custom Background';
+                customImg.addEventListener('click', async function () {
+                    await applyVirtualBackground(initVideo, initStream, false, e.target.result);
+                });
+                imageGrid.appendChild(customImg);
+                setTippy(customImg.id, 'Custom background', 'top');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    // Append the button to the imageGrid
+    imageGrid.appendChild(uploadImg);
+    setTippy(uploadImg.id, 'Upload your custom background', 'top');
+    // Loop through virtual background images dynamically
+    virtualBackgrounds.forEach((imageUrl, index) => {
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        img.dataset.index = index + 1;
+        img.addEventListener('click', async function () {
+            console.log('Selected Image Index:', this.dataset.index);
+            await applyVirtualBackground(initVideo, initStream, false, imageUrl);
+        });
+        imageGrid.appendChild(img);
+    });
+}
+async function applyVirtualBackground(videoElement, stream, blurLevel, backgroundImage) {
+    const videoTrack = stream.getVideoTracks()[0];
+    const processor = new WebRTCStreamProcessor();
+    if (blurLevel) {
+        videoElement.srcObject = await processor.applyBlurToWebRTCStream(videoTrack, blurLevel);
+        virtualBackgroundBlurLevel = blurLevel;
+        virtualBackgroundSelectedImage = null;
+    } else if (backgroundImage) {
+        videoElement.srcObject = await processor.applyVirtualBackgroundToWebRTCStream(videoTrack, backgroundImage);
+        virtualBackgroundSelectedImage = backgroundImage;
+        virtualBackgroundBlurLevel = null;
+    } else {
+        videoElement.srcObject = stream; // Default case, use original stream
+        virtualBackgroundBlurLevel = null;
+        virtualBackgroundSelectedImage = null;
+    }
 }
 
 // ####################################################

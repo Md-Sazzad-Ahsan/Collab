@@ -557,7 +557,6 @@ function startServer() {
                                 room: room,
                             });
                             return res.redirect('/whoAreYou/' + room);
-                            //return res.status(401).json({ message: 'Direct Room Join for this User is Unauthorized' });
                         }
                     }
                 } catch (err) {
@@ -577,7 +576,6 @@ function startServer() {
                 if (!allowRoomAccess && !roomAllowedForUser) {
                     log.warn('Direct Room Join Unauthorized', room);
                     return OIDC.enabled ? res.redirect('/') : res.redirect('/whoAreYou/' + room);
-                    //return res.status(401).json({ message: 'Direct Room Join Unauthorized' });
                 }
             }
 
