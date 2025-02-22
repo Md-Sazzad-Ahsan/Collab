@@ -180,8 +180,8 @@ const initSpeakerSelect = getId('initSpeakerSelect');
 // DYNAMIC SETTINGS
 // ####################################################
 
-let virtualBackgroundSelectedImage;
 let virtualBackgroundBlurLevel;
+let virtualBackgroundSelectedImage;
 let imageCounter = 0; // Virtual Background upload custom images
 
 let swalBackground = 'radial-gradient(#393939, #000000)'; //'rgba(0, 0, 0, 0.7)';
@@ -2298,12 +2298,7 @@ async function changeCamera(deviceId) {
             checkInitConfig();
             handleCameraMirror(initVideo);
 
-            await applyVirtualBackground(
-                initVideo,
-                initStream,
-                virtualBackgroundBlurLevel,
-                virtualBackgroundSelectedImage,
-            );
+            await loadVirtualBackgroundSettings();
         })
         .catch((error) => {
             console.error('[Error] changeCamera', error);
@@ -4947,6 +4942,7 @@ function showImageSelector() {
         virtualBackgroundBlurLevel = null;
         virtualBackgroundSelectedImage = null;
         initVideoSelect.onchange();
+        saveVirtualBackgroundSettings(virtualBackgroundBlurLevel, virtualBackgroundSelectedImage);
     });
     imageGrid.appendChild(cleanVbImg);
     setTippy(cleanVbImg.id, 'Remove virtual background', 'top');
@@ -5055,7 +5051,7 @@ function showImageSelector() {
         customImg.src = imgData;
         customImg.alt = 'Custom Background';
         customImg.addEventListener('click', async function () {
-            await applyVirtualBackground(initVideo, initStream, false, imgData);
+            await applyVirtualBackground(initVideo, initStream, null, imgData);
         });
 
         // Create delete button
@@ -5173,7 +5169,7 @@ function showImageSelector() {
         img.dataset.index = index + 1;
         img.addEventListener('click', async function () {
             console.log('Selected Image Index:', this.dataset.index);
-            await applyVirtualBackground(initVideo, initStream, false, imageUrl);
+            await applyVirtualBackground(initVideo, initStream, null, imageUrl);
         });
         imageGrid.appendChild(img);
     });
@@ -5196,6 +5192,34 @@ async function applyVirtualBackground(videoElement, stream, blurLevel, backgroun
         videoElement.srcObject = stream; // Default case, use original stream
         virtualBackgroundBlurLevel = null;
         virtualBackgroundSelectedImage = null;
+    }
+
+    saveVirtualBackgroundSettings(blurLevel, backgroundImage);
+}
+
+// ####################################################
+// VIRTUAL BACKGROUND LOCAL STORAGE SETTINGS
+// ####################################################
+
+function saveVirtualBackgroundSettings(blurLevel, imageUrl) {
+    const settings = {
+        blurLevel: blurLevel || null,
+        imageUrl: imageUrl || null,
+    };
+    localStorage.setItem('virtualBackgroundSettings', JSON.stringify(settings));
+}
+
+async function loadVirtualBackgroundSettings() {
+    const savedSettings = localStorage.getItem('virtualBackgroundSettings');
+    if (savedSettings) {
+        const { blurLevel, imageUrl } = JSON.parse(savedSettings);
+        if (blurLevel) {
+            console.log('-------> Apply Blur');
+            await applyVirtualBackground(initVideo, initStream, blurLevel);
+        } else if (imageUrl) {
+            console.log('-------> Apply Virtual background');
+            await applyVirtualBackground(initVideo, initStream, null, imageUrl);
+        }
     }
 }
 

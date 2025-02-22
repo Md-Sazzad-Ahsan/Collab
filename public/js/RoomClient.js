@@ -1677,6 +1677,7 @@ class RoomClient {
             virtualBackgroundBlurLevel = null;
             virtualBackgroundSelectedImage = null;
             videoSelect.onchange();
+            saveVirtualBackgroundSettings(virtualBackgroundBlurLevel, virtualBackgroundSelectedImage);
         });
         imageGridVideo.appendChild(cleanVbImg);
         setTippy(cleanVbImg.id, 'Remove virtual background', 'top');
@@ -2012,6 +2013,8 @@ class RoomClient {
             virtualBackgroundBlurLevel = null;
         }
         videoSelect.onchange();
+
+        saveVirtualBackgroundSettings(blurLevel, backgroundImage);
     }
 
     // ####################################################
