@@ -1480,7 +1480,10 @@ class RoomClient {
 
                     if (virtualBackgroundBlurLevel) {
                         // Apply blur before sending it to WebRTC stream
-                        stream = await virtualBackground.applyBlurToWebRTCStream(videoTrack, virtualBackgroundBlurLevel);
+                        stream = await virtualBackground.applyBlurToWebRTCStream(
+                            videoTrack,
+                            virtualBackgroundBlurLevel,
+                        );
                     }
 
                     if (virtualBackgroundSelectedImage) {
@@ -1707,9 +1710,8 @@ class RoomClient {
             setTippy(imgButton.id, tooltip, 'top');
         }
 
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
+        function handleFileUpload(file) {
+            if (file && file.type.startsWith('image/')) {
                 const reader = new FileReader();
                 reader.onload = async (e) => {
                     const imgData = e.target.result;
@@ -1725,7 +1727,9 @@ class RoomClient {
             fileInput.type = 'file';
             fileInput.accept = 'image/*';
             fileInput.style.display = 'none';
-            fileInput.addEventListener('change', handleFileUpload);
+            fileInput.addEventListener('change', (event) => {
+                handleFileUpload(event.target.files[0]);
+            });
 
             setupFileUploadButton('uploadImg', image.upload, 'Upload your custom image', () => fileInput.click());
 
@@ -1810,6 +1814,24 @@ class RoomClient {
 
         // Load stored images and add to image grid UI
         indexedDBHelper.getAllImages().then((images) => images.forEach(addImageToUI));
+
+        // Upload image with drag and drop
+        imageGridVideo.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            imageGridVideo.classList.add('drag-over');
+        });
+
+        imageGridVideo.addEventListener('dragleave', () => {
+            imageGridVideo.classList.remove('drag-over');
+        });
+
+        imageGridVideo.addEventListener('drop', (event) => {
+            event.preventDefault();
+            imageGridVideo.classList.remove('drag-over');
+            if (event.dataTransfer.files.length > 0) {
+                handleFileUpload(event.dataTransfer.files[0]);
+            }
+        });
     }
 
     // ####################################################
