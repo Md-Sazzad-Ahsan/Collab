@@ -104,7 +104,7 @@
         <script defer src="https://cdn.jsdelivr.net/npm/ua-parser-js@latest/dist/ua-parser.min.js"></script>
 
         <script async src="../js/Umami.js"></script>
-        <script async src="../js/Brand.js"></script>
+        <script defer src="../js/Brand.js"></script>
         <script async src="../js/Translate.js"></script>
 
         <!-- Js scripts https://cdn.jsdelivr.net -->
@@ -134,6 +134,7 @@
         <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
         <script defer src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
         <script defer src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/gifler@0.1.0/gifler.min.js"></script>
     </head>
     <body>
         <noscript>You need to enable JavaScript to run this app.</noscript>
@@ -158,6 +159,7 @@ access to use this app.
                         poster="../images/loader.gif"
                     ></video>
                     <div id="imageGrid" class="image-grid fadein"></div>
+                    <span id="initErrorMessage" class="show-error"></span>
                 </div>
                 <div class="initComands">
                     <button id="initVideoAudioRefreshButton" class="fas fa-rotate"></button>
@@ -192,6 +194,11 @@ access to use this app.
                 <button id="saveImageUrlBtn">Save</button>
                 <button id="cancelImageUrlBtn">Cancel</button>
             </div>
+        </div>
+
+        <div id="qrRoomPopupContainer" class="hidden top-center fadein">
+            <canvas id="qrRoomPopup"></canvas>
+            <div id="qrText">Scan to join the room</div>
         </div>
 
         <div id="control" class="fadein">
@@ -422,6 +429,7 @@ access to use this app.
                                 <p>Virtual background:</p>
                             </div>
                             <div id="imageGridVideo" class="image-grid"></div>
+                            <span id="errorMessage" class="show-error"></span>
                             <br />
                         </div>
                         <div class="title">
@@ -453,6 +461,18 @@ access to use this app.
                                 <option value="4k">🖥&nbsp;4K</option>
                                 <option value="6k">🖥&nbsp;6k</option>
                                 <option value="8k">🖥&nbsp;8K</option>
+                            </select>
+                        </div>
+                        <br />
+                        <div id="ScreenOptimizationDiv" class="hidden">
+                            <div class="title">
+                                <i class="fa-solid fa-rocket"></i>
+                                <p id="screenOptimizationLabel">Screen Optimization:</p>
+                            </div>
+                            <select id="screenOptimization" class="form-select text-light bg-dark">
+                                <option value="default">🖥&nbsp;None</option>
+                                <option value="detail">🖥&nbsp;Detail</option>
+                                <option value="motion">🖥&nbsp;Motion</option>
                             </select>
                         </div>
                         <hr />

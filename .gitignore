@@ -15,8 +15,12 @@ package-lock.json
 .cache
 
 # personal
+.env
 config.js
 docker-compose.yml
 docker-push.sh
 rec
 rtmp
+
+# virtual background
+custom

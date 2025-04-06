@@ -80,7 +80,6 @@ const swalImageUrl = '../images/pricing-illustration.svg';
 
 // Media
 const sinkId = 'sinkId' in HTMLMediaElement.prototype;
-const MediaStreamTrackProcessorSupported = 'MediaStreamTrackProcessor' in window;
 
 // ####################################################
 // LOCAL STORAGE
@@ -177,10 +176,14 @@ const speakerSelect = getId('speakerSelect');
 const initSpeakerSelect = getId('initSpeakerSelect');
 
 // ####################################################
-// VIRTUAL BACKGROUND DEFAULT IMAGES
+// VIRTUAL BACKGROUND DEFAULT IMAGES AND INIT CLASS
 // ####################################################
 
 const virtualBackgrounds = Object.values(image.virtualBackground);
+
+const virtualBackground = new VirtualBackground();
+
+const isMediaStreamTrackAndTransformerSupported = virtualBackground.checkSupport();
 
 // ####################################################
 // DYNAMIC SETTINGS
@@ -188,6 +191,7 @@ const virtualBackgrounds = Object.values(image.virtualBackground);
 
 let virtualBackgroundBlurLevel;
 let virtualBackgroundSelectedImage;
+let virtualBackgroundTransparent;
 
 let swalBackground = 'radial-gradient(#393939, #000000)'; //'rgba(0, 0, 0, 0.7)';
 
@@ -225,7 +229,6 @@ let isEnumerateVideoDevices = false;
 let isAudioAllowed = false;
 let isVideoAllowed = false;
 let isVideoPrivacyActive = false;
-let isInitVideoMirror = true;
 let isRecording = false;
 let isAudioVideoAllowed = false;
 let isParticipantsListOpen = false;
@@ -241,6 +244,7 @@ let audio = false;
 let video = false;
 let screen = false;
 let hand = false;
+let camera = 'user';
 
 let recTimer = null;
 let recElapsedTime = null;
@@ -312,6 +316,12 @@ function initClient() {
             'right',
         );
         setTippy('initVideoAudioRefreshButton', 'Refresh audio/video devices', 'top');
+        setTippy(
+            'screenOptimizationLabel',
+            'Detail: For high fidelity (screen sharing with text/graphics)<br />Motion: For high frame rate (video playback, game streaming',
+            'right',
+            true,
+        );
         setTippy('switchPitchBar', 'Toggle audio pitch bar', 'right');
         setTippy('switchSounds', 'Toggle the sounds notifications', 'right');
         setTippy('switchShare', "Show 'Share Room' popup on join", 'right');
@@ -693,7 +703,6 @@ function setupInitButtons() {
     };
     initVideoMirrorButton.onclick = () => {
         initVideo.classList.toggle('mirror');
-        isInitVideoMirror = initVideo.classList.contains('mirror');
     };
     initVirtualBackgroundButton.onclick = () => {
         showImageSelector();
@@ -1034,7 +1043,7 @@ async function whoAreYou() {
 
     // Virtual Background if supported (Chrome/Edge/Opera/Vivaldi/...)
     if (
-        MediaStreamTrackProcessorSupported &&
+        isMediaStreamTrackAndTransformerSupported &&
         (BUTTONS.settings.virtualBackground !== undefined ? BUTTONS.settings.virtualBackground : true)
     ) {
         show(initVirtualBackgroundButton);
@@ -1186,7 +1195,7 @@ function handleVideo() {
     elemDisplay('imageGrid', false);
 
     isVideoAllowed &&
-    MediaStreamTrackProcessorSupported &&
+    isMediaStreamTrackAndTransformerSupported &&
     (BUTTONS.settings.virtualBackground !== undefined ? BUTTONS.settings.virtualBackground : true)
         ? show(initVirtualBackgroundButton)
         : hide(initVirtualBackgroundButton);
@@ -1219,7 +1228,7 @@ async function handleAudioVideo() {
     elemDisplay('imageGrid', false);
 
     isVideoAllowed &&
-    MediaStreamTrackProcessorSupported &&
+    isMediaStreamTrackAndTransformerSupported &&
     (BUTTONS.settings.virtualBackground !== undefined ? BUTTONS.settings.virtualBackground : true)
         ? show(initVirtualBackgroundButton)
         : hide(initVirtualBackgroundButton);
@@ -1335,8 +1344,18 @@ async function shareRoom(useNavigator = false) {
 // ####################################################
 
 function makeRoomQR() {
-    let qr = new QRious({
+    const qr = new QRious({
         element: document.getElementById('qrRoom'),
+        value: RoomURL,
+    });
+    qr.set({
+        size: 256,
+    });
+}
+
+function makeRoomPopupQR() {
+    const qr = new QRious({
+        element: document.getElementById('qrRoomPopup'),
         value: RoomURL,
     });
     qr.set({
@@ -1439,6 +1458,8 @@ function joinRoom(peer_name, room_id) {
 }
 
 function roomIsReady() {
+    makeRoomPopupQR();
+
     if (rc.isValidEmail(peer_name)) {
         myProfileAvatar.style.borderRadius = `50px`;
         myProfileAvatar.setAttribute('src', rc.genGravatar(peer_name));
@@ -1550,7 +1571,7 @@ function roomIsReady() {
     if (!isMobileDevice) show(pinUnpinGridDiv);
     if (!isSpeechSynthesisSupported) hide(speechMsgDiv);
     if (
-        MediaStreamTrackProcessorSupported &&
+        isMediaStreamTrackAndTransformerSupported &&
         (BUTTONS.settings.virtualBackground !== undefined ? BUTTONS.settings.virtualBackground : true)
     ) {
         rc.showVideoImageSelector();
@@ -1687,6 +1708,14 @@ function handleButtons() {
     };
     shareButton.onclick = () => {
         shareRoom(true);
+    };
+    shareButton.onmouseenter = () => {
+        if (isMobileDevice || !BUTTONS.main.shareQr) return;
+        show(qrRoomPopupContainer);
+    };
+    shareButton.onmouseleave = () => {
+        if (isMobileDevice || !BUTTONS.main.shareQr) return;
+        hide(qrRoomPopupContainer);
     };
     hideMeButton.onclick = (e) => {
         if (isHideALLVideosActive) {
@@ -2284,9 +2313,6 @@ async function changeCamera(deviceId) {
         await stopTracks(initStream);
         elemDisplay('initVideo', true);
         initVideoContainerShow();
-        if (!initVideo.classList.contains('mirror')) {
-            initVideo.classList.toggle('mirror');
-        }
     }
     const videoConstraints = {
         audio: false,
@@ -2300,7 +2326,6 @@ async function changeCamera(deviceId) {
     await navigator.mediaDevices
         .getUserMedia(videoConstraints)
         .then(async (camStream) => {
-            initVideo.className = 'mirror';
             initVideo.srcObject = camStream;
             initStream = camStream;
             console.log(
@@ -2308,13 +2333,29 @@ async function changeCamera(deviceId) {
                 initStream.getVideoTracks()[0].getSettings(),
             );
             checkInitConfig();
+            camera = detectCameraFacingMode(camStream);
             handleCameraMirror(initVideo);
-            await loadVirtualBackgroundSettings();
         })
         .catch((error) => {
             console.error('[Error] changeCamera', error);
             handleMediaError('video/audio', error, '/');
         });
+
+    if (isVideoAllowed) {
+        await loadVirtualBackgroundSettings();
+    }
+}
+
+function detectCameraFacingMode(stream) {
+    if (!stream || !stream.getVideoTracks().length) {
+        console.warn("No video track found in the stream. Defaulting to 'user'.");
+        return 'user';
+    }
+    const videoTrack = stream.getVideoTracks()[0];
+    const settings = videoTrack.getSettings();
+    const capabilities = videoTrack.getCapabilities?.() || {};
+    const facingMode = settings.facingMode || capabilities.facingMode?.[0] || 'user';
+    return facingMode === 'environment' ? 'environment' : 'user';
 }
 
 // ####################################################
@@ -2447,19 +2488,9 @@ async function toggleScreenSharing() {
 }
 
 function handleCameraMirror(video) {
-    if (isDesktopDevice) {
-        // Desktop devices...
-        if (!video.classList.contains('mirror')) {
-            video.classList.toggle('mirror');
-            isInitVideoMirror = true;
-        }
-    } else {
-        // Mobile, Tablet, IPad devices...
-        if (video.classList.contains('mirror')) {
-            video.classList.remove('mirror');
-            isInitVideoMirror = false;
-        }
-    }
+    camera === 'environment'
+        ? video.classList.remove('mirror') // Back camera → No mirror
+        : video.classList.add('mirror'); // Disable mirror for rear camera
 }
 
 function handleSelects() {
@@ -2474,6 +2505,11 @@ function handleSelects() {
     };
     screenQuality.onchange = () => {
         rc.closeThenProduce(RoomClient.mediaType.screen);
+    };
+    screenOptimization.onchange = () => {
+        rc.closeThenProduce(RoomClient.mediaType.screen);
+        localStorageSettings.screen_optimization = screenOptimization.selectedIndex;
+        lS.setSettings(localStorageSettings);
     };
     videoFps.onchange = () => {
         rc.closeThenProduce(RoomClient.mediaType.video, videoSelect.value);
@@ -3222,6 +3258,7 @@ function loadSettingsFromLocalStorage() {
     micVolumeRange.value = localStorageSettings.mic_volume || 100;
     micVolumeValue.innerText = localStorageSettings.mic_volume || 100;
 
+    screenOptimization.selectedIndex = localStorageSettings.screen_optimization;
     videoFps.selectedIndex = localStorageSettings.video_fps;
     screenFps.selectedIndex = localStorageSettings.screen_fps;
     BtnVideoObjectFit.selectedIndex = localStorageSettings.video_obj_fit;
@@ -4863,7 +4900,7 @@ function setTheme() {
 // ####################################################
 
 function handleAspectRatio() {
-    if (participantsCount > 1) {
+    if (videoMediaContainer.childElementCount > 1) {
         adaptAspectRatio(videoMediaContainer.childElementCount);
     } else {
         resizeVideoMedia();
@@ -4952,13 +4989,14 @@ function showImageSelector() {
     }
 
     // Common function to handle virtual background changes
-    async function handleVirtualBackground(blurLevel = null, imgSrc = null) {
-        if (!blurLevel && !imgSrc) {
+    async function handleVirtualBackground(blurLevel = null, imgSrc = null, bgTransparent = null) {
+        if (!blurLevel && !imgSrc && !bgTransparent) {
             virtualBackgroundBlurLevel = null;
             virtualBackgroundSelectedImage = null;
+            virtualBackgroundTransparent = null;
             elemDisplay('imageGrid', false);
         }
-        await applyVirtualBackground(initVideo, initStream, blurLevel, imgSrc);
+        await applyVirtualBackground(initVideo, initStream, blurLevel, imgSrc, bgTransparent);
     }
 
     // Create clean virtual bg Image
@@ -4969,6 +5007,11 @@ function showImageSelector() {
     createImage('initHighBlurImg', image.blurHigh, 'High Blur', 'high', () => handleVirtualBackground(20));
     // Create Low Blur Image
     createImage('initLowBlurImg', image.blurLow, 'Low Blur', 'low', () => handleVirtualBackground(10));
+
+    // Create transparent virtual bg Image
+    createImage('initTransparentBg', image.transparentBg, 'Transparent Virtual background', 'transparentVb', () =>
+        handleVirtualBackground(null, null, true),
+    );
 
     // Handle file upload (common logic for file selection)
     function setupFileUploadButton(buttonId, sourceImg, tooltip, handler) {
@@ -5042,6 +5085,10 @@ function showImageSelector() {
             reader.readAsDataURL(blob);
         } catch (error) {
             console.error('Error fetching image:', error);
+            // Detect CORS issue and provide a clearer error message
+            error.message.includes('Failed to fetch')
+                ? showError(initErrorMessage, 'Error: Unable to fetch image. CORS policy may be blocking the request.')
+                : showError(initErrorMessage, `Error fetching image: ${error.message}`);
         }
     }
 
@@ -5108,14 +5155,14 @@ function showImageSelector() {
 // VIRTUAL BACKGROUND HELPER
 // ####################################################
 
-async function applyVirtualBackground(videoElement, stream, blurLevel, backgroundImage) {
+async function applyVirtualBackground(videoElement, stream, blurLevel, backgroundImage, backgroundTransparent) {
     const videoTrack = stream.getVideoTracks()[0];
-    const virtualBackground = new VirtualBackground();
 
     if (blurLevel) {
         videoElement.srcObject = await virtualBackground.applyBlurToWebRTCStream(videoTrack, blurLevel);
         virtualBackgroundBlurLevel = blurLevel;
         virtualBackgroundSelectedImage = null;
+        virtualBackgroundTransparent = null;
     } else if (backgroundImage) {
         videoElement.srcObject = await virtualBackground.applyVirtualBackgroundToWebRTCStream(
             videoTrack,
@@ -5123,13 +5170,20 @@ async function applyVirtualBackground(videoElement, stream, blurLevel, backgroun
         );
         virtualBackgroundSelectedImage = backgroundImage;
         virtualBackgroundBlurLevel = null;
+        virtualBackgroundTransparent = null;
+    } else if (backgroundTransparent) {
+        videoElement.srcObject = await virtualBackground.applyTransparentVirtualBackgroundToWebRTCStream(videoTrack);
+        virtualBackgroundBlurLevel = null;
+        virtualBackgroundSelectedImage = null;
+        virtualBackgroundTransparent = true;
     } else {
         videoElement.srcObject = stream; // Default case, use original stream
         virtualBackgroundBlurLevel = null;
         virtualBackgroundSelectedImage = null;
+        virtualBackgroundTransparent = null;
     }
 
-    saveVirtualBackgroundSettings(blurLevel, backgroundImage);
+    saveVirtualBackgroundSettings(blurLevel, backgroundImage, backgroundTransparent);
 }
 
 function isValidImageURL(url) {
@@ -5188,26 +5242,61 @@ const indexedDBHelper = {
 // VIRTUAL BACKGROUND LOCAL STORAGE SETTINGS
 // ####################################################
 
-function saveVirtualBackgroundSettings(blurLevel, imageUrl) {
+function saveVirtualBackgroundSettings(blurLevel, imageUrl, transparent) {
     const settings = {
         blurLevel: blurLevel || null,
         imageUrl: imageUrl || null,
+        transparent: transparent || null,
     };
     localStorage.setItem('virtualBackgroundSettings', JSON.stringify(settings));
 }
 
 async function loadVirtualBackgroundSettings() {
+    if (!isMediaStreamTrackAndTransformerSupported) return;
+
     const savedSettings = localStorage.getItem('virtualBackgroundSettings');
-    if (savedSettings) {
-        const { blurLevel, imageUrl } = JSON.parse(savedSettings);
-        if (blurLevel) {
-            console.log('-------> Apply Blur');
-            await applyVirtualBackground(initVideo, initStream, blurLevel);
-        } else if (imageUrl) {
-            console.log('-------> Apply Virtual background');
-            await applyVirtualBackground(initVideo, initStream, null, imageUrl);
-        }
+
+    if (!savedSettings) return;
+
+    const { blurLevel, imageUrl, transparent } = JSON.parse(savedSettings);
+
+    if (blurLevel) {
+        await applyVirtualBackground(initVideo, initStream, blurLevel);
+    } else if (imageUrl) {
+        await applyVirtualBackground(initVideo, initStream, null, imageUrl);
+    } else if (transparent) {
+        await applyVirtualBackground(initVideo, initStream, null, null, true);
     }
+
+    if (virtualBackgroundBlurLevel || virtualBackgroundSelectedImage || virtualBackgroundTransparent) {
+        initVirtualBackgroundButton.click();
+    }
+}
+
+// ####################################################
+// HANDLE ERRORS
+// ####################################################
+
+function showError(errorElement, message, delay = 5000) {
+    errorElement.innerText = message;
+
+    elemDisplay(errorElement.id, true);
+
+    setTimeout(() => {
+        errorElement.classList.add('fade-in');
+        errorElement.classList.remove('fade-out');
+    }, 100);
+
+    setTimeout(() => {
+        errorElement.classList.remove('fade-in');
+        errorElement.classList.add('fade-out');
+    }, delay);
+
+    setTimeout(() => {
+        if (errorElement.classList.contains('fade-out')) {
+            elemDisplay(errorElement.id, false);
+        }
+    }, delay + 500);
 }
 
 // ####################################################
@@ -5222,12 +5311,12 @@ function showAbout() {
         position: 'center',
         imageUrl: BRAND.about?.imageUrl && BRAND.about.imageUrl.trim() !== '' ? BRAND.about.imageUrl : image.about,
         customClass: { image: 'img-about' },
-        title: BRAND.about?.title && BRAND.about.title.trim() !== '' ? BRAND.about.title : 'Collab',
+        title: BRAND.about?.title && BRAND.about.title.trim() !== '' ? BRAND.about.title : 'WebRTC SFU v1.8.11',
         html: `
             <br />
             <div id="about">
                 ${
-                    BRAND.about?.html && BRAND.atalkbout.html.trim() !== ''
+                    BRAND.about?.html && BRAND.about.html.trim() !== ''
                         ? BRAND.about.html
                         : `
                             <hr />

@@ -103,19 +103,21 @@ const image = {
     blur: '../images/blur.png',
     blurLow: '../images/blur-low.png',
     blurHigh: '../images/blur-high.png',
+    transparentBg: '../images/transparentBg.png',
     link: '../images/link.png',
     upload: '../images/upload.png',
     virtualBackground: {
-        one: '../images/virtual-background/background-1.jpg',
-        two: '../images/virtual-background/background-2.jpg',
-        three: '../images/virtual-background/background-3.jpg',
-        four: '../images/virtual-background/background-4.jpg',
-        five: '../images/virtual-background/background-5.jpg',
-        six: '../images/virtual-background/background-6.jpg',
-        seven: '../images/virtual-background/background-7.jpg',
-        eight: '../images/virtual-background/background-8.jpg',
-        nine: '../images/virtual-background/background-9.jpg',
-        ten: '../images/virtual-background/background-10.jpg',
+        one: '../images/virtual-background/default/background-1.jpg',
+        two: '../images/virtual-background/default/background-2.webp',
+        three: '../images/virtual-background/default/background-3.jpg',
+        four: '../images/virtual-background/default/background-4.jpg',
+        five: '../images/virtual-background/default/background-5.jpg',
+        six: '../images/virtual-background/default/background-6.jpg',
+        seven: '../images/virtual-background/default/background-7.jpg',
+        eight: '../images/virtual-background/default/background-8.jpg',
+        nine: '../images/virtual-background/default/background-9.jpg',
+        ten: '../images/virtual-background/default/background-10.jpg',
+        eleven: '../images/virtual-background/default/background-11.gif',
     },
 };
 
@@ -222,6 +224,11 @@ class RoomClient {
         this.reconnectInterval = 3000;
         this.maxReconnectInterval = 15000;
 
+        // Handle ICE
+        this.iceRestarting = false;
+        this.iceProducerRestarting = false;
+        this.iceConsumerRestarting = false;
+
         this.room_id = room_id;
         this.peer_id = socket.id;
         this.peer_name = peer_name;
@@ -304,7 +311,6 @@ class RoomClient {
         this.isToggleRaiseHand = false;
         this.pinnedVideoPlayerId = null;
         this.camVideo = false;
-        this.camera = 'user';
         this.videoQualitySelectedIndex = 0;
 
         this.pollSelectedOptions = {};
@@ -354,6 +360,7 @@ class RoomClient {
         this.forceVP8 = false; // Force VP8 codec for webcam and screen sharing
         this.forceVP9 = false; // Force VP9 codec for webcam and screen sharing
         this.forceH264 = false; // Force H264 codec for webcam and screen sharing
+        this.forceAV1 = false; // Force AV1 codec for webcam and screen sharing
         this.enableWebcamLayers = true; // Enable simulcast or SVC for webcam
         this.enableSharingLayers = true; // Enable simulcast or SVC for screen sharing
         this.numSimulcastStreamsWebcam = 3; // Number of streams for simulcast in webcam
@@ -481,6 +488,8 @@ class RoomClient {
             })
             .catch((error) => {
                 console.error('Join error:', error);
+                //
+                popupHtmlMessage(null, image.network, 'Join Room', error, 'center', false, true);
             });
     }
 
@@ -674,29 +683,30 @@ class RoomClient {
     // ####################################################
 
     async initTransports(device) {
-        // ####################################################
-        // PRODUCER TRANSPORT
-        // ####################################################
+        await this.initProducerTransport(device);
+        await this.initConsumerTransport(device);
+    }
 
+    // ####################################################
+    // PRODUCER TRANSPORT
+    // ####################################################
+
+    async initProducerTransport(device) {
         const producerTransportData = await this.socket.request('createWebRtcTransport', {
             forceTcp: false,
             rtpCapabilities: device.rtpCapabilities,
         });
 
         if (producerTransportData.error) {
-            console.error(producerTransportData.error);
+            console.error('Producer Transport creation failed', producerTransportData.error);
             return;
         }
 
-        producerTransportData['proprietaryConstraints'] = { optional: [{ googDscp: true }] };
-
         this.producerTransport = device.createSendTransport(producerTransportData);
+        this.setupProducerTransportHandlers();
+    }
 
-        console.info('07.4 producerTransportData ---->', {
-            producerTransportId: this.producerTransport.id,
-            producerTransportData: producerTransportData,
-        });
-
+    setupProducerTransportHandlers() {
         this.producerTransport.on('connect', async ({ dtlsParameters }, callback, errback) => {
             try {
                 await this.socket.request('connectTransport', {
@@ -711,7 +721,6 @@ class RoomClient {
         });
 
         this.producerTransport.on('produce', async ({ kind, appData, rtpParameters }, callback, errback) => {
-            console.log('Going to produce', { kind, appData, rtpParameters });
             try {
                 const { producer_id } = await this.socket.request('produce', {
                     producerTransportId: this.producerTransport.id,
@@ -719,44 +728,36 @@ class RoomClient {
                     appData,
                     rtpParameters,
                 });
-                callback({
-                    id: producer_id,
-                });
+                callback({ id: producer_id });
             } catch (err) {
                 errback(err);
             }
         });
 
-        this.producerTransport.on('connectionstatechange', (state) => {
+        this.producerTransport.on('connectionstatechange', async (state) => {
+            console.log(`Producer Transport state changed to: ${state}`, { id: this.producerTransport.id });
+
+            if (state === 'disconnected' || state === 'failed') {
+                console.warn('⚠️ Attempting ICE restart...');
+                await this.restartProducerIce();
+            }
+
             switch (state) {
                 case 'connecting':
                     console.log('Producer Transport connecting...');
                     break;
                 case 'connected':
-                    console.log('Producer Transport connected', { id: this.producerTransport.id });
+                    console.log('✅ Producer Transport connected', { id: this.producerTransport.id });
                     break;
                 case 'disconnected':
-                    console.log('Producer Transport disconnected', { id: this.producerTransport.id });
+                    console.warn('⚠️ Producer Transport disconnected', { id: this.producerTransport.id });
                     break;
                 case 'failed':
-                    console.warn('Producer Transport failed', { id: this.producerTransport.id });
-
-                    this.producerTransport.close();
-
-                    popupHtmlMessage(
-                        null,
-                        image.network,
-                        'Producer Transport failed',
-                        'Check Your Network Configuration',
-                        'center',
-                        false,
-                        true,
-                    );
-
+                    console.warn('❌ Producer Transport failed', { id: this.producerTransport.id });
                     break;
                 default:
-                    console.log('Producer transport connection state changes', {
-                        state: state,
+                    console.log('Producer transport connection state changed', {
+                        state,
                         id: this.producerTransport.id,
                     });
                     break;
@@ -764,32 +765,39 @@ class RoomClient {
         });
 
         this.producerTransport.on('icegatheringstatechange', (state) => {
-            console.log('Producer icegatheringstatechange', {
+            console.warn('Producer ICE gathering change state', {
                 state: state,
                 id: this.producerTransport.id,
             });
         });
 
-        // ####################################################
-        // CONSUMER TRANSPORT
-        // ####################################################
+        this.producerTransport.on('icecandidateerror', (error) => {
+            console.error('❌ Producer ICE candidate error', {
+                error: error,
+                id: this.producerTransport.id,
+            });
+        });
+    }
 
+    // ####################################################
+    // CONSUMER TRANSPORT
+    // ####################################################
+
+    async initConsumerTransport(device) {
         const consumerTransportData = await this.socket.request('createWebRtcTransport', {
             forceTcp: false,
         });
 
         if (consumerTransportData.error) {
-            console.error(consumerTransportData.error);
+            console.error('Consumer Transport creation failed', consumerTransportData.error);
             return;
         }
 
         this.consumerTransport = device.createRecvTransport(consumerTransportData);
+        this.setupConsumerTransportHandlers();
+    }
 
-        console.info('07.5 consumerTransportData ---->', {
-            consumerTransportId: this.consumerTransport.id,
-            consumerTransportData: consumerTransportData,
-        });
-
+    setupConsumerTransportHandlers() {
         this.consumerTransport.on('connect', async ({ dtlsParameters }, callback, errback) => {
             try {
                 await this.socket.request('connectTransport', {
@@ -803,36 +811,30 @@ class RoomClient {
             }
         });
 
-        this.consumerTransport.on('connectionstatechange', (state) => {
+        this.consumerTransport.on('connectionstatechange', async (state) => {
+            console.log(`Consumer Transport state changed to: ${state}`, { id: this.consumerTransport.id });
+
+            if (state === 'disconnected' || state === 'failed') {
+                console.warn('⚠️ Attempting ICE restart...');
+                await this.restartConsumerIce();
+            }
+
             switch (state) {
                 case 'connecting':
                     console.log('Consumer Transport connecting...');
                     break;
                 case 'connected':
-                    console.log('Consumer Transport connected', { id: this.consumerTransport.id });
+                    console.log('✅ Consumer Transport connected', { id: this.consumerTransport.id });
                     break;
                 case 'disconnected':
-                    console.log('Consumer Transport disconnected', { id: this.consumerTransport.id });
+                    console.warn('⚠️ Consumer Transport disconnected', { id: this.consumerTransport.id });
                     break;
                 case 'failed':
-                    console.warn('Consumer Transport failed', { id: this.consumerTransport.id });
-
-                    this.consumerTransport.close();
-
-                    popupHtmlMessage(
-                        null,
-                        image.network,
-                        'Consumer Transport failed',
-                        'Check Your Network Configuration',
-                        'center',
-                        false,
-                        true,
-                    );
-
+                    console.warn('❌ Consumer Transport failed', { id: this.consumerTransport.id });
                     break;
                 default:
-                    console.log('Consumer transport connection state changes', {
-                        state: state,
+                    console.log('Consumer transport connection state changed', {
+                        state,
                         id: this.consumerTransport.id,
                     });
                     break;
@@ -840,48 +842,114 @@ class RoomClient {
         });
 
         this.consumerTransport.on('icegatheringstatechange', (state) => {
-            console.log('Consumer icegatheringstatechange', {
+            console.warn('Consumer ICE gathering change state', {
                 state: state,
                 id: this.consumerTransport.id,
             });
         });
 
-        // ####################################################
-        // TODO: DATA TRANSPORT
-        // ####################################################
-
-        //
+        this.consumerTransport.on('icecandidateerror', (error) => {
+            console.error('❌ Consumer ICE candidate error', {
+                error: error,
+                id: this.consumerTransport.id,
+            });
+        });
     }
 
     // ####################################################
-    // RESTART ICE
+    // TODO: DATA TRANSPORT
     // ####################################################
 
-    async restartIce() {
-        console.log('Restart ICE...');
+    // ####################################################
+    // HANDLE ICE
+    // ####################################################
+
+    async restartTransportIce(transport, type) {
+        if (!transport || typeof transport !== 'object' || transport.closed) return false;
+
         try {
-            if (this.producerTransport) {
-                const iceParameters = await this.socket.request('restartIce', {
-                    transport_id: this.producerTransport.id,
-                });
+            console.warn(`🔄 Restarting ${type} ICE...`, {
+                id: transport.id,
+                state: transport.connectionState,
+            });
 
-                console.log('Restarting producer transport ICE', iceParameters);
+            const iceParameters = await this.socket.request('restartIce', {
+                transport_id: transport.id,
+            });
 
-                await this.producerTransport.restartIce({ iceParameters });
+            if (!iceParameters) {
+                console.warn(`⚠️ No ${type} ICE Parameters received`);
+                return false;
             }
 
-            if (this.consumerTransport) {
-                const iceParameters = await this.socket.request('restartIce', {
-                    transport_id: this.consumerTransport.id,
-                });
+            console.info(`🚀 Restarting ${type} transport ICE`, iceParameters);
 
-                console.log('Restarting consumer transport ICE', iceParameters);
+            await transport.restartIce({ iceParameters });
 
-                await this.consumerTransport.restartIce({ iceParameters });
-            }
-            console.log('Restart ICE done');
+            console.info(`✅ Successfully restarted ${type} ICE`);
+            return true;
         } catch (error) {
-            console.error('Restart ICE error', error);
+            console.error(`🔥 Restart ${type} ICE error`, {
+                id: transport?.id,
+                error: error.message,
+            });
+            return false;
+        }
+    }
+
+    async restartTransportWithRetry(transport, transportType, retries = 5, initialDelay = 1000) {
+        let delay = initialDelay;
+
+        for (let i = 0; i < retries; i++) {
+            const success = i === 4 ? await this.restartTransportIce(transport, transportType) : false;
+            if (success) return true; // Exit if reconnection is successful
+
+            console.warn(`🌀 Reconnection attempt ${i + 1} failed. Retrying in ${delay}ms...`);
+            await new Promise((resolve) => setTimeout(resolve, delay));
+            delay *= 2; // Exponential backoff: 1s -> 2s -> 4s -> 8s -> 16s
+        }
+
+        console.error('❌ Failed to reconnect after multiple attempts.');
+        transport.close();
+
+        popupHtmlMessage(
+            null,
+            image.network,
+            `${transportType} Transport`,
+            'Unable to reconnect. Please check your network.',
+            'center',
+            false,
+            true,
+        );
+
+        return false;
+    }
+
+    async restartProducerIce(retries = 5, delay = 1000) {
+        return this.restartTransportWithRetry(this.producerTransport, 'Producer', retries, delay);
+    }
+
+    async restartConsumerIce(retries = 5, delay = 1000) {
+        return this.restartTransportWithRetry(this.consumerTransport, 'Consumer', retries, delay);
+    }
+
+    async restartIce() {
+        if (this.iceRestarting) return;
+
+        console.warn('Restart ICE...', {
+            producerTransportConnectionState: this.producerTransport.connectionState,
+            consumerTransportConnectionState: this.consumerTransport.connectionState,
+        });
+
+        try {
+            this.iceRestarting = true;
+            await this.restartProducerIce();
+            await this.restartConsumerIce();
+            console.log('✅ Restart ICE done');
+        } catch (error) {
+            console.error('❌ Restart ICE error', error);
+        } finally {
+            this.iceRestarting = false;
         }
     }
 
@@ -1474,9 +1542,8 @@ class RoomClient {
                     : await navigator.mediaDevices.getUserMedia(mediaConstraints);
 
                 // Handle Virtual Background and Blur using MediaPipe
-                if (video && MediaStreamTrackProcessorSupported) {
+                if (video && isMediaStreamTrackAndTransformerSupported) {
                     const videoTrack = stream.getVideoTracks()[0];
-                    const virtualBackground = new VirtualBackground();
 
                     if (virtualBackgroundBlurLevel) {
                         // Apply blur before sending it to WebRTC stream
@@ -1484,14 +1551,15 @@ class RoomClient {
                             videoTrack,
                             virtualBackgroundBlurLevel,
                         );
-                    }
-
-                    if (virtualBackgroundSelectedImage) {
+                    } else if (virtualBackgroundSelectedImage) {
                         // Apply virtual background to WebRTC stream
                         stream = await virtualBackground.applyVirtualBackgroundToWebRTCStream(
                             videoTrack,
                             virtualBackgroundSelectedImage,
                         );
+                    } else if (virtualBackgroundTransparent) {
+                        // Apply Transparent virtual background to WebRTC stream
+                        stream = await virtualBackground.applyTransparentVirtualBackgroundToWebRTCStream(videoTrack);
                     }
                 }
             }
@@ -1502,14 +1570,20 @@ class RoomClient {
 
             if (screen) {
                 /*
-                    track.contentHint helps optimize media tracks for specific use cases like `motion` or `detail`.
-                        - `motion`: For high frame rate, suitable for dynamic content like video playback or game streaming.
-                        - `detail`: For content requiring high fidelity, such as screen sharing with text, graphics, or fine details, prioritizing resolution over frame rate.
-                */
+                 * track.contentHint helps optimize media tracks for specific use cases:
+                 * - 'motion': For high frame rate (video playback, game streaming)
+                 * - 'detail': For high fidelity (screen sharing with text/graphics)
+                 */
                 if ('contentHint' in track) {
-                    track.contentHint = 'detail';
-                    console.info('Optimized video Track for screen sharing!');
+                    show(ScreenOptimizationDiv);
+
+                    const contentHint = screenOptimization.value;
+                    if (contentHint !== 'None') {
+                        track.contentHint = contentHint;
+                        console.info(`Optimized video track for screen sharing: ${contentHint}`);
+                    }
                 } else {
+                    hide(ScreenOptimizationDiv);
                     console.warn('contentHint is not supported in this browser');
                 }
             }
@@ -1588,14 +1662,16 @@ class RoomClient {
 
                 if (video) {
                     this.localVideoElement = elem;
+                    this.videoProducerId = producer.id;
+                    camera = detectCameraFacingMode(stream);
+                    handleCameraMirror(elem);
                 }
 
-                if (video) this.videoProducerId = producer.id;
-                if (screen) this.screenProducerId = producer.id;
-
-                // No mirror effect for producer
-                if (!isInitVideoMirror && elem.classList.contains('mirror')) {
-                    elem.classList.remove('mirror');
+                if (screen) {
+                    this.screenProducerId = producer.id;
+                    if (elem.classList.contains('mirror')) {
+                        elem.classList.remove('mirror');
+                    }
                 }
             } else {
                 this.localAudioStream = stream;
@@ -1683,12 +1759,13 @@ class RoomClient {
         }
 
         // Common function to handle virtual background changes
-        async function handleVirtualBackground(blurLevel = null, imgSrc = null) {
-            if (!blurLevel && !imgSrc) {
+        async function handleVirtualBackground(blurLevel = null, imgSrc = null, transparentBg = null) {
+            if (!blurLevel && !imgSrc && !transparentBg) {
                 virtualBackgroundBlurLevel = null;
                 virtualBackgroundSelectedImage = null;
+                virtualBackgroundTransparent = null;
             }
-            await rc.applyVirtualBackground(blurLevel, imgSrc);
+            await rc.applyVirtualBackground(blurLevel, imgSrc, transparentBg);
         }
 
         // Create clean virtual bg Image
@@ -1699,6 +1776,11 @@ class RoomClient {
         createImage('highBlurImg', image.blurHigh, 'High Blur', 'high', () => handleVirtualBackground(20));
         // Create Low Blur Image
         createImage('lowBlurImg', image.blurLow, 'Low Blur', 'low', () => handleVirtualBackground(10));
+
+        // Create transparent virtual bg Image
+        createImage('transparentBg', image.transparentBg, 'Transparent Virtual background', 'transparentVb', () =>
+            handleVirtualBackground(null, null, true),
+        );
 
         // Handle file upload (common logic for file selection)
         function setupFileUploadButton(buttonId, sourceImg, tooltip, handler) {
@@ -1772,6 +1854,10 @@ class RoomClient {
                 reader.readAsDataURL(blob);
             } catch (error) {
                 console.error('Error fetching image:', error);
+                // Detect CORS issue and provide a clearer error message
+                error.message.includes('Failed to fetch')
+                    ? showError(errorMessage, 'Error: Unable to fetch image. CORS policy may be blocking the request.')
+                    : showError(errorMessage, `Error fetching image: ${error.message}`);
             }
         }
 
@@ -1838,20 +1924,27 @@ class RoomClient {
     // VIRTUAL BACKGROUND HELPER
     // ####################################################
 
-    async applyVirtualBackground(blurLevel, backgroundImage) {
+    async applyVirtualBackground(blurLevel, backgroundImage, backgroundTransparent) {
         if (blurLevel) {
             virtualBackgroundBlurLevel = blurLevel;
             virtualBackgroundSelectedImage = null;
+            virtualBackgroundTransparent = null;
         } else if (backgroundImage) {
             virtualBackgroundSelectedImage = backgroundImage;
             virtualBackgroundBlurLevel = null;
+            virtualBackgroundTransparent = null;
+        } else if (backgroundTransparent) {
+            virtualBackgroundTransparent = true;
+            virtualBackgroundBlurLevel = null;
+            virtualBackgroundSelectedImage = null;
         } else {
             virtualBackgroundSelectedImage = null;
             virtualBackgroundBlurLevel = null;
+            virtualBackgroundTransparent = null;
         }
 
         videoSelect.onchange();
-        saveVirtualBackgroundSettings(blurLevel, backgroundImage);
+        saveVirtualBackgroundSettings(blurLevel, backgroundImage, backgroundTransparent);
     }
 
     // ####################################################
@@ -1888,8 +1981,8 @@ class RoomClient {
     }
 
     getCameraConstraints() {
-        this.camera = this.camera == 'user' ? 'environment' : 'user';
-        if (this.camera != 'user') this.camVideo = { facingMode: { exact: this.camera } };
+        camera = camera == 'user' ? 'environment' : 'user';
+        if (camera != 'user') this.camVideo = { facingMode: { exact: camera } };
         else this.camVideo = true;
         return {
             audio: false,
@@ -1994,9 +2087,11 @@ class RoomClient {
             forceVP8: this.forceVP8,
             forceVP9: this.forceVP9,
             forceH264: this.forceH264,
+            forceAV1: this.forceAV1,
             numSimulcastStreamsWebcam: this.numSimulcastStreamsWebcam,
             enableWebcamLayers: this.enableWebcamLayers,
             webcamScalabilityMode: this.webcamScalabilityMode,
+            rtpCapabilitiesCodecs: this.device.rtpCapabilities.codecs,
         });
 
         if (this.forceVP8) {
@@ -2008,6 +2103,9 @@ class RoomClient {
         } else if (this.forceVP9) {
             codec = this.device.rtpCapabilities.codecs.find((c) => c.mimeType.toLowerCase() === 'video/vp9');
             if (!codec) throw new Error('Desired VP9 codec+configuration is not supported');
+        } else if (this.forceAV1) {
+            codec = this.device.rtpCapabilities.codecs.find((c) => c.mimeType.toLowerCase() === 'video/av1');
+            if (!codec) throw new Error('Desired AV1 codec+configuration is not supported');
         }
 
         if (this.enableWebcamLayers) {
@@ -2017,8 +2115,12 @@ class RoomClient {
             console.log('WEBCAM ENCODING: first codec available', { firstVideoCodec: firstVideoCodec });
 
             // If VP9 is the only available video codec then use SVC.
-            if ((this.forceVP9 && codec) || firstVideoCodec.mimeType.toLowerCase() === 'video/vp9') {
-                console.log('WEBCAM ENCODING: VP9 with SVC');
+            if (
+                ((this.forceVP9 || this.forceAV1) && codec) ||
+                (firstVideoCodec?.mimeType &&
+                    ['video/vp9', 'video/av1'].includes(firstVideoCodec.mimeType.toLowerCase()))
+            ) {
+                console.log('WEBCAM ENCODING: VP9 or AV1 with SVC');
                 encodings = [
                     {
                         maxBitrate: 5000000,
@@ -2065,9 +2167,11 @@ class RoomClient {
             forceVP8: this.forceVP8,
             forceVP9: this.forceVP9,
             forceH264: this.forceH264,
+            forceAV1: this.forceAV1,
             numSimulcastStreamsSharing: this.numSimulcastStreamsSharing,
             enableSharingLayers: this.enableSharingLayers,
             sharingScalabilityMode: this.sharingScalabilityMode,
+            rtpCapabilitiesCodecs: this.device.rtpCapabilities.codecs,
         });
 
         if (this.forceVP8) {
@@ -2079,6 +2183,9 @@ class RoomClient {
         } else if (this.forceVP9) {
             codec = this.device.rtpCapabilities.codecs.find((c) => c.mimeType.toLowerCase() === 'video/vp9');
             if (!codec) throw new Error('Desired VP9 codec+configuration is not supported');
+        } else if (this.forceAV1) {
+            codec = this.device.rtpCapabilities.codecs.find((c) => c.mimeType.toLowerCase() === 'video/av1');
+            if (!codec) throw new Error('Desired AV1 codec+configuration is not supported');
         }
 
         if (this.enableSharingLayers) {
@@ -2088,8 +2195,12 @@ class RoomClient {
             console.log('SCREEN ENCODING: first codec available', { firstVideoCodec: firstVideoCodec });
 
             // If VP9 is the only available video codec then use SVC.
-            if ((this.forceVP9 && codec) || firstVideoCodec.mimeType.toLowerCase() === 'video/vp9') {
-                console.log('SCREEN ENCODING: VP9 with SVC');
+            if (
+                ((this.forceVP9 || this.forceAV1) && codec) ||
+                (firstVideoCodec?.mimeType &&
+                    ['video/vp9', 'video/av1'].includes(firstVideoCodec.mimeType.toLowerCase()))
+            ) {
+                console.log('SCREEN ENCODING: VP9 or AV1 with SVC');
                 encodings = [
                     {
                         maxBitrate: 5000000,
@@ -2219,7 +2330,6 @@ class RoomClient {
                 elem.volume = 0;
                 elem.poster = image.poster;
                 elem.style.objectFit = isScreen || isBroadcastingEnabled ? 'contain' : 'var(--videoObjFit)';
-                elem.className = this.isMobileDevice || isScreen ? '' : 'mirror';
 
                 vb = document.createElement('div');
                 vb.id = id + '__vb';
@@ -2307,9 +2417,7 @@ class RoomClient {
                 this.popupPeerInfo(p.id, this.peer_info);
                 this.checkPeerInfoStatus(this.peer_info);
 
-                if (isScreen) pn.click();
-
-                handleAspectRatio();
+                if (isScreen && this.videoMediaContainer.childElementCount > 1) pn.click();
 
                 if (!this.isMobileDevice) {
                     this.setTippy(pn.id, 'Toggle Pin', 'bottom');
@@ -2320,6 +2428,7 @@ class RoomClient {
                     this.setTippy(au.id, 'Audio status', 'bottom');
                 }
 
+                handleAspectRatio();
                 console.log('[addProducer] Video-element-count', this.videoMediaContainer.childElementCount);
                 break;
             case mediaType.audio:
@@ -2595,7 +2704,7 @@ class RoomClient {
         } catch (error) {
             console.error('Error in consume', error);
 
-            popupHtmlMessage(null, image.network, 'Consume', error, 'center', '/', true);
+            popupHtmlMessage(null, image.network, 'Consume', error, 'center', false, false);
         }
     }
 
@@ -2737,13 +2846,17 @@ class RoomClient {
                 vb.appendChild(peerNameHeader);
                 eVc.appendChild(peerNameHeader);
 
-                BUTTONS.consumerVideo.sendMessageButton && eVc.appendChild(sm);
-                BUTTONS.consumerVideo.sendFileButton && eVc.appendChild(sf);
-                BUTTONS.consumerVideo.sendVideoButton && eVc.appendChild(sv);
-                BUTTONS.consumerVideo.geolocationButton && eVc.appendChild(gl);
-                BUTTONS.consumerVideo.banButton && eVc.appendChild(ban);
-                BUTTONS.consumerVideo.ejectButton && eVc.appendChild(ko);
+                const buttonGroup = document.createElement('div');
+                buttonGroup.className = 'button-group';
 
+                BUTTONS.consumerVideo.sendMessageButton && buttonGroup.appendChild(sm);
+                BUTTONS.consumerVideo.sendFileButton && buttonGroup.appendChild(sf);
+                BUTTONS.consumerVideo.sendVideoButton && buttonGroup.appendChild(sv);
+                BUTTONS.consumerVideo.geolocationButton && buttonGroup.appendChild(gl);
+                BUTTONS.consumerVideo.banButton && buttonGroup.appendChild(ban);
+                BUTTONS.consumerVideo.ejectButton && buttonGroup.appendChild(ko);
+
+                eVc.appendChild(buttonGroup);
                 eDiv.appendChild(eBtn);
                 eDiv.appendChild(eVc);
                 vb.appendChild(eDiv);
@@ -2807,8 +2920,6 @@ class RoomClient {
                     });
                 }
 
-                console.log('[addConsumer] Video-element-count', this.videoMediaContainer.childElementCount);
-
                 if (!this.isMobileDevice) {
                     this.setTippy(pn.id, 'Toggle Pin', 'bottom');
                     this.setTippy(ha.id, 'Toggle Focus mode', 'bottom');
@@ -2837,6 +2948,8 @@ class RoomClient {
                 this.setPeerAudio(remotePeerId, remotePeerAudio);
 
                 handleAspectRatio();
+                console.log('[addConsumer] Video-element-count', this.videoMediaContainer.childElementCount);
+
                 this.sound('joined');
                 break;
             case mediaType.audio:
@@ -3036,8 +3149,6 @@ class RoomClient {
         this.setVideoAvatarImgName(i.id, peer_name);
         this.getId(i.id).style.display = 'block';
 
-        handleAspectRatio();
-
         if (isParticipantsListOpen) getRoomParticipants();
 
         if (!this.isMobileDevice && remotePeer) {
@@ -3052,6 +3163,8 @@ class RoomClient {
         }
 
         remotePeer ? this.setPeerAudio(peer_id, peer_audio) : this.setIsAudio(peer_id, peer_audio);
+
+        handleAspectRatio();
 
         console.log('[setVideoOff] Video-element-count', this.videoMediaContainer.childElementCount);
 
@@ -4019,7 +4132,7 @@ class RoomClient {
                 handleAspectRatio();
             });
 
-            if (isAvatar && !this.isMobileDevice) btnPn.click();
+            if (isAvatar && !this.isMobileDevice && this.videoMediaContainer.childElementCount > 1) btnPn.click();
         }
     }
 
@@ -4261,7 +4374,6 @@ class RoomClient {
         if (btnMv && videoPlayer) {
             btnMv.addEventListener('click', () => {
                 videoPlayer.classList.toggle('mirror');
-                //rc.roomMessage('toggleVideoMirror', videoPlayer.classList.contains('mirror'));
             });
         }
     }
@@ -4994,7 +5106,7 @@ class RoomClient {
     }
 
     isHtml(str) {
-        var a = document.createElement('div');
+        const a = document.createElement('div');
         a.innerHTML = str;
         for (var c = a.childNodes, i = c.length; i--; ) {
             if (c[i].nodeType == 1) return true;
@@ -5003,17 +5115,12 @@ class RoomClient {
     }
 
     isValidHttpURL(input) {
-        const pattern = new RegExp(
-            '^(https?:\\/\\/)?' + // protocol
-                '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-                'localhost|' + // allow localhost
-                '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-                '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-                '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-                '(\\#[-a-z\\d_]*)?$',
-            'i',
-        ); // fragment locator
-        return pattern.test(input);
+        try {
+            new URL(input);
+            return true;
+        } catch (_) {
+            return false;
+        }
     }
 
     isImageURL(input) {
@@ -6868,7 +6975,6 @@ class RoomClient {
         d.appendChild(video);
         d.appendChild(vb);
         this.videoMediaContainer.appendChild(d);
-        handleAspectRatio();
 
         const exitVideoBtn = this.getId(e.id);
         exitVideoBtn.addEventListener('click', (e) => {
@@ -6884,6 +6990,8 @@ class RoomClient {
             this.setTippy(pn.id, 'Toggle Pin video player', 'bottom');
             this.setTippy(e.id, 'Close video player', 'bottom');
         }
+
+        handleAspectRatio();
         console.log('[openVideo] Video-element-count', this.videoMediaContainer.childElementCount);
         this.sound('joined');
     }
@@ -7014,13 +7122,15 @@ class RoomClient {
                 this.userLog('info', `${icons.room} BROADCASTING ${isBroadcastingEnabled ? 'On' : 'Off'}`, 'top-end');
                 break;
             case 'lock':
+                if (!isPresenter) return;
                 this.sound('locked');
                 this.event(_EVENTS.roomLock);
                 this.userLog('info', `${icons.lock} LOCKED the room by the password`, 'top-end');
                 break;
             case 'unlock':
-                this.event(_EVENTS.roomUnlock);
+                if (!isPresenter) return;
                 this.userLog('info', `${icons.unlock} UNLOCKED the room`, 'top-end');
+                this.event(_EVENTS.roomUnlock);
                 break;
             case 'lobbyOn':
                 this.event(_EVENTS.lobbyOn);
@@ -7134,7 +7244,7 @@ class RoomClient {
             case 'chat_cant_chatgpt':
                 this.userLog(
                     'info',
-                    `${icons.moderator} Moderator: everyone can't chat with ChatGPT ${status}`,
+                    `${icons.moderator} Moderator: everyone can't chat with AI Assitant ${status}`,
                     'top-end',
                 );
                 break;
@@ -7162,6 +7272,7 @@ class RoomClient {
         switch (data.password) {
             case 'OK':
                 this.joinAllowed(data.room);
+                handleRules(isPresenter);
                 break;
             case 'KO':
                 this.roomIsLocked();
@@ -7214,9 +7325,10 @@ class RoomClient {
                 break;
             case 'accept':
                 await this.joinAllowed(data.room);
+                handleRules(isPresenter);
                 control.style.display = 'flex';
                 bottomButtons.style.display = 'flex';
-                this.msgPopup('info', 'Your join meeting was be accepted by moderator');
+                this.msgPopup('info', 'Your join meeting request was accepted by the moderator');
                 break;
             case 'reject':
                 this.sound('eject');
@@ -7228,7 +7340,7 @@ class RoomClient {
                     showConfirmButton: true,
                     background: swalBackground,
                     title: 'Rejected',
-                    text: 'Your join meeting was be rejected by moderator',
+                    text: 'Your join meeting request was rejected by the moderator',
                     confirmButtonText: `Ok`,
                     showClass: { popup: 'animate__animated animate__fadeInDown' },
                     hideClass: { popup: 'animate__animated animate__fadeOutUp' },
@@ -9043,7 +9155,7 @@ class RoomClient {
                 //console.log('VOICES LISTS', completion.response.voices);
 
                 // Ensure the response has the list of voices
-                const voiceList = completion?.response?.voices ?? [];
+                const voiceList = completion?.response?.voices || [];
                 if (!voiceList.length) {
                     console.warn('No voices available in the response');
                     return;

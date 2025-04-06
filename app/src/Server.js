@@ -11,7 +11,7 @@ const mediasoupClient = require('mediasoup-client');
 const http = require('http');
 const path = require('path');
 const axios = require('axios');
-const ngrok = require('ngrok');
+const ngrok = require('@ngrok/ngrok');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const sanitizeFilename = require('sanitize-filename');
@@ -39,8 +39,8 @@ const packageJson = require('../../package.json');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto-js');
 const RtmpStreamer = require('./RtmpStreamer.js'); // Import the RtmpStreamer class
-const rtmpCfg = config.server.rtmp;
-const rtmpDir = rtmpCfg && rtmpCfg.dir ? rtmpCfg.dir : 'rtmp';
+const rtmpCfg = config?.media?.rtmp;
+const rtmpDir = rtmpCfg?.dir || 'rtmp';
 
 // File and Url Rtmp streams count
 let rtmpFileStreamsCount = 0;
@@ -52,14 +52,14 @@ const nodemailer = require('./lib/nodemailer');
 // Slack API
 const CryptoJS = require('crypto-js');
 const qS = require('qs');
-const slackEnabled = config.slack.enabled;
-const slackSigningSecret = config.slack.signingSecret;
+const slackEnabled = config?.integrations?.slack?.enabled || false;
+const slackSigningSecret = config?.integrations?.slack?.signingSecret || '';
 
 const app = express();
 
 const options = {
-    cert: fs.readFileSync(path.join(__dirname, config.server.ssl.cert), 'utf-8'),
-    key: fs.readFileSync(path.join(__dirname, config.server.ssl.key), 'utf-8'),
+    cert: fs.readFileSync(path.join(__dirname, config?.server?.ssl.cert || '../ssl/cert.pem'), 'utf-8'),
+    key: fs.readFileSync(path.join(__dirname, config?.server?.ssl.key || '../ssl/key.pem'), 'utf-8'),
 };
 
 const corsOptions = {
@@ -75,38 +75,38 @@ const io = socketIo(server, {
     cors: corsOptions,
 });
 
-const host = config.server.hostUrl || `http://localhost:${config.server.listen.port}`;
-const trustProxy = !!config.server.trustProxy;
+const host = config?.server?.hostUrl || `http://localhost:${config?.server?.listen?.port || 3010}`;
+const trustProxy = Boolean(config?.server?.trustProxy);
 
 const jwtCfg = {
-    JWT_KEY: (config.jwt && config.jwt.key) || 'collab_jwt_secret',
-    JWT_EXP: (config.jwt && config.jwt.exp) || '1h',
+    JWT_KEY: config?.security?.jwt?.key || 'collab_jwt_secret',
+    JWT_EXP: config?.security?.jwt?.exp || '1h',
 };
 
 const hostCfg = {
-    protected: config.host.protected,
-    user_auth: config.host.user_auth,
-    users: config.host.users,
-    users_from_db: config.host.users_from_db,
-    users_api_room_allowed: config.host.users_api_room_allowed,
-    users_api_rooms_allowed: config.host.users_api_rooms_allowed,
-    users_api_endpoint: config.host.users_api_endpoint,
-    users_api_secret_key: config.host.users_api_secret_key,
-    api_room_exists: config.host.api_room_exists,
-    users: config.host.users,
-    authenticated: !config.host.protected,
+    protected: config?.security?.host?.protected,
+    authenticated: !config?.security?.host?.protected,
+    user_auth: config?.security?.host?.user_auth,
+    users: config?.security?.host?.users,
+    users_from_db: config?.security?.host?.users_from_db,
+    users_api_room_allowed: config?.security?.host?.users_api_room_allowed,
+    users_api_rooms_allowed: config?.security?.host?.users_api_rooms_allowed,
+    users_api_endpoint: config?.security?.host?.users_api_endpoint,
+    users_api_secret_key: config?.security?.host?.users_api_secret_key,
+    api_room_exists: config?.security?.host?.api_room_exists,
+    presenters: config?.security?.host?.presenters,
 };
 
 const restApi = {
     basePath: '/api/v1', // api endpoint path
     docs: host + '/api/v1/docs', // api docs
-    allowed: config.api?.allowed,
+    allowed: config.api?.allowed || {},
 };
 
 // Sentry monitoring
-const sentryEnabled = config.sentry.enabled;
-const sentryDSN = config.sentry.DSN;
-const sentryTracesSampleRate = config.sentry.tracesSampleRate;
+const sentryEnabled = config.integrations?.sentry?.enabled || false;
+const sentryDSN = config.integrations.sentry.DSN;
+const sentryTracesSampleRate = config.integrations.sentry.tracesSampleRate;
 if (sentryEnabled) {
     Sentry.init({
         dsn: sentryDSN,
@@ -134,7 +134,7 @@ const webhook = {
 };
 
 // Discord Bot
-const { enabled, commands, token } = config.discord || {};
+const { enabled, commands, token } = config?.integrations?.discord || {};
 
 if (enabled && commands.length > 0 && token) {
     const discordBot = new Discord(token, commands);
@@ -150,12 +150,12 @@ const defaultStats = {
 
 // OpenAI/ChatGPT
 let chatGPT;
-if (config.chatGPT.enabled) {
-    if (config.chatGPT.apiKey) {
+if (config?.integrations?.chatGPT?.enabled) {
+    if (config?.integrations?.chatGPT?.apiKey) {
         const { OpenAI } = require('openai');
         const configuration = {
-            basePath: config.chatGPT.basePath,
-            apiKey: config.chatGPT.apiKey,
+            basePath: config?.integrations?.chatGPT?.basePath,
+            apiKey: config?.integrations?.chatGPT?.apiKey,
         };
         chatGPT = new OpenAI(configuration);
     } else {
@@ -164,18 +164,18 @@ if (config.chatGPT.enabled) {
 }
 
 // OpenID Connect
-const OIDC = config.oidc ? config.oidc : { enabled: false };
+const OIDC = config?.security?.oidc || { enabled: false };
 
 // directory
 const dir = {
-    public: path.join(__dirname, '../../', 'public'),
-    rec: path.join(__dirname, '../', config?.server?.recording?.dir ? config.server.recording.dir + '/' : 'rec/'),
-    rtmp: path.join(__dirname, '../', config?.rtmp?.dir ? config.rtmp.dir + '/' : 'rtmp/'),
+    public: path.join(__dirname, '../../public'),
+    rec: path.join(__dirname, '../', config?.media?.recording?.dir || 'rec', '/'),
+    rtmp: path.join(__dirname, '../', config?.media?.rtmp?.dir || 'rtmp', '/'),
 };
 
 // Rec directory create and set max file size
-const recMaxFileSize = config?.server?.recording?.maxFileSize || 1 * 1024 * 1024 * 1024; // 1GB default
-const serverRecordingEnabled = config?.server?.recording?.enabled;
+const recMaxFileSize = config?.media?.recording?.maxFileSize || 1 * 1024 * 1024 * 1024; // 1GB default
+const serverRecordingEnabled = config?.media?.recording?.enabled || false;
 if (serverRecordingEnabled) {
     log.debug('Server Recording enabled creating dir', dir.rtmp);
     if (!fs.existsSync(dir.rec)) {
@@ -222,7 +222,7 @@ const streams = {}; // Collect all rtmp streams
 const webRtcServerActive = config.mediasoup.webRtcServerActive;
 
 // ip (server local IPv4)
-const IPv4 = webRtcServerActive
+const IP = webRtcServerActive
     ? config.mediasoup.webRtcServerOptions.listenInfos[0].ip
     : config.mediasoup.webRtcTransport.listenInfos[0].ip;
 
@@ -235,32 +235,60 @@ let announcedAddress = webRtcServerActive
 const workers = [];
 let nextMediasoupWorkerIdx = 0;
 
-// Autodetect announcedAddress (https://www.ipify.org)
-if (!announcedAddress && IPv4 === '0.0.0.0') {
-    http.get(
-        {
-            host: 'api.ipify.org',
-            port: 80,
-            path: '/',
-        },
-        (resp) => {
-            resp.on('data', (ip) => {
-                announcedAddress = ip.toString();
-                if (webRtcServerActive) {
-                    config.mediasoup.webRtcServerOptions.listenInfos.forEach((info) => {
-                        info.announcedAddress = announcedAddress;
-                    });
-                } else {
-                    config.mediasoup.webRtcTransport.listenInfos.forEach((info) => {
-                        info.announcedAddress = announcedAddress;
-                    });
+// Autodetect announcedAddress with multiple fallback services
+if (!announcedAddress && IP === '0.0.0.0') {
+    const detectPublicIp = async () => {
+        const services = config.system?.services?.ip || [
+            'http://api.ipify.org',
+            'http://ipinfo.io/ip',
+            'http://ifconfig.me/ip',
+        ];
+
+        for (const service of services) {
+            try {
+                const ip = await fetchPublicIp(service);
+                if (ip) {
+                    announcedAddress = ip;
+                    updateAnnouncedAddress(ip);
+                    startServer();
+                    return;
                 }
-                startServer();
-            });
-        },
-    );
+            } catch (err) {
+                log.warn(`Failed to detect IP from ${service}`, err.message);
+            }
+        }
+        throw new Error('All public IP detection services failed! Please check your network connection');
+    };
+
+    detectPublicIp().catch((err) => {
+        log.error('Public IP detection failed', err.message);
+        process.exit(1);
+    });
 } else {
     startServer();
+}
+
+function fetchPublicIp(serviceUrl) {
+    return new Promise((resolve, reject) => {
+        http.get(serviceUrl, (resp) => {
+            if (resp.statusCode !== 200) {
+                return reject(new Error(`HTTP ${resp.statusCode}`));
+            }
+            let data = '';
+            resp.on('data', (chunk) => (data += chunk));
+            resp.on('end', () => resolve(data.toString().trim()));
+        }).on('error', reject);
+    });
+}
+
+function updateAnnouncedAddress(ip) {
+    const target = webRtcServerActive
+        ? config.mediasoup.webRtcServerOptions.listenInfos
+        : config.mediasoup.webRtcTransport.listenInfos;
+
+    target.forEach((info) => {
+        info.announcedAddress = ip;
+    });
 }
 
 // Custom middleware function for OIDC authentication
@@ -307,7 +335,16 @@ function startServer() {
     // Start the app
     app.set('trust proxy', trustProxy); // Enables trust for proxy headers (e.g., X-Forwarded-For) based on the trustProxy setting
     app.use(helmet.noSniff()); // Enable content type sniffing prevention
-    app.use(express.static(dir.public));
+    // Use all static files from the public folder
+    app.use(
+        express.static(dir.public, {
+            setHeaders: (res, filePath) => {
+                if (filePath.endsWith('.js')) {
+                    res.setHeader('Content-Type', 'application/javascript');
+                } //...
+            },
+        }),
+    );
     app.use(cors(corsOptions));
     app.use(compression());
     app.use(express.json({ limit: '50mb' })); // Handles JSON payloads
@@ -334,16 +371,6 @@ function startServer() {
     // Mattermost
     const mattermost = new Mattermost(app);
 
-    // POST start from here...
-    app.post('*', function (next) {
-        next();
-    });
-
-    // GET start from here...
-    app.get('*', function (next) {
-        next();
-    });
-
     // Remove trailing slashes in url handle bad requests
     app.use((err, req, res, next) => {
         if (err && (err instanceof SyntaxError || err.status === 400 || 'body' in err)) {
@@ -360,10 +387,12 @@ function startServer() {
         if (/^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}/.test(cleanPath)) {
             return res.status(400).send('Bad Request: Potential Open Redirect Detected');
         }
+
         if (req.path.endsWith('/') && req.path.length > 1) {
             let query = req.url.substring(req.path.length).replace(/\/$/, ''); // Ensure query params don't end in '/'
             return res.redirect(301, req.path.slice(0, -1) + query);
         }
+
         next();
     });
 
@@ -371,11 +400,17 @@ function startServer() {
     if (OIDC.enabled) {
         const getDynamicConfig = (host, protocol) => {
             const baseURL = `${protocol}://${host}`;
-            log.debug('OIDC baseURL', baseURL);
-            return {
-                ...OIDC.config,
-                baseURL,
-            };
+
+            const config = OIDC.baseUrlDynamic
+                ? {
+                      ...OIDC.config,
+                      baseURL,
+                  }
+                : OIDC.config;
+
+            log.debug('OIDC baseURL', config.baseURL);
+
+            return config;
         };
 
         // Apply the authentication middleware using dynamic baseURL configuration
@@ -441,12 +476,12 @@ function startServer() {
 
     // UI buttons configuration
     app.get('/config', (req, res) => {
-        res.status(200).json({ message: config.ui ? config.ui.buttons : false });
+        res.status(200).json({ message: config?.ui?.buttons || false });
     });
 
     // Brand configuration
     app.get('/brand', (req, res) => {
-        res.status(200).json({ message: config.ui ? config.ui.brand : false });
+        res.status(200).json({ message: config?.ui?.brand || false });
     });
 
     // main page
@@ -568,6 +603,7 @@ function startServer() {
             } else {
                 const allowRoomAccess = isAllowedRoomAccess('/join/params', req, hostCfg, roomList, room);
                 const roomAllowedForUser = await isRoomAllowedForUser('Direct Join without token', name, room);
+
                 log.debug('Direct Room Join no JWT --------------->', {
                     allowRoomAccess: allowRoomAccess,
                     roomAllowedForUser: roomAllowedForUser,
@@ -645,7 +681,7 @@ function startServer() {
     });
 
     // not specified correctly the room id
-    app.get('/join/*', (req, res) => {
+    app.get('/join/\\*', (req, res) => {
         res.redirect('/');
     });
 
@@ -666,7 +702,7 @@ function startServer() {
 
     // Get stats endpoint
     app.get('/stats', (req, res) => {
-        const stats = config.stats ? config.stats : defaultStats;
+        const stats = config?.features?.stats || defaultStats;
         // log.debug('Send stats', stats);
         res.send(stats);
     });
@@ -719,12 +755,9 @@ function startServer() {
                 authorizedIps: authHost.getAuthorizedIPs(),
             });
 
-            const isPresenter =
-                config.presenters && config.presenters.join_first
-                    ? true
-                    : config.presenters &&
-                      config.presenters.list &&
-                      config.presenters.list.includes(username).toString();
+            const isPresenter = Boolean(
+                hostCfg?.presenters?.join_first || hostCfg?.presenters?.list?.includes(username),
+            );
 
             const token = encodeToken({ username: username, password: password, presenter: isPresenter });
             const allowedRooms = await getUserAllowedRooms(username, password);
@@ -734,8 +767,7 @@ function startServer() {
 
         if (isPeerValid) {
             log.debug('PEER LOGIN OK', { ip: ip, authorized: true });
-            const isPresenter =
-                config.presenters && config.presenters.list && config.presenters.list.includes(username).toString();
+            const isPresenter = hostCfg?.presenters?.list?.includes(username) || false;
             const token = encodeToken({ username: username, password: password, presenter: isPresenter });
             const allowedRooms = await getUserAllowedRooms(username, password);
             return res.status(200).json({ message: token, allowedRooms: allowedRooms });
@@ -863,13 +895,16 @@ function startServer() {
         res.json({ enabled: rtmpEnabled });
     });
 
-    app.post('/initRTMP', checkRTMPApiSecret, checkMaxStreams, async (req, res) => {
+    app.post('/initRTMP', checkRTMPApiSecret, checkMaxStreams, (req, res) => {
         if (!rtmpCfg || !rtmpCfg.enabled) {
             return res.status(400).send('RTMP server is not enabled or missing the config');
         }
 
-        const domainName = config.ngrok.enabled ? 'localhost' : req.headers.host.split(':')[0];
+        const domainName = config?.integrations?.ngrok?.enabled
+            ? 'localhost'
+            : req.headers.host?.split(':')[0] || 'localhost';
 
+        const rtmpUseNodeMediaServer = rtmpCfg.useNodeMediaServer ?? true;
         const rtmpServer = rtmpCfg.server != '' ? rtmpCfg.server : false;
         const rtmpServerAppName = rtmpCfg.appName != '' ? rtmpCfg.appName : 'live';
         const rtmpStreamKey = rtmpCfg.streamKey != '' ? rtmpCfg.streamKey : uuidv4();
@@ -878,12 +913,13 @@ function startServer() {
         const rtmpServerURL = rtmpServer ? rtmpServer : `rtmp://${domainName}:1935`;
         const rtmpServerPath = '/' + rtmpServerAppName + '/' + rtmpStreamKey;
 
-        const rtmp = rtmpServerSecret
+        const rtmp = rtmpUseNodeMediaServer
             ? generateRTMPUrl(rtmpServerURL, rtmpServerPath, rtmpServerSecret, expirationHours)
             : rtmpServerURL + rtmpServerPath;
 
         log.info('initRTMP', {
             headers: req.headers,
+            rtmpUseNodeMediaServer: rtmpUseNodeMediaServer,
             rtmpServer,
             rtmpServerSecret,
             rtmpServerURL,
@@ -1160,7 +1196,7 @@ function startServer() {
     });
 
     // not match any of page before, so 404 not found
-    app.get('*', function (req, res) {
+    app.use((req, res) => {
         res.sendFile(views.notFound);
     });
 
@@ -1169,57 +1205,92 @@ function startServer() {
     // ####################################################
 
     function getServerConfig(tunnel = false) {
-        return {
-            // General Server Information
-            server_listen: host,
-            server_tunnel: tunnel,
-            trust_proxy: trustProxy,
+        const safeConfig = {
+            // Network & Connectivity
+            network: {
+                server_listen: host,
+                server_tunnel: tunnel,
+                trust_proxy: trustProxy,
+                sfu: {
+                    listenIP: IP,
+                    publicIP: announcedAddress,
+                    numWorker: config.mediasoup?.numWorkers,
+                    rtcMinPort: config.mediasoup?.worker?.rtcMinPort,
+                    rtcMaxPort: config.mediasoup?.worker?.rtcMaxPort,
+                },
+                ngrok_enabled: config.ngrok?.enabled ? config.ngrok : false,
+            },
 
-            // Core Configurations
-            cors_options: corsOptions,
-            jwtCfg: jwtCfg,
-            rest_api: restApi,
+            // Security & Authentication
+            security: {
+                cors: corsOptions,
+                jwtCfg: jwtCfg,
+                host: hostCfg?.protected || hostCfg?.user_auth ? hostCfg : { presenters: hostCfg.presenters },
+                ip_lookup: config.integrations?.IPLookup?.enabled ? config.integrations.IPLookup : false,
+                oidc: OIDC?.enabled ? OIDC : false,
+                middleware: {
+                    IpWhitelist: config?.security?.middleware?.IpWhitelist?.enabled
+                        ? config.security.middleware.IpWhitelist
+                        : false,
+                    //...
+                },
+            },
 
-            // Middleware and UI
-            middleware: config.middleware,
-            configUI: config.ui,
+            // API & Services
+            api: {
+                rest_api: restApi,
+                webhook: webhook.enabled ? webhook : false,
+            },
 
-            // Security, Authorization, and User Management
-            oidc: OIDC.enabled ? OIDC : false,
-            hostProtected: hostCfg.protected || hostCfg.user_auth ? hostCfg : false,
-            ip_lookup_enabled: config.IPLookup?.enabled ? config.IPLookup : false,
-            presenters: config.presenters,
+            // Media Configuration
+            media: {
+                mediasoup: {
+                    listenInfos: config.mediasoup?.webRtcTransport?.listenInfos,
+                    worker_bin: mediasoup?.workerBin,
+                    server_version: mediasoup?.version,
+                    client_version: mediasoupClient?.version,
+                },
+                rtmp: rtmpCfg?.enabled ? rtmpCfg : false,
+                videoAI: config.integrations?.videoAI?.enabled ? config.integrations.videoAI : false,
+                server_recording: config?.media?.recording?.enabled ? config.media.recording : false,
+            },
 
             // Communication Integrations
-            discord_enabled: config.discord?.enabled ? config.discord : false,
-            mattermost_enabled: config.mattermost?.enabled ? config.mattermost : false,
-            slack_enabled: slackEnabled ? config.slack : false,
-            chatGPT_enabled: config.chatGPT?.enabled ? config.chatGPT : false,
+            integrations: {
+                discord: config.integrations?.discord?.enabled ? config.integrations.discord : false,
+                mattermost: config.integrations?.mattermost?.enabled ? config.integrations.mattermost : false,
+                slack: slackEnabled ? config.integrations?.slack : false,
+                chatGPT: config.integrations?.chatGPT?.enabled ? config.integrations.chatGPT : false,
+                email_alerts: config?.integrations?.email?.alert ? config.integrations.email : false,
+            },
 
-            // Media and Video Configurations
-            mediasoup_listenInfos: config.mediasoup.webRtcTransport.listenInfos,
-            mediasoup_worker_bin: mediasoup.workerBin,
-            rtmp_enabled: rtmpCfg.enabled ? rtmpCfg : false,
-            videAI_enabled: config.videoAI.enabled ? config.videoAI : false,
-            serverRec: config?.server?.recording,
+            // UI & Branding
+            ui: {
+                brand: config.ui?.brand,
+                buttons: config.ui?.buttons,
+            },
 
-            // Centralized Logging
-            sentry_enabled: sentryEnabled ? config.sentry : false,
+            // Monitoring & Analytics
+            monitoring: {
+                sentry: sentryEnabled ? config.integrations?.sentry : false,
+                stats: config.features?.stats?.enabled ? config.features.stats : false,
+                system_info: config.system?.info,
+            },
 
-            // Additional Configurations and Features
-            survey_enabled: config.survey?.enabled ? config.survey : false,
-            redirect_enabled: config.redirect?.enabled ? config.redirect : false,
-            stats_enabled: config.stats?.enabled ? config.stats : false,
-            ngrok_enabled: config.ngrok?.enabled ? config.ngrok : false,
-            email_alerts: config.email?.alert ? config.email : false,
-            webhook: webhook,
+            // Features & Functionality
+            features: {
+                survey: config.features?.survey?.enabled ? config.features.survey : false,
+                redirect: config.features?.redirect?.enabled ? config.features.redirect : false,
+            },
 
             // Version Information
-            app_version: packageJson.version,
-            node_version: process.versions.node,
-            mediasoup_server_version: mediasoup.version,
-            mediasoup_client_version: mediasoupClient.version,
+            versions: {
+                app: packageJson?.version,
+                node: process.versions.node,
+            },
         };
+
+        return safeConfig;
     }
 
     // ####################################################
@@ -1228,14 +1299,12 @@ function startServer() {
 
     async function ngrokStart() {
         try {
-            await ngrok.authtoken(config.ngrok.authToken);
-            await ngrok.connect(config.server.listen.port);
-            const api = ngrok.getApi();
-            const list = await api.listTunnels();
-            const tunnel = list.tunnels[0].public_url;
-            log.info('Server config', getServerConfig(tunnel));
+            await ngrok.authtoken(config?.integrations?.ngrok?.authToken);
+            const listener = await ngrok.forward({ addr: config?.server?.listen?.port });
+            const tunnelUrl = listener.url();
+            log.info('Server config', getServerConfig(tunnelUrl));
         } catch (err) {
-            log.error('Ngrok Start error: ', err.body);
+            log.warn('Ngrok Start error', err);
             await ngrok.kill();
             process.exit(1);
         }
@@ -1245,7 +1314,7 @@ function startServer() {
     // START SERVER
     // ####################################################
 
-    server.listen(config.server.listen.port, () => {
+    server.listen(config?.server?.listen?.port || 3010, () => {
         log.log(
             `%c
     
@@ -1260,7 +1329,7 @@ function startServer() {
             'font-family:monospace',
         );
 
-        if (config.ngrok.enabled && config.ngrok.authToken !== '') {
+        if (config?.integrations?.ngrok?.enabled && config?.integrations?.ngrok?.authToken !== '') {
             return ngrokStart();
         }
         log.info('Server config', getServerConfig());
@@ -1386,7 +1455,7 @@ function startServer() {
             const peer_ip = getIpSocket(socket);
 
             // Get peer Geo Location
-            if (config.IPLookup.enabled && peer_ip != '::1') {
+            if (config?.integrations?.IPLookup?.enabled && peer_ip != '::1') {
                 dataObject.peer_geo = await getPeerGeoLocation(peer_ip);
             }
 
@@ -1428,10 +1497,10 @@ function startServer() {
                             return cb('unauthorized');
                         }
 
-                        is_presenter =
+                        const is_presenter =
                             presenter === '1' ||
                             presenter === 'true' ||
-                            (config.presenters.join_first && room.getPeersCount() === 0);
+                            (hostCfg?.presenters?.join_first && room?.getPeersCount() === 0);
 
                         log.debug('[Join] - HOST PROTECTED - USER AUTH check peer', {
                             ip: peer_ip,
@@ -1496,7 +1565,7 @@ function startServer() {
                 is_presenter: is_presenter,
             };
             // first we check if the username match the presenters username
-            if (config.presenters && config.presenters.list && config.presenters.list.includes(peer_name)) {
+            if (hostCfg?.presenters?.list?.includes(peer_name)) {
                 presenters[socket.room_id][socket.id] = presenter;
             } else {
                 // if not match the presenters username, the first one join room is the presenter
@@ -1512,6 +1581,12 @@ function startServer() {
                 : isPeerPresenter(socket.room_id, socket.id, peer_name, peer_uuid);
 
             const peer = room.getPeer(socket.id);
+
+            if (!peer) {
+                return cb({
+                    error: 'Peer does not exist in the room',
+                });
+            }
 
             peer.updatePeerInfo({ type: 'presenter', status: isPresenter });
 
@@ -1575,22 +1650,19 @@ function startServer() {
             }
 
             const { room, peer } = getRoomAndPeer(socket);
+            const peerInfo = getPeerInfo(peer);
 
-            const { peer_name } = peer || 'undefined';
-
-            log.debug('Get RouterRtpCapabilities', peer_name);
+            log.debug('Request: getRouterRtpCapabilities', peerInfo);
 
             try {
-                const getRouterRtpCapabilities = room.getRtpCapabilities();
-
-                //log.debug('Get RouterRtpCapabilities callback', { callback: getRouterRtpCapabilities });
-
-                callback(getRouterRtpCapabilities);
+                const rtpCapabilities = room.getRtpCapabilities();
+                callback(rtpCapabilities);
             } catch (err) {
-                log.error('Get RouterRtpCapabilities error', err);
-                callback({
+                log.warn('Failed to get Router RTP Capabilities', {
                     error: err.message,
+                    peerInfo,
                 });
+                callback({ error: err.message });
             }
         });
 
@@ -1600,19 +1672,15 @@ function startServer() {
             }
 
             const { room, peer } = getRoomAndPeer(socket);
+            const peerInfo = getPeerInfo(peer);
 
-            const { peer_name } = peer || 'undefined';
-
-            log.debug('Create WebRtc transport', peer_name);
+            log.debug('Create WebRTC transport request received', peerInfo);
 
             try {
                 const createWebRtcTransport = await room.createWebRtcTransport(socket.id);
-
-                //log.debug('Create WebRtc transport callback', { callback: createWebRtcTransport });
-
                 callback(createWebRtcTransport);
             } catch (err) {
-                log.error('Create WebRtc Transport error', err);
+                log.warn('Create WebRTC Transport warning', { error: err.message, peerInfo });
                 callback({ error: err.message });
             }
         });
@@ -1623,19 +1691,15 @@ function startServer() {
             }
 
             const { room, peer } = getRoomAndPeer(socket);
+            const peerInfo = getPeerInfo(peer);
 
-            const { peer_name } = peer || 'undefined';
-
-            log.debug('Connect transport', { peer_name: peer_name, transport_id: transport_id });
+            log.debug('Connect transport request received', { transport_id, peerInfo });
 
             try {
                 const connectTransport = await room.connectPeerTransport(socket.id, transport_id, dtlsParameters);
-
-                //log.debug('Connect transport', { callback: connectTransport });
-
                 callback(connectTransport);
             } catch (err) {
-                log.error('Connect transport error', err);
+                log.warn('Connect transport warning', { error: err.message, peerInfo });
                 callback({ error: err.message });
             }
         });
@@ -1651,24 +1715,25 @@ function startServer() {
                 return callback({ error: 'Peer not found' });
             }
 
-            const { peer_name } = peer || 'undefined';
+            const peerInfo = getPeerInfo(peer);
 
-            log.debug('Restart ICE', { peer_name: peer_name, transport_id: transport_id });
+            log.debug('Restart ICE request received', { transport_id: transport_id, peerInfo });
 
             try {
                 const transport = peer.getTransport(transport_id);
 
                 if (!transport) {
-                    throw new Error(`Restart ICE, transport with id "${transport_id}" not found`);
+                    log.warn(`Restart ICE attempt failed. Transport with ID "${transport_id}" not found.`);
+                    return callback({ error: `Transport with id "${transport_id}" not found` });
                 }
 
                 const iceParameters = await transport.restartIce();
 
-                log.debug('Restart ICE callback', { callback: iceParameters });
+                log.debug('ICE Restart successful', { transport_id: transport_id, iceParameters });
 
                 callback(iceParameters);
             } catch (err) {
-                log.error('Restart ICE error', err);
+                log.warn('Restart ICE warning', { error: err.message, peerInfo });
                 callback({ error: err.message });
             }
         });
@@ -1684,11 +1749,11 @@ function startServer() {
                 return callback({ error: 'Peer not found' });
             }
 
-            const { peer_name } = peer || 'undefined';
+            const peerInfo = getPeerInfo(peer);
 
             const data = {
                 room_id: room.id,
-                peer_name: peer_name,
+                peer_name: peerInfo.peer_name,
                 peer_id: socket.id,
                 kind: kind,
                 type: appData.mediaType,
@@ -1709,9 +1774,9 @@ function startServer() {
                 log.debug('Produce', {
                     kind: kind,
                     type: appData.mediaType,
-                    peer_name: peer_name,
-                    peer_id: socket.id,
                     producer_id: producer_id,
+                    peer_id: socket.id,
+                    peerInfo: peerInfo,
                 });
 
                 // add & monitor producer audio level and active speaker
@@ -1722,7 +1787,10 @@ function startServer() {
 
                 callback({ producer_id });
             } catch (err) {
-                log.error('Producer transport error', err);
+                log.warn('Producer transport error', {
+                    error: err,
+                    peerInfo,
+                });
                 callback({ error: err.message });
             }
         });
@@ -1734,21 +1802,32 @@ function startServer() {
 
             const { room, peer } = getRoomAndPeer(socket);
 
-            const { peer_name } = peer || 'undefined';
+            if (!peer) {
+                return callback({ error: 'Peer not found' });
+            }
+
+            const peerInfo = getPeerInfo(peer);
 
             try {
                 const params = await room.consume(socket.id, consumerTransportId, producerId, rtpCapabilities, type);
 
                 log.debug('Consuming', {
-                    peer_name: peer_name,
                     producer_type: type,
                     producer_id: producerId,
                     consumer_id: params ? params.id : undefined,
+                    peerInfo: peerInfo,
                 });
 
                 callback(params);
             } catch (err) {
-                log.error('Consumer transport error', err);
+                log.warn('Consumer transport error', {
+                    error: err,
+                    type,
+                    consumerTransportId,
+                    producerId,
+                    rtpCapabilities,
+                    peerInfo,
+                });
                 callback({ error: err.message });
             }
         });
@@ -1758,15 +1837,24 @@ function startServer() {
 
             const { room, peer } = getRoomAndPeer(socket);
 
-            if (!peer) return;
+            const peerInfo = getPeerInfo(peer);
 
-            peer.updatePeerInfo(data); // peer_info.audio OR video OFF
+            if (peer) peer.updatePeerInfo(data); // peer_info.audio OR video OFF
 
-            room.closeProducer(socket.id, data.producer_id);
+            try {
+                room.closeProducer(socket.id, data.producer_id);
+            } catch (err) {
+                log.warn('Producer Close error', {
+                    error: err.message,
+                    peerInfo,
+                });
+            }
         });
 
         socket.on('pauseProducer', async ({ producer_id, type }, callback) => {
-            if (!roomExists(socket)) return;
+            if (!roomExists(socket)) {
+                return callback({ error: 'Room not found' });
+            }
 
             const peer = getPeer(socket);
 
@@ -1782,21 +1870,27 @@ function startServer() {
                 return callback({ error: `Producer with id "${producer_id}" type "${type}" not found` });
             }
 
+            const peerInfo = getPeerInfo(peer);
+
             try {
                 await producer.pause();
 
-                const { peer_name } = peer || 'undefined';
-
-                log.debug('Producer paused', { peer_name, producer_id, type });
+                log.debug('Producer paused', { producer_id, type, peerInfo });
 
                 callback('successfully');
             } catch (error) {
+                log.warn('Pause producer', {
+                    error: error,
+                    peerInfo,
+                });
                 callback({ error: error.message });
             }
         });
 
         socket.on('resumeProducer', async ({ producer_id, type }, callback) => {
-            if (!roomExists(socket)) return;
+            if (!roomExists(socket)) {
+                return callback({ error: 'Room not found' });
+            }
 
             const peer = getPeer(socket);
 
@@ -1812,21 +1906,27 @@ function startServer() {
                 return callback({ error: `producer with id "${producer_id}" type "${type}" not found` });
             }
 
+            const peerInfo = getPeerInfo(peer);
+
             try {
                 await producer.resume();
 
-                const { peer_name } = peer || 'undefined';
-
-                log.debug('Producer resumed', { peer_name, producer_id, type });
+                log.debug('Producer resumed', { producer_id, type, peerInfo });
 
                 callback('successfully');
             } catch (error) {
+                log.warn('Resume producer', {
+                    error: error,
+                    peerInfo,
+                });
                 callback({ error: error.message });
             }
         });
 
         socket.on('resumeConsumer', async ({ consumer_id, type }, callback) => {
-            if (!roomExists(socket)) return;
+            if (!roomExists(socket)) {
+                return callback({ error: 'Room not found' });
+            }
 
             const peer = getPeer(socket);
 
@@ -1842,15 +1942,19 @@ function startServer() {
                 return callback({ error: `consumer with id "${consumer_id}" type "${type}" not found` });
             }
 
+            const peerInfo = getPeerInfo(peer);
+
             try {
                 await consumer.resume();
 
-                const { peer_name } = peer || 'undefined';
-
-                log.debug('Consumer resumed', { peer_name, consumer_id, type });
+                log.debug('Consumer resumed', { consumer_id, type, peerInfo });
 
                 callback('successfully');
             } catch (error) {
+                log.warn('Resume consumer', {
+                    error: error,
+                    peerInfo,
+                });
                 callback({ error: error.message });
             }
         });
@@ -1871,7 +1975,9 @@ function startServer() {
         });
 
         socket.on('getPeerCounts', async ({}, callback) => {
-            if (!roomExists(socket)) return;
+            if (!roomExists(socket)) {
+                return callback({ error: 'Room not found' });
+            }
 
             const room = getRoom(socket);
 
@@ -1887,11 +1993,13 @@ function startServer() {
 
             const data = checkXSS(dataObject);
 
-            log.debug('cmd', data);
-
             const room = getRoom(socket);
 
             const peer = getPeer(socket);
+
+            if (!room || !peer) return;
+
+            log.debug('cmd', data);
 
             switch (data.type) {
                 case 'privacy':
@@ -2120,7 +2228,9 @@ function startServer() {
         });
 
         socket.on('getRoomInfo', async (_, cb) => {
-            if (!roomExists(socket)) return;
+            if (!roomExists(socket)) {
+                return cb({ error: 'Room not found' });
+            }
 
             const { room, peer } = getRoomAndPeer(socket);
 
@@ -2292,7 +2402,7 @@ function startServer() {
         socket.on('getChatGPT', async ({ time, room, name, prompt, context }, cb) => {
             if (!roomExists(socket)) return;
 
-            if (!config.chatGPT.enabled) return cb({ message: 'AI Assistant seems disabled, try later!' });
+            if (!config?.integrations?.chatGPT?.enabled) return cb({ message: 'AI Assistant seems disabled, try later!' });
 
             // https://platform.openai.com/docs/api-reference/completions/create
             try {
@@ -2358,14 +2468,14 @@ function startServer() {
 
         // https://docs.heygen.com/reference/list-avatars-v2
         socket.on('getAvatarList', async ({}, cb) => {
-            if (!config.videoAI.enabled || !config.videoAI.apiKey)
+            if (!config?.integrations?.videoAI?.enabled || !config?.integrations?.videoAI?.apiKey)
                 return cb({ error: 'Video AI seems disabled, try later!' });
 
             try {
-                const response = await axios.get(`${config.videoAI.basePath}/v2/avatars`, {
+                const response = await axios.get(`${config?.integrations?.videoAI?.basePath}/v2/avatars`, {
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Api-Key': config.videoAI.apiKey,
+                        'X-Api-Key': config?.integrations?.videoAI?.apiKey,
                     },
                 });
 
@@ -2382,14 +2492,14 @@ function startServer() {
 
         // https://docs.heygen.com/reference/list-voices-v2
         socket.on('getVoiceList', async ({}, cb) => {
-            if (!config.videoAI.enabled || !config.videoAI.apiKey)
+            if (!config?.integrations?.videoAI?.enabled || !config?.integrations?.videoAI?.apiKey)
                 return cb({ error: 'Video AI seems disabled, try later!' });
 
             try {
-                const response = await axios.get(`${config.videoAI.basePath}/v2/voices`, {
+                const response = await axios.get(`${config?.integrations?.videoAI?.basePath}/v2/voices`, {
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Api-Key': config.videoAI.apiKey,
+                        'X-Api-Key': config?.integrations?.videoAI?.apiKey,
                     },
                 });
 
@@ -2408,12 +2518,12 @@ function startServer() {
         socket.on('streamingNew', async ({ quality, avatar_id, voice_id }, cb) => {
             if (!roomExists(socket)) return;
 
-            if (!config.videoAI.enabled || !config.videoAI.apiKey)
+            if (!config?.integrations?.videoAI?.enabled || !config?.integrations?.videoAI?.apiKey)
                 return cb({ error: 'Video AI seems disabled, try later!' });
             try {
                 const voice = voice_id ? { voice_id: voice_id } : {};
                 const response = await axios.post(
-                    `${config.videoAI.basePath}/v1/streaming.new`,
+                    `${config?.integrations?.videoAI?.basePath}/v1/streaming.new`,
                     {
                         quality,
                         avatar_id,
@@ -2423,7 +2533,7 @@ function startServer() {
                         headers: {
                             accept: 'application/json',
                             'content-type': 'application/json',
-                            'x-api-key': config.videoAI.apiKey,
+                            'x-api-key': config?.integrations?.videoAI?.apiKey,
                         },
                     },
                 );
@@ -2435,7 +2545,7 @@ function startServer() {
                 cb(data);
             } catch (error) {
                 log.error('streamingNew', error.response.data);
-                cb({ error: error.response?.status === 500 ? 'Internal server error' : error.response.data.message });
+                cb({ error: error.response?.status === 500 ? 'Internal server error' : error.response.data });
             }
         });
 
@@ -2443,17 +2553,17 @@ function startServer() {
         socket.on('streamingStart', async ({ session_id, sdp }, cb) => {
             if (!roomExists(socket)) return;
 
-            if (!config.videoAI.enabled || !config.videoAI.apiKey)
+            if (!config?.integrations?.videoAI?.enabled || !config?.integrations?.videoAI?.apiKey)
                 return cb({ error: 'Video AI seems disabled, try later!' });
 
             try {
                 const response = await axios.post(
-                    `${config.videoAI.basePath}/v1/streaming.start`,
+                    `${config?.integrations?.videoAI?.basePath}/v1/streaming.start`,
                     { session_id, sdp },
                     {
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-Api-Key': config.videoAI.apiKey,
+                            'X-Api-Key': config?.integrations?.videoAI?.apiKey,
                         },
                     },
                 );
@@ -2473,17 +2583,17 @@ function startServer() {
         socket.on('streamingICE', async ({ session_id, candidate }, cb) => {
             if (!roomExists(socket)) return;
 
-            if (!config.videoAI.enabled || !config.videoAI.apiKey)
+            if (!config?.integrations?.videoAI?.enabled || !config?.integrations?.videoAI?.apiKey)
                 return cb({ error: 'Video AI seems disabled, try later!' });
 
             try {
                 const response = await axios.post(
-                    `${config.videoAI.basePath}/v1/streaming.ice`,
+                    `${config?.integrations?.videoAI?.basePath}/v1/streaming.ice`,
                     { session_id, candidate },
                     {
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-Api-Key': config.videoAI.apiKey,
+                            'X-Api-Key': config?.integrations?.videoAI?.apiKey,
                         },
                     },
                 );
@@ -2503,12 +2613,12 @@ function startServer() {
         socket.on('streamingTask', async ({ session_id, text }, cb) => {
             if (!roomExists(socket)) return;
 
-            if (!config.videoAI.enabled || !config.videoAI.apiKey)
+            if (!config?.integrations?.videoAI?.enabled || !config?.integrations?.videoAI?.apiKey)
                 return cb({ error: 'Video AI seems disabled, try later!' });
 
             try {
                 const response = await axios.post(
-                    `${config.videoAI.basePath}/v1/streaming.task`,
+                    `${config?.integrations?.videoAI?.basePath}/v1/streaming.task`,
                     {
                         session_id,
                         text,
@@ -2516,7 +2626,7 @@ function startServer() {
                     {
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-Api-Key': config.videoAI.apiKey,
+                            'X-Api-Key': config?.integrations?.videoAI?.apiKey,
                         },
                     },
                 );
@@ -2536,19 +2646,19 @@ function startServer() {
         socket.on('streamingInterrupt', async ({ session_id, text }, cb) => {
             if (!roomExists(socket)) return;
 
-            if (!config.videoAI.enabled || !config.videoAI.apiKey)
+            if (!config?.integrations?.videoAI?.enabled || !config?.integrations?.videoAI?.apiKey)
                 return cb({ error: 'Video AI seems disabled, try later!' });
 
             try {
                 const response = await axios.post(
-                    `${config.videoAI.basePath}/v1/streaming.interrupt`,
+                    `${config?.integrations?.videoAI?.basePath}/v1/streaming.interrupt`,
                     {
                         session_id,
                     },
                     {
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-Api-Key': config.videoAI.apiKey,
+                            'X-Api-Key': config?.integrations?.videoAI?.apiKey,
                         },
                     },
                 );
@@ -2567,10 +2677,11 @@ function startServer() {
         socket.on('talkToOpenAI', async ({ text, context }, cb) => {
             if (!roomExists(socket)) return;
 
-            if (!config.videoAI.enabled || !config.videoAI.apiKey)
+            if (!config?.integrations?.videoAI?.enabled || !config?.integrations?.videoAI?.apiKey)
                 return cb({ error: 'Video AI seems disabled, try later!' });
+
             try {
-                const systemLimit = config.videoAI.systemLimit;
+                const systemLimit = config?.integrations?.videoAI?.systemLimit;
                 const arr = {
                     messages: [...context, { role: 'system', content: systemLimit }, { role: 'user', content: text }],
                     model: 'gpt-3.5-turbo',
@@ -2595,18 +2706,19 @@ function startServer() {
         socket.on('streamingStop', async ({ session_id }, cb) => {
             if (!roomExists(socket)) return;
 
-            if (!config.videoAI.enabled || !config.videoAI.apiKey)
+            if (!config?.integrations?.videoAI?.enabled || !config?.integrations?.videoAI?.apiKey)
                 return cb({ error: 'Video AI seems disabled, try later!' });
+
             try {
                 const response = await axios.post(
-                    `${config.videoAI.basePath}/v1/streaming.stop`,
+                    `${config?.integrations?.videoAI?.basePath}/v1/streaming.stop`,
                     {
                         session_id,
                     },
                     {
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-Api-Key': config.videoAI.apiKey,
+                            'X-Api-Key': config?.integrations?.videoAI?.apiKey,
                         },
                     },
                 );
@@ -2646,7 +2758,12 @@ function startServer() {
             if (!isPresenter) return cb(false);
 
             const room = getRoom(socket);
-            const host = config.ngrok.enabled ? 'localhost' : socket.handshake.headers.host.split(':')[0];
+
+            const DEFAULT_HOST = 'localhost';
+            const host = config?.ngrok?.enabled
+                ? DEFAULT_HOST
+                : socket?.handshake?.headers?.host?.split(':')[0] || DEFAULT_HOST;
+
             const rtmp = await room.startRTMP(socket.id, room, host, 1935, `../${rtmpDir}/${file}`);
 
             if (rtmp !== false) rtmpFileStreamsCount++;
@@ -2690,7 +2807,12 @@ function startServer() {
             if (!isPresenter) return cb(false);
 
             const room = getRoom(socket);
-            const host = config.ngrok.enabled ? 'localhost' : socket.handshake.headers.host.split(':')[0];
+
+            const DEFAULT_HOST = 'localhost';
+            const host = config?.integrations?.ngrok?.enabled
+                ? DEFAULT_HOST
+                : socket?.handshake?.headers?.host?.split(':')[0] || DEFAULT_HOST;
+
             const rtmp = await room.startRTMPfromURL(socket.id, room, host, 1935, inputVideoURL);
 
             if (rtmp !== false) rtmpUrlStreamsCount++;
@@ -2973,17 +3095,39 @@ function startServer() {
         }
 
         function getRoom(socket) {
-            return roomList.get(socket.room_id) || {};
+            return roomList.get(socket.room_id) || null;
         }
 
         function getPeer(socket) {
             const room = getRoom(socket); // Reusing getRoom to retrieve the room
 
-            return room.getPeer ? room.getPeer(socket.id) || {} : {};
+            return room.getPeer ? room.getPeer(socket.id) || null : null;
         }
 
         function roomExists(socket) {
             return roomList.has(socket.room_id);
+        }
+
+        function getPeerInfo(peer) {
+            if (!peer || !peer.peer_info) {
+                return {
+                    peer_name: peer?.peer_name || 'Unknown',
+                    isDesktop: false,
+                    os: 'Unknown',
+                    browser: 'Unknown',
+                };
+            }
+
+            const { peer_name, peer_info } = peer;
+            const { is_desktop_device, os_name, os_version, browser_name, browser_version } = peer_info;
+
+            return {
+                peer_name: peer_name || 'Unknown',
+                isDesktop: Boolean(is_desktop_device),
+                os: os_name && os_version ? `${os_name} ${os_version}` : os_name || 'Unknown',
+                browser:
+                    browser_name && browser_version ? `${browser_name} ${browser_version}` : browser_name || 'Unknown',
+            };
         }
 
         function isValidFileName(fileName) {
@@ -2992,17 +3136,12 @@ function startServer() {
         }
 
         function isValidHttpURL(input) {
-            const pattern = new RegExp(
-                '^(https?:\\/\\/)?' + // protocol
-                    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-                    'localhost|' + // allow localhost
-                    '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-                    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-                    '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-                    '(\\#[-a-z\\d_]*)?$',
-                'i',
-            ); // fragment locator
-            return pattern.test(input);
+            try {
+                const url = new URL(input);
+                return url.protocol === 'http:' || url.protocol === 'https:';
+            } catch (_) {
+                return false;
+            }
         }
 
         function removeMeData(room, peerName, isPresenter) {
@@ -3075,11 +3214,7 @@ function startServer() {
 
     function isPeerPresenter(room_id, peer_id, peer_name, peer_uuid) {
         try {
-            if (
-                config.presenters &&
-                config.presenters.join_first &&
-                (!presenters[room_id] || !presenters[room_id][peer_id])
-            ) {
+            if (hostCfg?.presenters?.join_first && (!presenters[room_id] || !presenters[room_id][peer_id])) {
                 // Presenter not in the presenters config list, disconnected, or peer_id changed...
                 for (const [existingPeerID, presenter] of Object.entries(presenters[room_id] || {})) {
                     if (presenter.peer_name === peer_name) {
@@ -3095,13 +3230,13 @@ function startServer() {
             }
 
             const isPresenter =
-                (config.presenters &&
-                    config.presenters.join_first &&
-                    typeof presenters[room_id] === 'object' &&
-                    Object.keys(presenters[room_id][peer_id]).length > 1 &&
-                    presenters[room_id][peer_id]['peer_name'] === peer_name &&
-                    presenters[room_id][peer_id]['peer_uuid'] === peer_uuid) ||
-                (config.presenters && config.presenters.list && config.presenters.list.includes(peer_name));
+                // First condition: join_first validation
+                (hostCfg?.presenters?.join_first &&
+                    presenters[room_id]?.[peer_id]?.peer_name === peer_name &&
+                    presenters[room_id]?.[peer_id]?.peer_uuid === peer_uuid &&
+                    Object.keys(presenters[room_id]?.[peer_id] || {}).length > 1) ||
+                // Fallback condition: list check
+                hostCfg?.presenters?.list?.includes(peer_name);
 
             log.debug('isPeerPresenter', {
                 room_id: room_id,
@@ -3300,7 +3435,7 @@ function startServer() {
 
         // Get allowed rooms for user from config.js file
         if (hostCfg.protected && !hostCfg.users_from_db) {
-            const isOIDCEnabled = config.oidc && config.oidc.enabled;
+            const isOIDCEnabled = config?.security?.oidc?.enabled;
 
             const user = hostCfg.users.find((user) => user.displayname === username || user.username === username);
 
@@ -3321,7 +3456,7 @@ function startServer() {
 
         if (!username || !room) return false;
 
-        const isOIDCEnabled = config.oidc && config.oidc.enabled;
+        const isOIDCEnabled = config?.security?.oidc?.enabled;
 
         if (hostCfg.protected || hostCfg.user_auth) {
             // Check if allowed room for user from DB...
@@ -3348,7 +3483,7 @@ function startServer() {
                 }
             }
 
-            const isInPresenterLists = config.presenters.list.includes(username);
+            const isInPresenterLists = hostCfg?.presenters?.list?.includes(username);
 
             if (isInPresenterLists) {
                 log.debug('isRoomAllowedForUser - user in presenters list room allowed', room);
@@ -3380,7 +3515,7 @@ function startServer() {
     }
 
     async function getPeerGeoLocation(ip) {
-        const endpoint = config.IPLookup.getEndpoint(ip);
+        const endpoint = config?.integrations?.IPLookup?.getEndpoint(ip);
         log.debug('Get peer geo', { ip: ip, endpoint: endpoint });
         return axios
             .get(endpoint)
@@ -3425,3 +3560,15 @@ function startServer() {
         }
     }
 }
+
+process.on('SIGINT', () => {
+    log.debug('PROCESS', 'SIGINT');
+    htmlInjector.cleanup();
+    process.exit();
+});
+
+process.on('SIGTERM', () => {
+    log.debug('PROCESS', 'SIGTERM');
+    htmlInjector.cleanup();
+    process.exit();
+});

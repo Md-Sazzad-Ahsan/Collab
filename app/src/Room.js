@@ -34,8 +34,8 @@ module.exports = class Room {
         this._hostOnlyRecording = false;
         // ##########################
         this.recording = {
-            recSyncServerRecording: config?.server?.recording?.enabled || false,
-            recSyncServerEndpoint: config?.server?.recording?.endpoint || '',
+            recSyncServerRecording: config?.media?.recording?.enabled || false,
+            recSyncServerEndpoint: config?.media?.recording?.endpoint || '',
         };
         // ##########################
         this._moderator = {
@@ -49,9 +49,9 @@ module.exports = class Room {
             chat_cant_chatgpt: false,
             media_cant_sharing: false,
         };
-        this.survey = config.survey;
-        this.redirect = config.redirect;
-        this.videoAIEnabled = config?.videoAI?.enabled || false;
+        this.survey = config?.features?.survey;
+        this.redirect = config?.features?.redirect;
+        this.videoAIEnabled = config?.integrations?.videoAI?.enabled || false;
         this.peers = new Map();
         this.bannedPeers = [];
         this.webRtcTransport = config.mediasoup.webRtcTransport;
@@ -62,12 +62,12 @@ module.exports = class Room {
         // RTMP configuration
         this.rtmpFileStreamer = null;
         this.rtmpUrlStreamer = null;
-        this.rtmp = config.server.rtmp || false;
+        this.rtmp = config?.media?.rtmp || false;
 
         // Polls
         this.polls = [];
 
-        this.isHostProtected = config.host.protected;
+        this.isHostProtected = config?.security?.host?.protected || false;
 
         // Share Media
         this.shareMediaData = {};
@@ -271,6 +271,7 @@ module.exports = class Room {
     // ####################################################
 
     getRTMPUrl(host, port) {
+        const rtmpUseNodeMediaServer = this.rtmp.useNodeMediaServer ?? true;
         const rtmpServer = this.rtmp.server != '' ? this.rtmp.server : false;
         const rtmpAppName = this.rtmp.appName != '' ? this.rtmp.appName : 'live';
         const rtmpStreamKey = this.rtmp.streamKey != '' ? this.rtmp.streamKey : uuidv4();
@@ -279,7 +280,7 @@ module.exports = class Room {
         const rtmpServerURL = rtmpServer ? rtmpServer : `rtmp://${host}:${port}`;
         const rtmpServerPath = '/' + rtmpAppName + '/' + rtmpStreamKey;
 
-        const rtmpUrl = rtmpServerSecret
+        const rtmpUrl = rtmpUseNodeMediaServer
             ? this.generateRTMPUrl(rtmpServerURL, rtmpServerPath, rtmpServerSecret, expirationHours)
             : rtmpServerURL + rtmpServerPath;
 
@@ -547,7 +548,7 @@ module.exports = class Room {
             enableUdp: true,
             enableTcp: true,
             preferUdp: true,
-            iceConsentTimeout: 20,
+            iceConsentTimeout: 35,
             initialAvailableOutgoingBitrate,
         };
 
@@ -565,8 +566,7 @@ module.exports = class Room {
             try {
                 await transport.setMaxIncomingBitrate(maxIncomingBitrate);
             } catch (error) {
-                log.error('Failed to set max incoming bitrate', error);
-                throw new Error(`Failed to set max incoming bitrate for transport ${id}`);
+                log.warn('Failed to set max incoming bitrate', error);
             }
         }
 
@@ -597,17 +597,17 @@ module.exports = class Room {
 
         transport.on('icestatechange', (iceState) => {
             if (iceState === 'disconnected' || iceState === 'closed') {
-                log.debug('Transport closed "icestatechange" event', {
+                log.warn('ICE state changed, closing peer', {
                     peer_name: peer_name,
                     transport_id: id,
                     iceState: iceState,
                 });
-                transport.close();
+                this.removePeer(socket_id);
             }
         });
 
         transport.on('sctpstatechange', (sctpState) => {
-            log.debug('Transport "sctpstatechange" event', {
+            log.debug('SCTP state changed', {
                 peer_name: peer_name,
                 transport_id: id,
                 sctpState: sctpState,
@@ -616,12 +616,12 @@ module.exports = class Room {
 
         transport.on('dtlsstatechange', (dtlsState) => {
             if (dtlsState === 'failed' || dtlsState === 'closed') {
-                log.debug('Transport closed "dtlsstatechange" event', {
+                log.warn('DTLS state changed, closing peer', {
                     peer_name: peer_name,
                     transport_id: id,
                     dtlsState: dtlsState,
                 });
-                transport.close();
+                this.removePeer(socket_id);
             }
         });
 
@@ -668,23 +668,26 @@ module.exports = class Room {
 
         const peer = this.getPeer(socket_id);
 
+        const { peer_name, peer_info } = peer;
+
         let peerProducer;
+
         try {
             peerProducer = await peer.createProducer(producerTransportId, rtpParameters, kind, type);
         } catch (error) {
-            log.error(`Error creating producer for peer with socket ID ${socket_id}`, error);
+            log.error(`Error creating producer for peer ${peer_name} with socket ID ${socket_id}`, error);
             throw new Error(
-                `Error creating producer with transport ID ${producerTransportId} type ${type} for peer ${socket_id}`,
+                `Error creating producer for peer ${peer_name} with transport ID ${producerTransportId} type ${type} for peer ${socket_id}`,
             );
         }
 
         if (!peerProducer) {
-            throw new Error(`Failed to create producer with ID ${producerTransportId} for peer ${socket_id}`);
+            throw new Error(
+                `Failed to create producer for peer ${peer_name} with ID ${producerTransportId} for peer ${socket_id}`,
+            );
         }
 
         const { id } = peerProducer;
-
-        const { peer_name, peer_info } = peer;
 
         this.broadCast(socket_id, 'newProducers', [
             {
@@ -700,9 +703,7 @@ module.exports = class Room {
     }
 
     closeProducer(socket_id, producer_id) {
-        if (!this.peers.has(socket_id)) {
-            throw new Error(`Peer with socket ID ${socket_id} not found in the room`);
-        }
+        if (!this.peers.has(socket_id)) return;
 
         const peer = this.getPeer(socket_id);
 
@@ -723,11 +724,15 @@ module.exports = class Room {
             throw new Error(`Peer with socket ID ${socket_id} not found in the room`);
         }
 
-        if (!this.router.canConsume({ producerId, rtpCapabilities })) {
-            throw new Error(`Cannot consume producer with ID ${producerId} type ${type}, router validation failed`);
-        }
-
         const peer = this.getPeer(socket_id);
+
+        const { peer_name } = peer;
+
+        if (!this.router.canConsume({ producerId, rtpCapabilities })) {
+            throw new Error(
+                `Cannot consume producer for peer ${peer_name} with ID ${producerId} type ${type}, router validation failed`,
+            );
+        }
 
         let peerConsumer;
         try {
@@ -735,13 +740,13 @@ module.exports = class Room {
         } catch (error) {
             log.error(`Error creating consumer for peer with socket ID ${socket_id}`, error);
             throw new Error(
-                `Failed to create consumer with transport ID ${consumer_transport_id} and producer ID ${producerId} type ${type} for peer ${socket_id}`,
+                `Failed to create consumer for peer ${peer_name} with transport ID ${consumer_transport_id} and producer ID ${producerId} type ${type} for peer ${socket_id}`,
             );
         }
 
         if (!peerConsumer) {
             throw new Error(
-                `Consumer creation failed for transport ID ${consumer_transport_id} and producer ID ${producerId}`,
+                `Consumer creation failed for peer ${peer_name} with transport ID ${consumer_transport_id} and producer ID ${producerId}`,
             );
         }
 
