@@ -232,6 +232,7 @@ class RoomClient {
         this.room_id = room_id;
         this.peer_id = socket.id;
         this.peer_name = peer_name;
+        this.peer_avatar = peer_info.peer_avatar;
         this.peer_uuid = peer_uuid;
         this.peer_info = peer_info;
 
@@ -266,6 +267,7 @@ class RoomClient {
         this.chatMessageSpamCountToBan = 10;
         this.chatPeerId = 'all';
         this.chatPeerName = 'all';
+        this.chatPeerAvatar = '';
 
         // HeyGen Video AI
         this.videoAIContainer = null;
@@ -626,7 +628,7 @@ class RoomClient {
             let peer_info = this.peers.get(peer).peer_info;
             // console.log('07.1 ----> Remote Peer info', peer_info);
 
-            const { peer_id, peer_name, peer_presenter, peer_video, peer_recording } = peer_info;
+            const { peer_id, peer_name, peer_avatar, peer_presenter, peer_video, peer_recording } = peer_info;
 
             const canSetVideoOff = !isBroadcastingEnabled || (isBroadcastingEnabled && peer_presenter);
 
@@ -639,6 +641,7 @@ class RoomClient {
                 this.handleRecordingAction({
                     peer_id: peer_id,
                     peer_name: peer_name,
+                    peer_avatar: peer_avatar,
                     action: enums.recording.started,
                 });
             }
@@ -737,11 +740,6 @@ class RoomClient {
         this.producerTransport.on('connectionstatechange', async (state) => {
             console.log(`Producer Transport state changed to: ${state}`, { id: this.producerTransport.id });
 
-            if (state === 'disconnected' || state === 'failed') {
-                console.warn('⚠️ Attempting ICE restart...');
-                await this.restartProducerIce();
-            }
-
             switch (state) {
                 case 'connecting':
                     console.log('Producer Transport connecting...');
@@ -751,6 +749,12 @@ class RoomClient {
                     break;
                 case 'disconnected':
                     console.warn('⚠️ Producer Transport disconnected', { id: this.producerTransport.id });
+                    console.warn('⚠️ Producer Attempting ICE restart...');
+                    try {
+                        await this.restartProducerIce();
+                    } catch (error) {
+                        console.error('❌ Producer ICE restart failed', error.message);
+                    }
                     break;
                 case 'failed':
                     console.warn('❌ Producer Transport failed', { id: this.producerTransport.id });
@@ -814,11 +818,6 @@ class RoomClient {
         this.consumerTransport.on('connectionstatechange', async (state) => {
             console.log(`Consumer Transport state changed to: ${state}`, { id: this.consumerTransport.id });
 
-            if (state === 'disconnected' || state === 'failed') {
-                console.warn('⚠️ Attempting ICE restart...');
-                await this.restartConsumerIce();
-            }
-
             switch (state) {
                 case 'connecting':
                     console.log('Consumer Transport connecting...');
@@ -828,6 +827,12 @@ class RoomClient {
                     break;
                 case 'disconnected':
                     console.warn('⚠️ Consumer Transport disconnected', { id: this.consumerTransport.id });
+                    console.warn('⚠️ Consumer Attempting ICE restart...');
+                    try {
+                        await this.restartConsumerIce();
+                    } catch (error) {
+                        console.error('❌ Consumer ICE restart failed', error.message);
+                    }
                     break;
                 case 'failed':
                     console.warn('❌ Consumer Transport failed', { id: this.consumerTransport.id });
@@ -868,7 +873,7 @@ class RoomClient {
         if (!transport || typeof transport !== 'object' || transport.closed) return false;
 
         try {
-            console.warn(`🔄 Restarting ${type} ICE...`, {
+            console.warn(`🔄 ${type} Restarting ICE...`, {
                 id: transport.id,
                 state: transport.connectionState,
             });
@@ -882,31 +887,39 @@ class RoomClient {
                 return false;
             }
 
-            console.info(`🚀 Restarting ${type} transport ICE`, iceParameters);
+            console.info(`🚀 ${type} Restarting transport ICE`, iceParameters);
 
             await transport.restartIce({ iceParameters });
 
             console.info(`✅ Successfully restarted ${type} ICE`);
             return true;
         } catch (error) {
-            console.error(`🔥 Restart ${type} ICE error`, {
+            console.error(`🔥 ${type} Restart ICE error`, {
                 id: transport?.id,
-                error: error.message,
+                error: error,
             });
             return false;
         }
     }
 
-    async restartTransportWithRetry(transport, transportType, retries = 5, initialDelay = 1000) {
+    async restartTransportWithRetry(transport, transportType, maxRetries = 5, initialDelay = 1000) {
         let delay = initialDelay;
 
-        for (let i = 0; i < retries; i++) {
-            const success = i === 4 ? await this.restartTransportIce(transport, transportType) : false;
-            if (success) return true; // Exit if reconnection is successful
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            const reconnected = await this.restartTransportIce(transport, transportType);
 
-            console.warn(`🌀 Reconnection attempt ${i + 1} failed. Retrying in ${delay}ms...`);
-            await new Promise((resolve) => setTimeout(resolve, delay));
-            delay *= 2; // Exponential backoff: 1s -> 2s -> 4s -> 8s -> 16s
+            if (reconnected) {
+                console.info(`✅ ${transportType} reconnected successfully on attempt ${attempt}.`);
+                return true;
+            }
+
+            if (attempt < maxRetries) {
+                console.warn(`🌀 ${transportType} reconnection attempt ${attempt} failed. Retrying in ${delay}ms...`);
+                await new Promise((resolve) => setTimeout(resolve, delay));
+                delay *= 2; // Exponential backoff: 1s -> 2s -> 4s -> 8s -> 16s
+            } else {
+                console.error(`❌ ${transportType} failed to reconnect after ${maxRetries} attempts.`);
+            }
         }
 
         console.error('❌ Failed to reconnect after multiple attempts.');
@@ -3057,7 +3070,7 @@ class RoomClient {
         //console.log('setVideoOff', peer_info);
         let d, vb, i, h, au, sf, sm, sv, gl, ban, ko, p, pm, pb, pv;
 
-        const { peer_id, peer_name, peer_audio, peer_presenter } = peer_info;
+        const { peer_id, peer_name, peer_avatar, peer_audio, peer_presenter } = peer_info;
 
         this.removeVideoOff(peer_id);
 
@@ -3146,7 +3159,7 @@ class RoomClient {
         this.handleDD(d.id, peer_id, !remotePeer);
         this.popupPeerInfo(p.id, peer_info);
         this.checkPeerInfoStatus(peer_info);
-        this.setVideoAvatarImgName(i.id, peer_name);
+        this.setVideoAvatarImgName(i.id, peer_name, peer_avatar);
         this.getId(i.id).style.display = 'block';
 
         if (isParticipantsListOpen) getRoomParticipants();
@@ -3368,9 +3381,11 @@ class RoomClient {
         }
     }
 
-    setVideoAvatarImgName(elemId, peer_name) {
+    setVideoAvatarImgName(elemId, peer_name, peer_avatar = false) {
         let elem = this.getId(elemId);
-        if (cfg.useAvatarSvg) {
+        if (peer_avatar && rc.isImageURL(peer_avatar)) {
+            elem.setAttribute('src', peer_avatar);
+        } else if (cfg.useAvatarSvg) {
             rc.isValidEmail(peer_name)
                 ? elem.setAttribute('src', this.genGravatar(peer_name))
                 : elem.setAttribute('src', this.genAvatarSvg(peer_name, 250));
@@ -4505,7 +4520,7 @@ class RoomClient {
             }
             this.chatCenter();
             this.sound('open');
-            this.showPeerAboutAndMessages(this.chatPeerId, this.chatPeerName);
+            this.showPeerAboutAndMessages(this.chatPeerId, this.chatPeerName, this.chatPeerAvatar);
         }
         isParticipantsListOpen = !isParticipantsListOpen;
         this.isChatOpen = !this.isChatOpen;
@@ -4714,6 +4729,7 @@ class RoomClient {
         const data = {
             room_id: this.room_id,
             peer_name: this.peer_name,
+            peer_avatar: this.peer_avatar,
             peer_id: this.peer_id,
             to_peer_id: 'ChatGPT',
             to_peer_name: 'ChatGPT',
@@ -4723,7 +4739,7 @@ class RoomClient {
         if (isChatGPTOn) {
             console.log('Send message:', data);
             this.socket.emit('message', data);
-            this.setMsgAvatar('left', this.peer_name);
+            this.setMsgAvatar('left', this.peer_name, this.peer_avatar);
             this.appendMessage(
                 'left',
                 this.leftMsgAvatar,
@@ -4769,7 +4785,7 @@ class RoomClient {
                     data.to_peer_name = li.getAttribute('data-to-name');
                     console.log('Send message:', data);
                     this.socket.emit('message', data);
-                    this.setMsgAvatar('left', this.peer_name);
+                    this.setMsgAvatar('left', this.peer_name, this.peer_avatar);
                     this.appendMessage(
                         'left',
                         this.leftMsgAvatar,
@@ -4812,6 +4828,7 @@ class RoomClient {
                 const toPeerName = filterXSS(to_peer_name);
                 let data = {
                     peer_name: this.peer_name,
+                    peer_avatar: this.peer_avatar,
                     peer_id: this.peer_id,
                     to_peer_id: to_peer_id,
                     to_peer_name: toPeerName,
@@ -4819,7 +4836,7 @@ class RoomClient {
                 };
                 console.log('Send message:', data);
                 this.socket.emit('message', data);
-                this.setMsgAvatar('left', this.peer_name);
+                this.setMsgAvatar('left', this.peer_name, this.peer_avatar);
                 this.appendMessage(
                     'left',
                     this.leftMsgAvatar,
@@ -4836,7 +4853,7 @@ class RoomClient {
 
     async showMessage(data) {
         if (!this.isChatOpen && this.showChatOnMessage) await this.toggleChat();
-        this.setMsgAvatar('right', data.peer_name);
+        this.setMsgAvatar('right', data.peer_name, data.peer_avatar);
         this.appendMessage(
             'right',
             this.rightMsgAvatar,
@@ -4872,8 +4889,13 @@ class RoomClient {
         }
     }
 
-    setMsgAvatar(avatar, peerName) {
-        let avatarImg = rc.isValidEmail(peerName) ? this.genGravatar(peerName) : this.genAvatarSvg(peerName, 32);
+    setMsgAvatar(avatar, peerName, peerAvatar = false) {
+        const avatarImg =
+            peerAvatar && this.isImageURL(peerAvatar)
+                ? peerAvatar
+                : this.isValidEmail(peerName)
+                  ? this.genGravatar(peerName)
+                  : this.genAvatarSvg(peerName, 32);
         avatar === 'left' ? (this.leftMsgAvatar = avatarImg) : (this.rightMsgAvatar = avatarImg);
     }
 
@@ -5123,8 +5145,15 @@ class RoomClient {
         }
     }
 
-    isImageURL(input) {
-        return input.match(/\.(jpeg|jpg|gif|png|tiff|bmp)$/) != null;
+    async isImageURL(input) {
+        if (!input) return false;
+        try {
+            const response = await fetch(input, { method: 'HEAD' });
+            const contentType = response.headers.get('content-type');
+            return contentType && contentType.startsWith('image/');
+        } catch {
+            return false;
+        }
     }
 
     getImage(input) {
@@ -6311,12 +6340,13 @@ class RoomClient {
     handleRecordingAction(data) {
         console.log('Handle recording action', data);
 
-        const { peer_name, peer_id, action } = data;
+        const { peer_name, peer_avatar, peer_id, action } = data;
 
         const recAction = {
             side: 'left',
             img: this.leftMsgAvatar,
             peer_name: peer_name,
+            peer_avatar: peer_avatar,
             peer_id: peer_id,
             peer_msg: `🔴 ${action}`,
             to_peer_id: 'all',
@@ -6500,11 +6530,12 @@ class RoomClient {
                 peer_id: peer_id,
                 broadcast: broadcast,
                 peer_name: this.peer_name,
+                peer_avatar: this.peer_avatar,
                 fileName: this.fileToSend.name,
                 fileSize: this.fileToSend.size,
                 fileType: this.fileToSend.type,
             };
-            this.setMsgAvatar('left', this.peer_name);
+            this.setMsgAvatar('left', this.peer_name, this.peer_avatar);
             this.appendMessage(
                 'left',
                 this.leftMsgAvatar,
@@ -6546,7 +6577,7 @@ class RoomClient {
             html.newline +
             ' File size: ' +
             this.bytesToSize(this.incomingFileInfo.fileSize);
-        this.setMsgAvatar('right', this.incomingFileInfo.peer_name);
+        this.setMsgAvatar('right', this.incomingFileInfo.peer_name, this.incomingFileInfo.peer_avatar);
         this.appendMessage(
             'right',
             this.rightMsgAvatar,
@@ -7244,7 +7275,7 @@ class RoomClient {
             case 'chat_cant_chatgpt':
                 this.userLog(
                     'info',
-                    `${icons.moderator} Moderator: everyone can't chat with AI Assitant ${status}`,
+                    `${icons.moderator} Moderator: everyone can't chat with ChatGPT ${status}`,
                     'top-end',
                 );
                 break;
@@ -7294,9 +7325,15 @@ class RoomClient {
                     let lobbyTr = '';
                     let peer_id = data.peer_id;
                     let peer_name = data.peer_name;
-                    let avatarImg = rc.isValidEmail(peer_name)
-                        ? this.genGravatar(peer_name)
-                        : this.genAvatarSvg(peer_name, 32);
+                    let peer_avatar = data.peer_avatar;
+
+                    const avatarImg =
+                        peer_avatar && this.isImageURL(peer_avatar)
+                            ? peer_avatar
+                            : this.isValidEmail(peer_name)
+                              ? this.genGravatar(peer_name)
+                              : this.genAvatarSvg(peer_name, 32);
+
                     let lobbyTb = this.getId('lobbyTb');
                     let lobbyAccept = _PEER.acceptPeer;
                     let lobbyReject = _PEER.ejectPeer;
@@ -8607,11 +8644,12 @@ class RoomClient {
     // SHOW PEER ABOUT AND MESSAGES
     // ####################################################
 
-    showPeerAboutAndMessages(peer_id, peer_name, event = null) {
+    showPeerAboutAndMessages(peer_id, peer_name, peer_avatar = false, event = null) {
         this.hidePeerMessages();
 
         this.chatPeerId = peer_id;
         this.chatPeerName = peer_name;
+        this.chatPeerAvatar = peer_avatar;
 
         const chatAbout = this.getId('chatAbout');
         const participant = this.getId(peer_id);
@@ -8619,7 +8657,7 @@ class RoomClient {
         const chatPrivateMessages = this.getId('chatPrivateMessages');
         const messagePrivateListItems = chatPrivateMessages.getElementsByTagName('li');
         const participantsListItems = participantsList.getElementsByTagName('li');
-        const avatarImg = getParticipantAvatar(peer_name);
+        const avatarImg = getParticipantAvatar(peer_name, peer_avatar);
 
         const generateChatAboutHTML = (imgSrc, title, status = 'online', participants = '') => {
             const isSensitiveChat = !['all', 'ChatGPT'].includes(peer_id) && title.length > 15;
