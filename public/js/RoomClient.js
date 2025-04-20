@@ -1115,14 +1115,14 @@ class RoomClient {
                 lobby: {
                     roomIsLobby: this.RoomIsLobby,
                     roomLobbyAccepted: this.RoomLobbyAccepted,
-                }
+                },
             });
 
             if (this.RoomIsLocked && !this.RoomPasswordValid) {
                 console.log('Access denied: Room is locked and password has not been validated yet', data);
                 return;
             }
-            
+
             if (this.RoomIsLobby && !this.RoomLobbyAccepted) {
                 console.log('Access pending: Lobby mode is active, waiting for approval to join', data);
                 return;

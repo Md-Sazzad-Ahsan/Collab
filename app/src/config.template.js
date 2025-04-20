@@ -33,7 +33,7 @@ const splitChar = ',';
 const PLATFORM = os.platform();
 const IS_DOCKER = fs.existsSync('/.dockerenv');
 const ENVIRONMENT = process.env.NODE_ENV || 'development';
-const PUBLIC_IP = process.env.SFU_PUBLIC_IP || '';
+const ANNOUNCED_IP = process.env.SFU_ANNOUNCED_IP || '';
 const LISTEN_IP = process.env.SFU_LISTEN_IP || '0.0.0.0';
 const IPv4 = getIPv4();
 
@@ -293,10 +293,11 @@ module.exports = {
          * identity providers like Auth0, Okta, Keycloak, etc.
          *
          * Structure:
-         * - enabled            : Master switch for OIDC authentication
-         * - baseURLDynamic     : Whether to dynamically resolve base URL
-         * - peer_name          : Controls which user attributes to enforce/request
-         * - config             : Core OIDC provider settings
+         * - enabled                                : Master switch for OIDC authentication
+         * - baseURLDynamic                         : Whether to dynamically resolve base URL
+         *   allow_rooms_creation_for_auth_users    : Allow all authenticated users via OIDC to create their own rooms
+         * - peer_name                              : Controls which user attributes to enforce/request
+         * - config                                 : Core OIDC provider settings
          *
          * Core Settings:
          * - issuerBaseURL      : Provider's discovery endpoint (e.g., https://your-tenant.auth0.com)
@@ -318,6 +319,10 @@ module.exports = {
         oidc: {
             enabled: process.env.OIDC_ENABLED === 'true',
             baseURLDynamic: false, // Set true if your app has dynamic base URLs
+
+            // ==================================================================================================
+            allow_rooms_creation_for_auth_users: process.env.OIDC_ALLOW_ROOMS_CREATION_FOR_AUTH_USERS === 'true',
+            // ==================================================================================================
 
             // User identity requirements
             peer_name: {
@@ -1397,17 +1402,17 @@ module.exports = {
 /**
  * Get IPv4 Address
  * ----------------
- * - Prioritizes PUBLIC_IP if set
+ * - Prioritizes ANNOUNCED_IP if set
  * - Falls back to local IP detection
  */
 function getIPv4() {
-    if (PUBLIC_IP) return PUBLIC_IP;
+    if (ANNOUNCED_IP) return ANNOUNCED_IP;
 
     switch (ENVIRONMENT) {
         case 'development':
             return IS_DOCKER ? '127.0.0.1' : getLocalIPv4();
         case 'production':
-            return PUBLIC_IP;
+            return ANNOUNCED_IP;
         default:
             return getLocalIPv4();
     }

@@ -129,8 +129,8 @@ if (sentryEnabled) {
 
 // Handle WebHook
 const webhook = {
-    enabled: config?.webhook?.enabled || false,
-    url: config?.webhook?.url || 'http://localhost:8888/webhook-endpoint',
+    enabled: config?.integrations?.webhook?.enabled || false,
+    url: config?.integrations?.webhook?.url || 'http://localhost:8888/webhook-endpoint',
 };
 
 // Discord Bot
@@ -1212,8 +1212,8 @@ function startServer() {
                 server_tunnel: tunnel,
                 trust_proxy: trustProxy,
                 sfu: {
+                    announcedIP: announcedAddress,
                     listenIP: IP,
-                    publicIP: announcedAddress,
                     numWorker: config.mediasoup?.numWorkers,
                     rtcMinPort: config.mediasoup?.worker?.rtcMinPort,
                     rtcMaxPort: config.mediasoup?.worker?.rtcMaxPort,
@@ -3357,26 +3357,29 @@ function startServer() {
         const hostUserAuthenticated = hostCfg.protected && hostCfg.authenticated;
         const roomExist = roomList.has(roomId);
         const roomCount = roomList.size;
+        const OIDCAllowRoomCreationForAuthUsers = OIDC.allow_rooms_creation_for_auth_users;
 
         const allowRoomAccess =
-            (!hostCfg.protected && !OIDC.enabled) || // No host protection and OIDC mode enabled (default)
-            (OIDCUserAuthenticated && roomExist) || // User authenticated via OIDC and room Exist
-            (hostUserAuthenticated && roomExist) || // User authenticated via Login and room Exist
-            ((OIDCUserAuthenticated || hostUserAuthenticated) && roomCount === 0) || // User authenticated joins the first room
-            roomExist; // User Or Guest join an existing Room
+            (!hostCfg.protected && !OIDC.enabled) || // Default open access
+            (OIDCUserAuthenticated && roomExist) || // OIDC auth & room exists
+            (hostUserAuthenticated && roomExist) || // Host login auth & room exists
+            ((OIDCUserAuthenticated || hostUserAuthenticated) && roomCount === 0) || // First room creation
+            (OIDCUserAuthenticated && OIDCAllowRoomCreationForAuthUsers) || // Allow room creation if authenticated via OIDC
+            roomExist; // Fallback: allow anyone if room exists
 
         log.debug(logMessage, {
-            OIDCUserAuthenticated: OIDCUserAuthenticated,
-            hostUserAuthenticated: hostUserAuthenticated,
-            roomExist: roomExist,
-            roomCount: roomCount,
+            OIDCUserAuthenticated,
+            hostUserAuthenticated,
+            roomExist,
+            roomCount,
             extraInfo: {
-                roomId: roomId,
+                roomId,
                 OIDCUserEnabled: OIDC.enabled,
                 hostProtected: hostCfg.protected,
                 hostAuthenticated: hostCfg.authenticated,
+                OIDCAllowRoomCreationForAuthUsers,
             },
-            allowRoomAccess: allowRoomAccess,
+            allowRoomAccess,
         });
 
         return allowRoomAccess;
