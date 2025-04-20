@@ -1383,7 +1383,7 @@ function copyRoomURL() {
     tmpInput.setSelectionRange(0, 99999); // For mobile devices
     navigator.clipboard.writeText(tmpInput.value);
     document.body.removeChild(tmpInput);
-    userLog('info', 'Meeting URL copied to clipboard 👍', 'top-end');
+    userLog('info', 'Meeting URL copied to clipboard', 'top-end');
 }
 
 function copyToClipboard(txt, showTxt = true) {
