@@ -654,7 +654,7 @@ class RoomClient {
             }
             // Host protected enabled in the server side
             if (room.hostProtected) {
-                RoomURL = window.location.origin + '/join/?room=' + room_id;
+                RoomURL = window.location.origin + '/join/' + room_id;
             }
 
             // Share Media Data on Join

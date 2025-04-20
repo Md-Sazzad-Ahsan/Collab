@@ -1470,10 +1470,19 @@ function startServer() {
 
             const room = getRoom(socket);
 
-            const { peer_name, peer_id, peer_uuid, peer_token, os_name, os_version, browser_name, browser_version } =
-                data.peer_info;
+            const {
+                peer_name,
+                peer_id,
+                peer_uuid,
+                peer_token,
+                peer_presenter,
+                os_name,
+                os_version,
+                browser_name,
+                browser_version,
+            } = data.peer_info;
 
-            let is_presenter = true;
+            let is_presenter = peer_presenter;
 
             // User Auth required or detect token, we check if peer valid
             if (hostCfg.user_auth || peer_token) {
@@ -1497,7 +1506,7 @@ function startServer() {
                             return cb('unauthorized');
                         }
 
-                        const is_presenter =
+                        is_presenter =
                             presenter === '1' ||
                             presenter === 'true' ||
                             (hostCfg?.presenters?.join_first && room?.getPeersCount() === 0);
@@ -1588,13 +1597,15 @@ function startServer() {
                 });
             }
 
-            peer.updatePeerInfo({ type: 'presenter', status: isPresenter });
+            log.info('[Join] - Is Peer presenter', {
 
-            log.info('[Join] - Is presenter', {
+
                 roomId: socket.room_id,
                 peer_name: peer_name,
                 peer_presenter: isPresenter,
             });
+
+            peer.updatePeerInfo({ type: 'presenter', status: isPresenter });
 
             if (room.isLocked() && !isPresenter) {
                 log.debug('The user was rejected because the room is locked, and they are not a presenter');
@@ -1635,6 +1646,7 @@ function startServer() {
             // handle WebHook
             if (webhook.enabled) {
                 // Trigger a POST request when a user joins
+                data.timestamp = log.getDateTime(false);
                 axios
                     .post(webhook.url, { event: 'join', data })
                     .then((response) => log.debug('Join event tracked:', response.data))
@@ -1658,7 +1670,7 @@ function startServer() {
                 const rtpCapabilities = room.getRtpCapabilities();
                 callback(rtpCapabilities);
             } catch (err) {
-                log.warn('Failed to get Router RTP Capabilities', {
+                log.error('Failed to get Router RTP Capabilities', {
                     error: err.message,
                     peerInfo,
                 });
@@ -3011,8 +3023,7 @@ function startServer() {
                 const data = {
                     timestamp: log.getDateTime(false),
                     room_id: socket.room_id,
-                    peer_name: peer_name,
-                    presenter: isPresenter,
+                    peer: peer?.peer_info,
                     reason: reason,
                 };
                 // Trigger a POST request when a user disconnects
@@ -3069,13 +3080,12 @@ function startServer() {
                 const data = {
                     timestamp: log.getDateTime(false),
                     room_id: socket.room_id,
-                    peer_name: peer_name,
-                    presenter: isPresenter,
+                    peer: peer?.peer_info,
                 };
                 // Trigger a POST request when a user exits
                 axios
                     .post(webhook.url, { event: 'exit', data })
-                    .then((response) => log.debug('ExitROom event tracked:', response.data))
+                    .then((response) => log.debug('ExitRoom event tracked:', response.data))
                     .catch((error) => log.error('Error tracking exitRoom event:', error.message));
             }
 
@@ -3236,9 +3246,11 @@ function startServer() {
                     presenters[room_id]?.[peer_id]?.peer_uuid === peer_uuid &&
                     Object.keys(presenters[room_id]?.[peer_id] || {}).length > 1) ||
                 // Fallback condition: list check
-                hostCfg?.presenters?.list?.includes(peer_name);
+                hostCfg?.presenters?.list?.includes(peer_name) ||
+                // Or from presenters list eg. token...
+                presenters[room_id]?.[peer_id]?.is_presenter;
 
-            log.debug('isPeerPresenter', {
+            log.debug('isPeerPresenter Check', {
                 room_id: room_id,
                 peer_id: peer_id,
                 peer_name: peer_name,
@@ -3248,7 +3260,7 @@ function startServer() {
 
             return isPresenter;
         } catch (err) {
-            log.error('isPeerPresenter', err);
+            log.error('isPeerPresenter Check error', err);
             return false;
         }
     }
@@ -3453,68 +3465,84 @@ function startServer() {
     }
 
     async function isRoomAllowedForUser(message, username, room) {
-        const logData = { message, username, room };
-
-        log.debug('isRoomAllowedForUser ------>', logData);
-
-        if (!username || !room) return false;
-
-        const isOIDCEnabled = config?.security?.oidc?.enabled;
-
-        if (hostCfg.protected || hostCfg.user_auth) {
-            // Check if allowed room for user from DB...
-            if (hostCfg.users_from_db && hostCfg.users_api_room_allowed) {
-                try {
-                    // Using either email or username, as the username can also be an email here.
-                    const response = await axios.post(
-                        hostCfg.users_api_room_allowed,
-                        {
-                            email: username,
-                            username: username,
-                            room: room,
-                            api_secret_key: hostCfg.users_api_secret_key,
-                        },
-                        {
-                            timeout: 5000, // Timeout set to 5 seconds (5000 milliseconds)
-                        },
-                    );
-                    log.debug('AXIOS isRoomAllowedForUser', { room: room, allowed: true });
-                    return response.data && response.data.message === true;
-                } catch (error) {
-                    log.error('AXIOS isRoomAllowedForUser error', error.message);
-                    return false;
-                }
-            }
-
-            const isInPresenterLists = hostCfg?.presenters?.list?.includes(username);
-
-            if (isInPresenterLists) {
-                log.debug('isRoomAllowedForUser - user in presenters list room allowed', room);
-                return true;
-            }
-
-            const user = hostCfg.users.find((user) => user.displayname === username || user.username === username);
-
-            if (!isOIDCEnabled && !user) {
-                log.debug('isRoomAllowedForUser - user not found', username);
-                return false;
-            }
-
-            if (
-                isOIDCEnabled ||
-                !user.allowed_rooms ||
-                (user.allowed_rooms && (user.allowed_rooms.includes('*') || user.allowed_rooms.includes(room)))
-            ) {
-                log.debug('isRoomAllowedForUser - user room allowed', room);
-                return true;
-            }
-
-            log.debug('isRoomAllowedForUser - user room not allowed', room);
+        if (!username || !room) {
+            log.debug('isRoomAllowedForUser - missing username or room', { username, room });
             return false;
         }
 
-        log.debug('isRoomAllowedForUser - No host protected or user_auth enabled, user room allowed', room);
-        return true;
+        const logData = { message, username, room };
+        log.debug('isRoomAllowedForUser ------>', logData);
+
+        try {
+            const isOIDCEnabled = config?.security?.oidc?.enabled;
+
+            if (hostCfg.protected || hostCfg.user_auth) {
+                // Check API first if configured
+                if (hostCfg.users_from_db && hostCfg.users_api_room_allowed) {
+                    try {
+                        const response = await axios.post(
+                            hostCfg.users_api_room_allowed,
+                            {
+                                email: username,
+                                username: username,
+                                room: room,
+                                api_secret_key: hostCfg.users_api_secret_key,
+                            },
+                            {
+                                timeout: hostCfg.users_api_timeout || 5000,
+                            },
+                        );
+
+                        if (response.data && (response.data === true || response.data.message === true)) {
+                            log.debug('AXIOS isRoomAllowedForUser - allowed access', { room, username });
+                            return true;
+                        }
+                        log.debug('AXIOS isRoomAllowedForUser - denied access', { room, username });
+                        return false;
+                    } catch (error) {
+                        log.error('AXIOS isRoomAllowedForUser - check failed', error.message);
+                        // Fail closed (deny access) if API check fails
+                        return false;
+                    }
+                }
+
+                // Check presenter list
+                if (hostCfg?.presenters?.list?.includes(username)) {
+                    log.debug('isRoomAllowedForUser - User in presenters list', { username });
+                    return true;
+                }
+
+                // Find user in configuration
+                const user = hostCfg.users?.find((u) => u.displayname === username || u.username === username);
+
+                // For OIDC, we might want additional checks even when enabled
+                if (isOIDCEnabled) {
+                    log.debug('isRoomAllowedForUser - OIDC enabled, allowing access', { username });
+                    return true;
+                }
+
+                if (!user) {
+                    log.debug('isRoomAllowedForUser - User not found in configuration', { username });
+                    return false;
+                }
+
+                // Check allowed rooms
+                const isAllowed =
+                    !user.allowed_rooms || user.allowed_rooms.includes('*') || user.allowed_rooms.includes(room);
+
+                log.debug(
+                    isAllowed ? 'isRoomAllowedForUser - Room allowed' : 'isRoomAllowedForUser - Room not allowed',
+                    { room, username },
+                );
+                return isAllowed;
+            }
+
+            log.debug('isRoomAllowedForUser - No protection enabled, allowing access', { room, username });
+            return true;
+        } catch (error) {
+            log.error('isRoomAllowedForUser - Unexpected error', error);
+            return false; // Fail closed
+        }
     }
 
     async function getPeerGeoLocation(ip) {
