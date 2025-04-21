@@ -1428,7 +1428,7 @@ class RoomClient {
             video: peer_video,
             screen: peer_screen,
             notify: 0,
-            isPresenter: isPresenter,
+            isPresenter: isPresenter || false,
         };
         if (peer_token) queryParams.token = peer_token;
         const url = `${baseUrl}?${Object.entries(queryParams)
