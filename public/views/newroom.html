@@ -1,90 +1,88 @@
-<!DOCTYPE html>
-<html class="h-full">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title id="title">Collab - Create your Room name and start the new call.</title>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,600" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+        <link id="icon" rel="shortcut icon" href="../images/collab.png" />
+        <link id="appleTouchIcon" rel="apple-touch-icon" href="../images/collab.png" />
+        <title id="title">Collab, Free Video Calls, Messaging and Screen Sharing</title>
+        <!-- Js scripts -->
+        <script defer src="../js/Brand.js"></script>
+        <script async src="../js/Umami.js"></script>
     
-    <!-- Styles -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,600" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
-    <link id="icon" rel="shortcut icon" href="../images/collab.png" />
-    <link id="appleTouchIcon" rel="apple-touch-icon" href="../images/collab.png" />
+        <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.8"></script>
+        <script src="https://unpkg.com/animejs@3.0.1/lib/anime.min.js"></script>
+        <script src="https://unpkg.com/scrollreveal@4.0.0/dist/scrollreveal.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/xss/dist/xss.min.js"></script>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
     
-    <!-- Scripts -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="../js/Brand.js"></script>
-    <script async src="../js/Umami.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.8"></script>
-    <script src="https://unpkg.com/animejs@3.0.1/lib/anime.min.js"></script>
-    <script src="https://unpkg.com/scrollreveal@4.0.0/dist/scrollreveal.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xss/dist/xss.min.js"></script>
-</head>
-
-<body class="h-full flex flex-col bg-gray-50 font-sans antialiased text-gray-900">
-
-    <!-- Page Content Wrapper -->
-    <div class="flex-1">
-        <div class="max-w-screen-xl mx-auto px-4">
-            <!-- Header -->
-            <header class="py-8 flex justify-between items-center">
-                <div class="flex items-center space-x-6">
-                    <a href="/" class="text-3xl font-semibold text-blue-600 hover:text-blue-700 transition duration-300">Collab</a>
-                </div>
-            </header>
-
-            <!-- Hero Section -->
-            <section class="flex flex-col lg:flex-row items-center py-20 space-y-12 lg:space-y-0">
-                <div class="lg:w-2/3 text-center lg:text-left space-y-6 animate__animated animate__fadeInLeft">
-                    <h1 class="text-5xl font-extrabold text-gray-900 leading-tight">
-                        Create or Join a <span class="text-blue-600">Room</span>
-                    </h1>
-                    <p class="text-lg text-gray-600 max-w-xl mx-auto lg:mx-0">
-                        Name your room and jump into the conversation — instant, secure, and private.
-                    </p>
-
-                    <div class="flex flex-col sm:flex-row items-center sm:space-x-4">
-                        <input
-                            id="roomName"
-                            class="w-full sm:w-auto px-5 py-3 text-lg border border-gray-300 rounded-xl shadow focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                            type="text"
-                            placeholder="Enter room name"
-                            maxlength="36"
-                        />
-                        <button
-                            id="genRoomButton"
-                            title="Generate Room Name"
-                            class="mt-3 sm:mt-0 w-12 h-12 flex items-center justify-center rounded-xl bg-white border border-gray-300 hover:bg-blue-100 text-blue-600 transition duration-200 shadow-sm"
-                        >
-                            <i class="fas fa-random text-lg"></i>
-                        </button>
-                        <button
-                            id="joinRoomButton"
-                            class="mt-3 sm:mt-0 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl text-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
-                        >
-                            Join Room
-                        </button>
+    <body class="min-h-screen flex flex-col bg-gray-50 font-sans antialiased text-gray-900 sm:px-10">
+    
+        <div class="flex-1">
+            <div class="max-w-screen-xl mx-auto px-4">
+        
+                <!-- Header with Text Logo -->
+                <header class="py-8 flex justify-between items-center">
+                    <div class="flex items-center space-x-6">
+                        <!-- Text-based Logo -->
+                        <a href="/" class="text-3xl font-semibold text-blue-600 hover:text-blue-700 transition duration-300">Collab</a>
                     </div>
-
-                    <div id="lastRoomContainer" class="text-sm text-gray-600 mt-3 hidden">
-                        <span class="font-medium">Your recent room:</span>
-                        <a id="lastRoom" href="#" class="text-blue-600 hover:underline font-medium"></a>
+                </header>
+        
+                <!-- Hero Section -->
+                <section class="flex flex-col lg:flex-row items-start py-20 space-y-12 lg:space-y-0">
+                    <div class="lg:w-2/3 text-left space-y-6 animate__animated animate__fadeInLeft">
+                        <h1 class="text-5xl font-extrabold text-gray-900 leading-tight">
+                            Collab
+                            <span class="text-blue-600">— Seamless</span> Video Communication
+                        </h1>
+                        <p class="text-lg text-gray-600 max-w-xl lg:mx-0 text-left">
+                            No downloads. No delays. Just click, name a room, and connect.
+                        </p>
+                        <div class="flex flex-col sm:flex-row items-start sm:space-x-4 space-y-4 sm:space-y-0">
+                            <input
+                                id="roomName"
+                                class="w-full sm:w-auto px-5 py-3 text-lg border border-gray-300 rounded-xl shadow focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                                type="text"
+                                placeholder="Enter room name"
+                                maxlength="36"
+                            />
+                            <button
+                                id="genRoomButton"
+                                title="Generate Room Name"
+                                class="mt-3 sm:mt-0 w-12 h-12 flex items-center justify-center rounded-xl bg-white border border-gray-300 hover:bg-blue-100 text-blue-600 transition duration-200 shadow-sm"
+                            >
+                                <i class="fas fa-random text-lg"></i>
+                            </button>
+                            <button
+                                id="joinRoomButton"
+                                class="mt-3 sm:mt-0 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl text-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
+                            >
+                                Join Room
+                            </button>
+                        </div>
+                    
+                        <div id="lastRoomContainer" class="text-sm text-gray-600 mt-3 hidden">
+                            <span class="font-medium">Your recent room:</span>
+                            <a id="lastRoom" href="#" class="text-blue-600 hover:underline font-medium"></a>
+                        </div>
                     </div>
-                </div>
-            </section>
+                </section>  
+
+
+            </div>
         </div>
-    </div>
 
-    <!-- Footer -->
-    <footer class="py-8 bg-gray-50 text-center text-black">
-        <p>&copy; 2025 Collab - All rights reserved</p>
-    </footer>
+        <!-- Footer -->
+        <footer class="py-8 bg-gray-50 text-center text-black mt-auto">
+            <p>&copy; 2025 Collab - All rights reserved</p>
+        </footer>
 
-    <!-- Additional Scripts -->
-    <script defer src="../js/Utils.js"></script>
-    <script defer src="../js/Common.js"></script>
-    <script defer src="../js/Landing.js"></script>
-    <script async defer src="https://buttons.github.io/buttons.js"></script>
-</body>
+         <!-- Additional Scripts -->
+        <script defer src="../js/Utils.js"></script>
+        <script defer src="../js/Common.js"></script>
+        <script defer src="../js/Landing.js"></script>
+        <script async defer src="https://buttons.github.io/buttons.js"></script>
+    </body>
 </html>
