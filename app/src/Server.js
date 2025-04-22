@@ -34,6 +34,10 @@ const Discord = require('./Discord');
 const Mattermost = require('./Mattermost');
 const restrictAccessByIP = require('./middleware/IpWhitelist');
 const packageJson = require('../../package.json');
+const session = require('express-session');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const User = require('./models/User'); // Import the User model
 
 // Incoming Stream to RTPM
 const { v4: uuidv4 } = require('uuid');
@@ -198,6 +202,7 @@ const views = {
     about: path.join(__dirname, '../../', 'public/views/about.html'),
     landing: path.join(__dirname, '../../', 'public/views/landing.html'),
     login: path.join(__dirname, '../../', 'public/views/login.html'),
+    signup: path.join(__dirname, '../../', 'public/views/signup.html'),
     newRoom: path.join(__dirname, '../../', 'public/views/newroom.html'),
     notFound: path.join(__dirname, '../../', 'public/views/404.html'),
     permission: path.join(__dirname, '../../', 'public/views/permission.html'),
@@ -207,7 +212,7 @@ const views = {
     whoAreYou: path.join(__dirname, '../../', 'public/views/whoAreYou.html'),
 };
 
-const filesPath = [views.landing, views.newRoom, views.room, views.login];
+const filesPath = [views.landing, views.newRoom, views.room, views.login, views.signup];
 
 const htmlInjector = new HtmlInjector(filesPath, config.ui.brand);
 
@@ -396,6 +401,71 @@ function startServer() {
         next();
     });
 
+    app.use(bodyParser.urlencoded({ extended: true }));
+    app.use(bodyParser.json());
+    app.use(session({
+        secret: 'collab-secret',
+        resave: false,
+        saveUninitialized: false,
+        cookie: { maxAge: 24 * 60 * 60 * 1000 } // 1 day session expiration
+    }));
+    app.use((req, res, next) => {
+        res.set('Cache-Control', 'no-store');
+        next();
+    });
+    
+
+    // Connect to MongoDB
+    mongoose.connect('mongodb://localhost:27017/collab', {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+    }).then(() => {
+        console.log('Connected to MongoDB');
+    }).catch((err) => {
+        console.log('Error connecting to MongoDB:', err);
+    });
+
+    app.get('/', (req, res) => {
+        if (req.session && req.session.user) {
+            htmlInjector.injectHtml(views.landing, res);
+        } else {
+            res.redirect('/signup');
+        }
+    });
+    
+    // Signup page
+    app.get('/signup', (req, res) => {
+        if (req.session && req.session.user) {
+            return res.redirect('/');
+        }
+        htmlInjector.injectHtml(views.signup, res);
+    });
+    
+    // Handle signup POST
+    app.post('/signup', async (req, res) => {
+        const { name, email, password } = req.body;
+    
+        if (!name || !email || !password) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+    
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+    
+        const newUser = new User({ name, email, password });
+        await newUser.save();
+    
+        req.session.user = {
+            id: newUser._id,
+            name: newUser.name,
+            email: newUser.email
+        };
+    
+        res.redirect('/');
+    });
+
     // OpenID Connect - Dynamically set baseURL based on incoming host and protocol
     if (OIDC.enabled) {
         const getDynamicConfig = (host, protocol) => {
@@ -485,21 +555,21 @@ function startServer() {
     });
 
     // main page
-    app.get('/', OIDCAuth, (req, res) => {
-        //log.debug('/ - hostCfg ----->', hostCfg);
-        if (!OIDC.enabled && hostCfg.protected) {
-            const ip = getIP(req);
-            if (allowedIP(ip)) {
-                htmlInjector.injectHtml(views.landing, res);
-                hostCfg.authenticated = true;
-            } else {
-                hostCfg.authenticated = false;
-                res.redirect('/login');
-            }
-        } else {
-            return htmlInjector.injectHtml(views.landing, res);
-        }
-    });
+    // app.get('/', OIDCAuth, (req, res) => {
+    //     //log.debug('/ - hostCfg ----->', hostCfg);
+    //     if (!OIDC.enabled && hostCfg.protected) {
+    //         const ip = getIP(req);
+    //         if (allowedIP(ip)) {
+    //             htmlInjector.injectHtml(views.landing, res);
+    //             hostCfg.authenticated = true;
+    //         } else {
+    //             hostCfg.authenticated = false;
+    //             res.redirect('/login');
+    //         }
+    //     } else {
+    //         return htmlInjector.injectHtml(views.landing, res);
+    //     }
+    // });
 
     // Route to display rtmp streamer
     app.get('/rtmp', OIDCAuth, (req, res) => {
@@ -543,14 +613,9 @@ function startServer() {
     // Handle Direct join room with params
     app.get('/join/', async (req, res) => {
         if (Object.keys(req.query).length > 0) {
-            //log.debug('/join/params - hostCfg ----->', hostCfg);
-
             log.debug('Direct Join', req.query);
 
-            // http://localhost:3010/join?room=test&roomPassword=0&name=collabsfu&audio=1&video=1&screen=0&hide=0&notify=1&duration=00:00:30
-            // http://localhost:3010/join?room=test&roomPassword=0&name=collabsfu&audio=1&video=1&screen=0&hide=0&notify=0&token=token
-
-            const { room, roomPassword, name, audio, video, screen, hide, notify, duration, token, isPresenter } =
+            const { room, roomPassword, name, audio, video, screen, hide, notify, duration } =
                 checkXSS(req.query);
 
             if (!room) {
@@ -564,77 +629,15 @@ function startServer() {
                 });
             }
 
-            let peerUsername = '';
-            let peerPassword = '';
-            let isPeerValid = false;
-            let isPeerPresenter = false;
+            // Check if the user is authenticated via session
+            const isAuthenticated = req.session && req.session.user;
 
-            if (token) {
-                try {
-                    const validToken = await isValidToken(token);
-
-                    if (!validToken) {
-                        return res.status(401).json({ message: 'Invalid Token' });
-                    }
-
-                    const { username, password, presenter } = checkXSS(decodeToken(token));
-
-                    peerUsername = username;
-                    peerPassword = password;
-                    isPeerValid = await isAuthPeer(username, password);
-                    isPeerPresenter = presenter === '1' || presenter === 'true';
-
-                    if (isPeerPresenter && !hostCfg.users_from_db) {
-                        const roomAllowedForUser = await isRoomAllowedForUser('Direct Join with token', username, room);
-                        if (!roomAllowedForUser) {
-                            log.warn('Direct Room Join for this User is Unauthorized', {
-                                username: username,
-                                room: room,
-                            });
-                            return res.redirect('/whoAreYou/' + room);
-                        }
-                    }
-                } catch (err) {
-                    log.error('Direct Join JWT error', { error: err.message, token: token });
-                    return hostCfg.protected || hostCfg.user_auth
-                        ? htmlInjector.injectHtml(views.login, res)
-                        : htmlInjector.injectHtml(views.landing, res);
-                }
-            } else {
-                const allowRoomAccess = isAllowedRoomAccess('/join/params', req, hostCfg, roomList, room);
-                const roomAllowedForUser = await isRoomAllowedForUser('Direct Join without token', name, room);
-
-                log.debug('Direct Room Join no JWT --------------->', {
-                    allowRoomAccess: allowRoomAccess,
-                    roomAllowedForUser: roomAllowedForUser,
-                });
-
-                if (!allowRoomAccess && !roomAllowedForUser) {
-                    log.warn('Direct Room Join Unauthorized', room);
-                    return OIDC.enabled ? res.redirect('/') : res.redirect('/whoAreYou/' + room);
-                }
-            }
-
-            const OIDCUserAuthenticated = OIDC.enabled && req.oidc.isAuthenticated();
-
-            if (
-                (hostCfg.protected && isPeerValid && isPeerPresenter && !hostCfg.authenticated) ||
-                OIDCUserAuthenticated
-            ) {
-                const ip = getIP(req);
-                hostCfg.authenticated = true;
-                authHost.setAuthorizedIP(ip, true);
-                log.debug('Direct Join user auth as host done', {
-                    ip: ip,
-                    username: peerUsername,
-                    password: peerPassword,
-                });
-            }
-
-            if (room && (hostCfg.authenticated || isPeerValid)) {
+            if (isAuthenticated) {
+                // If user is authenticated, proceed to join the room
                 return htmlInjector.injectHtml(views.room, res);
             } else {
-                return htmlInjector.injectHtml(views.login, res);
+                // If user is not authenticated, redirect to login
+                return htmlInjector.injectHtml(views.signup, res);
             }
         }
 
@@ -643,7 +646,6 @@ function startServer() {
 
     // join room by id
     app.get('/join/:roomId', async (req, res) => {
-        //
         const { roomId } = checkXSS(req.params);
 
         if (!roomId) {
@@ -656,28 +658,17 @@ function startServer() {
             return res.redirect('/');
         }
 
-        const allowRoomAccess = isAllowedRoomAccess('/join/:roomId', req, hostCfg, roomList, roomId);
+        // Check if the user is authenticated via session
+        const isAuthenticated = req.session && req.session.user;
 
-        if (allowRoomAccess) {
-            // 1. Protect room access with database check
-            if (!OIDC.enabled && hostCfg.protected && hostCfg.users_from_db) {
-                const roomExists = await roomExistsForUser(roomId);
-                log.debug('/join/:roomId exists from API endpoint', roomExists);
-                return roomExists ? htmlInjector.injectHtml(views.room, res) : res.redirect('/login');
-            }
-            // 2. Protect room access with configuration check
-            if (!OIDC.enabled && hostCfg.protected && !hostCfg.users_from_db) {
-                const roomExists = hostCfg.users.some(
-                    (user) => user.allowed_rooms && (user.allowed_rooms.includes(roomId) || roomList.has(roomId)),
-                );
-                log.debug('/join/:roomId exists from config allowed rooms', roomExists);
-                return roomExists ? htmlInjector.injectHtml(views.room, res) : res.redirect('/whoAreYou/' + roomId);
-            }
-            htmlInjector.injectHtml(views.room, res);
-        } else {
-            // Who are you?
-            !OIDC.enabled && hostCfg.protected ? res.redirect('/whoAreYou/' + roomId) : res.redirect('/');
+        if (!isAuthenticated) {
+            // If not authenticated, redirect to signup or login
+            log.warn('/join/:roomId: user not logged in');
+            return res.redirect('/signup');  // Or redirect to login page
         }
+
+        // If user is authenticated, allow them to join the room
+        htmlInjector.injectHtml(views.room, res);
     });
 
     // not specified correctly the room id
@@ -3369,23 +3360,24 @@ function startServer() {
     }
 
     function isAllowedRoomAccess(logMessage, req, hostCfg, roomList, roomId) {
+        // Check if user is authenticated using the session
+        const isUserAuthenticated = req.session && req.session.user;  // Check session for user authentication
+    
         const OIDCUserAuthenticated = OIDC.enabled && req.oidc.isAuthenticated();
         const hostUserAuthenticated = hostCfg.protected && hostCfg.authenticated;
         const roomExist = roomList.has(roomId);
         const roomCount = roomList.size;
         const OIDCAllowRoomCreationForAuthUsers = OIDC.allow_rooms_creation_for_auth_users;
-
+    
+        // Modify the condition to allow room creation only for authenticated users
         const allowRoomAccess =
-            (!hostCfg.protected && !OIDC.enabled) || // Default open access
-            (OIDCUserAuthenticated && roomExist) || // OIDC auth & room exists
-            (hostUserAuthenticated && roomExist) || // Host login auth & room exists
-            ((OIDCUserAuthenticated || hostUserAuthenticated) && roomCount === 0) || // First room creation
-            (OIDCUserAuthenticated && OIDCAllowRoomCreationForAuthUsers) || // Allow room creation if authenticated via OIDC
-            roomExist; // Fallback: allow anyone if room exists
-
+            (isUserAuthenticated && roomExist) || // Allow access if user is authenticated in session
+            (isUserAuthenticated && roomCount === 0); // Allow room creation if user is authenticated
+    
         log.debug(logMessage, {
             OIDCUserAuthenticated,
             hostUserAuthenticated,
+            isUserAuthenticated,
             roomExist,
             roomCount,
             extraInfo: {
@@ -3397,9 +3389,9 @@ function startServer() {
             },
             allowRoomAccess,
         });
-
+    
         return allowRoomAccess;
-    }
+    }    
 
     async function roomExistsForUser(room) {
         if (hostCfg.protected || hostCfg.user_auth) {
