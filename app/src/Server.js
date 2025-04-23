@@ -38,6 +38,7 @@ const session = require('express-session');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const User = require('./models/User'); // Import the User model
+const bcrypt = require('bcryptjs');
 
 // Incoming Stream to RTPM
 const { v4: uuidv4 } = require('uuid');
@@ -413,17 +414,6 @@ function startServer() {
         res.set('Cache-Control', 'no-store');
         next();
     });
-    
-
-    // Connect to MongoDB
-    mongoose.connect('mongodb://localhost:27017/collab', {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-    }).then(() => {
-        console.log('Connected to MongoDB');
-    }).catch((err) => {
-        console.log('Error connecting to MongoDB:', err);
-    });
 
     app.get('/', (req, res) => {
         if (req.session && req.session.user) {
@@ -525,23 +515,20 @@ function startServer() {
 
     // Logout Route
     app.get('/logout', (req, res) => {
-        if (OIDC.enabled) {
-            //
-            if (hostCfg.protected) {
-                const ip = authHost.getIP(req);
-                if (authHost.isAuthorizedIP(ip)) {
-                    authHost.deleteIP(ip);
-                }
-                hostCfg.authenticated = false;
-                //
-                log.debug('[OIDC] ------> Logout', {
-                    authenticated: hostCfg.authenticated,
-                    authorizedIPs: authHost.getAuthorizedIPs(),
-                });
+        // Custom logout logic
+
+        // Destroy the session
+        req.session.destroy((err) => {
+            if (err) {
+                log.error('Error destroying session: ', err);
+                return res.status(500).send('Logout failed');
             }
-            req.logout(); // Logout user
-        }
-        res.redirect('/'); // Redirect to the home page after logout
+            // Log the logout event
+            log.debug('[Logout] ------> Logout successful');
+
+            // Redirect the user to the home page after successful logout
+            res.redirect('/login');
+        });
     });
 
     // UI buttons configuration
@@ -580,21 +567,15 @@ function startServer() {
     });
 
     // set new room name and join
-    app.get('/newroom', OIDCAuth, (req, res) => {
-        //log.info('/newroom - hostCfg ----->', hostCfg);
-
-        if (!OIDC.enabled && hostCfg.protected) {
-            const ip = getIP(req);
-            if (allowedIP(ip)) {
-                res.redirect('/');
-                hostCfg.authenticated = true;
-            } else {
-                hostCfg.authenticated = false;
-                res.redirect('/login');
-            }
-        } else {
-            htmlInjector.injectHtml(views.newRoom, res);
+    app.get('/newroom', (req, res) => {
+        // Check if user is authenticated using the session
+        if (!req.session || !req.session.user) {
+            // If the user is not authenticated, redirect to login page
+            return res.redirect('/login');
         }
+    
+        // If the user is authenticated, inject the new room HTML view
+        htmlInjector.injectHtml(views.newRoom, res);
     });
 
     // Check if room active (exists)
@@ -705,10 +686,11 @@ function startServer() {
 
     // handle login if user_auth enabled
     app.get('/login', (req, res) => {
-        if (hostCfg.protected || hostCfg.user_auth) {
-            return htmlInjector.injectHtml(views.login, res);
+        if (req.session && req.session.user) {
+            res.redirect('/');
+        } else {
+            res.sendFile(views.login);
         }
-        res.redirect('/');
     });
 
     // handle logged on host protected
@@ -729,43 +711,33 @@ function startServer() {
 
     // handle login on host protected
     app.post('/login', async (req, res) => {
-        const ip = getIP(req);
-        log.debug(`Request login to host from: ${ip}`, req.body);
+        try {
+            const { email, password } = checkXSS(req.body);
 
-        const { username, password } = checkXSS(req.body);
+            // Find user by email instead of username
+            const user = await User.findOne({ email });
+            if (!user) {
+                return res.status(401).render('login', { error: 'Invalid email or password' });
+            }
 
-        const isPeerValid = await isAuthPeer(username, password);
+            const isPasswordCorrect = await bcrypt.compare(password, user.password);
+            if (!isPasswordCorrect) {
+                return res.status(401).render('login', { error: 'Invalid email or password' });
+            }
 
-        if (hostCfg.protected && isPeerValid && !hostCfg.authenticated) {
-            const ip = getIP(req);
-            hostCfg.authenticated = true;
-            authHost.setAuthorizedIP(ip, true);
-            log.debug('HOST LOGIN OK', {
-                ip: ip,
-                authorized: authHost.isAuthorizedIP(ip),
-                authorizedIps: authHost.getAuthorizedIPs(),
-            });
+            // Save to session
+            req.session.user = {
+                id: user._id,
+                email: user.email,  // store email instead of username
+            };
 
-            const isPresenter = Boolean(
-                hostCfg?.presenters?.join_first || hostCfg?.presenters?.list?.includes(username),
-            );
-
-            const token = encodeToken({ username: username, password: password, presenter: isPresenter });
-            const allowedRooms = await getUserAllowedRooms(username, password);
-
-            return res.status(200).json({ message: token, allowedRooms: allowedRooms });
+            // Redirect to landing
+            return res.redirect('/landing');
+        } catch (error) {
+            console.error('Login error:', error);
+            return res.status(500).render('login', { error: 'Internal server error' });
         }
-
-        if (isPeerValid) {
-            log.debug('PEER LOGIN OK', { ip: ip, authorized: true });
-            const isPresenter = hostCfg?.presenters?.list?.includes(username) || false;
-            const token = encodeToken({ username: username, password: password, presenter: isPresenter });
-            const allowedRooms = await getUserAllowedRooms(username, password);
-            return res.status(200).json({ message: token, allowedRooms: allowedRooms });
-        } else {
-            return res.status(401).json({ message: 'unauthorized' });
-        }
-    });
+});   
 
     // ####################################################
     // KEEP RECORDING ON SERVER DIR
@@ -972,18 +944,18 @@ function startServer() {
         res.sendStatus(200);
     });
 
-    // Join roomId redirect to /join?room=roomId
-    app.get('/:roomId', (req, res) => {
-        const { roomId } = checkXSS(req.params);
+    // // Join roomId redirect to /join?room=roomId
+    // app.get('/:roomId', (req, res) => {
+    //     const { roomId } = checkXSS(req.params);
 
-        if (!roomId) {
-            log.warn('/:roomId empty', roomId);
-            return res.redirect('/');
-        }
+    //     if (!roomId) {
+    //         log.warn('/:roomId empty', roomId);
+    //         return res.redirect('/');
+    //     }
 
-        log.debug('Detected roomId --> redirect to /join?room=roomId');
-        res.redirect(`/join/${roomId}`);
-    });
+    //     log.debug('Detected roomId --> redirect to /join?room=roomId');
+    //     res.redirect(`/join/${roomId}`);
+    // });
 
     // ####################################################
     // REST API
@@ -1227,6 +1199,13 @@ function startServer() {
                 },
             },
 
+             // MongoDB Configuration (no authentication if not needed)
+            mongodb: {
+                uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/collab',
+                host: process.env.MONGODB_HOST || 'localhost',
+                port: process.env.MONGODB_PORT || '27017',
+            },
+
             // API & Services
             api: {
                 rest_api: restApi,
@@ -1325,6 +1304,24 @@ function startServer() {
         }
         log.info('Server config', getServerConfig());
     });
+
+    // ####################################################
+    // CONNECT MONGODB
+    // ####################################################
+    mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/collab')
+    .then(() => {
+        log.log(
+            `%cConnected to MongoDB`,
+            'font-family:monospace; color: green; font-size: 16px'
+        );
+    })
+    .catch((err) => {
+        log.log(
+            `%cError connecting to MongoDB: ${err}`,
+            'font-family:monospace; color: red; font-size: 16px'
+        );
+    });
+
 
     // ####################################################
     // WORKERS

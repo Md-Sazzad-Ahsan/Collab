@@ -1,170 +1,65 @@
-<!doctype html>
-<html lang="en" class="no-js">
-    <head>
-        <!-- Title and Icon -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | Collab</title>
 
-        <title id="title">Collab - Host Protected login required.</title>
-        <link id="icon" rel="shortcut icon" href="../images/collab.png" />
-        <link id="appleTouchIcon" rel="apple-touch-icon" href="../images/collab.png" />
+    <!-- Fonts & CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,600" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+    <link rel="icon" href="../images/collab.png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
 
-        <!-- Meta Information -->
+<body class="min-h-screen flex flex-col bg-gray-50 font-sans text-gray-900 sm:px-10">
 
-        <meta charset="utf-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Main content wrapper with flex-grow to push footer down -->
+    <div class="flex-1 flex flex-col justify-center items-center px-4 py-12">
+        
+        <!-- Logo -->
+        <a href="/" class="text-3xl font-bold text-blue-600 mb-10 hover:text-blue-700 transition animate__animated animate__fadeInDown">
+            Collab
+        </a>
 
-        <meta
-            id="description"
-            name="description"
-            content="Collab powered by WebRTC and mediasoup, Real-time Simple Secure Fast video calls, messaging and screen sharing capabilities in the browser."
-        />
-        <meta
-            id="keywords"
-            name="keywords"
-            content="webrtc, collab, mediasoup, mediasoup-client, self hosted, voip, sip, real-time communications, chat, messaging, meet, webrtc stun, webrtc turn, webrtc p2p, webrtc sfu, video meeting, video chat, video conference, multi video chat, multi video conference, peer to peer, p2p, sfu, rtc, alternative to, zoom, microsoft teams, google meet, jitsi, meeting"
-        />
+        <!-- Login Card -->
+        <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 space-y-6 animate__animated animate__fadeInUp">
+            <h2 class="text-2xl font-semibold text-center text-gray-800">Login to your account</h2>
 
-        <!-- https://ogp.me -->
-
-        <meta property="og:type" content="{{OG_TYPE}}" />
-        <meta property="og:site_name" content="{{OG_SITE_NAME}}" />
-        <meta property="og:title" content="{{OG_TITLE}}" />
-        <meta property="og:description" content="{{OG_DESCRIPTION}}" />
-        <meta property="og:image" content="{{OG_IMAGE}}" />
-        <meta property="og:url" content="{{OG_URL}}" />
-
-        <!-- StyleSheet -->
-
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,600" />
-        <link rel="stylesheet" type="text/css" href="../css/landing.css" />
-        <link rel="stylesheet" type="text/css" href="../css/Translate.css" />
-
-        <!-- Bootstrap 5 -->
-
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-            crossorigin="anonymous"
-        />
-        <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-            crossorigin="anonymous"
-        ></script>
-
-        <!-- https://animate.style 4 using for swal fadeIn-Out -->
-
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-
-        <!-- Js scripts -->
-
-        <script async src="../js/Umami.js"></script>
-        <script defer src="../js/Brand.js"></script>
-        <script async src="../js/Translate.js"></script>
-
-        <script src="https://unpkg.com/animejs@3.0.1/lib/anime.min.js"></script>
-        <script src="https://unpkg.com/scrollreveal@4.0.0/dist/scrollreveal.min.js"></script>
-
-        <!-- xss -->
-        <script src="https://cdn.jsdelivr.net/npm/xss/dist/xss.min.js"></script>
-
-        <!-- axios -->
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
-        <!-- sweetalert -->
-        <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.8"></script>
-    </head>
-    <body class="is-boxed has-animations">
-        <div id="google_translate_element"></div>
-
-        <div class="body-wrap">
-            <header class="site-header">
-                <div class="container">
-                    <div class="site-header-inner">
-                        <div class="brand header-brand"></div>
-                    </div>
+            <form id="loginForm" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="email" placeholder="email" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none" required />
                 </div>
-            </header>
 
-            <main>
-                <section class="hero">
-                    <div class="container">
-                        <div class="hero-inner">
-                            <div class="hero-copy">
-                                <div id="loginForm">
-                                    <br />
-                                    <div class="mb-12">
-                                        <input
-                                            id="username"
-                                            class="form-input"
-                                            type="name"
-                                            placeholder="Username"
-                                            maxlength="36"
-                                            required
-                                        />
-                                    </div>
-                                    <br />
-                                    <div class="mb-12">
-                                        <input
-                                            id="password"
-                                            class="form-input"
-                                            type="password"
-                                            placeholder="Password"
-                                            maxlength="36"
-                                            required
-                                        />
-                                    </div>
-                                    <div class="mt-24 mb-32">
-                                        <button id="loginButton" class="button button-primary button-block">
-                                            Login
-                                        </button>
-                                    </div>
-                                </div>
-                                <!-- Join Room Section hidden -->
-                                <div id="joinRoomForm" class="mb-12">
-                                    <div class="hero-copy reveal-from-bottom">
-                                        <h1 class="hero-title mt-0">
-                                            Pick name. <br />
-                                            Share URL. <br />
-                                            Start conference.
-                                        </h1>
-                                    </div>
-                                    <br />
-                                    <div class="mb-12">
-                                        <select id="selectRoom" class="form-select text-light bg-dark"></select>
-                                    </div>
-                                    <div class="mt-24 mb-32">
-                                        <button id="joinSelectRoomButton" class="button button-primary button-block">
-                                            JOIN ROOM
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="hero-figure anime-element">
-                                <svg class="placeholder" width="528" height="396" viewBox="0 0 528 396">
-                                    <rect width="528" height="396" style="fill: transparent" />
-                                </svg>
-                                <div class="hero-figure-box hero-figure-box-01" data-rotation="45deg"></div>
-                                <div class="hero-figure-box hero-figure-box-02" data-rotation="-45deg"></div>
-                                <div class="hero-figure-box hero-figure-box-03" data-rotation="0deg"></div>
-                                <div class="hero-figure-box hero-figure-box-04" data-rotation="-135deg"></div>
-                                <div class="hero-figure-box hero-figure-box-05"></div>
-                                <div class="hero-figure-box hero-figure-box-06"></div>
-                                <div class="hero-figure-box hero-figure-box-07"></div>
-                                <div class="hero-figure-box hero-figure-box-08" data-rotation="-22deg"></div>
-                                <div class="hero-figure-box hero-figure-box-09" data-rotation="-52deg"></div>
-                                <div class="hero-figure-box hero-figure-box-10" data-rotation="-50deg"></div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </main>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="password" placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none" required />
+                </div>
+
+                <button type="submit" id="loginButton" class="w-full py-3 px-4 bg-blue-600 text-white rounded-xl font-semibold text-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg">
+                    Log In
+                </button>
+            </form>
+
+            <p class="text-sm text-center text-gray-600">
+                Don't have an account?
+                <a href="/signup" class="text-blue-600 hover:underline">Sign up</a>
+            </p>
         </div>
 
-        <script defer src="../js/Utils.js"></script>
-        <script defer src="../js/Login.js"></script>
-        <script defer src="../js/Landing.js"></script>
-        <script async defer src="https://buttons.github.io/buttons.js"></script>
-    </body>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-8 bg-gray-50 text-center text-black mt-auto">
+        <p>&copy; 2025 Collab - All rights reserved</p>
+    </footer>
+
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- Custom JS -->
+    <script defer src="../js/login.js"></script>
+</body>
 </html>
