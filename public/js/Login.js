@@ -38,11 +38,8 @@ function login() {
         window.location.href = '/'; // Redirect on success (e.g., homepage or dashboard)
     })
     .catch((error) => {
-        console.error('Login error:', error);
-        const msg = error?.response?.data?.message || 'Login failed. Please try again.';
+        const msg = error?.response?.data?.message || 'Wrong credentials. Please try again.';
         popup('warning', msg);
-
-        // Optional: Clear password field
         passwordInput.value = '';
     });
 }

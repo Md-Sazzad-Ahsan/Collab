@@ -1,11 +1,36 @@
 <html>
     <head>
+        <!-- Title and Icon -->
+
+        <title id="title">Collab, Free Video Calls, Messaging and Screen Sharing</title>
+        <link id="icon" rel="shortcut icon" href="../images/collab.png" />
+        <link id="appleTouchIcon" rel="apple-touch-icon" href="../images/collab.png" />
+
+        <!-- Meta Information -->
+        <meta
+            id="description"
+            name="description"
+            content="Collab powered by WebRTC and mediasoup, Real-time Simple Secure Fast video calls, messaging and screen sharing capabilities in the browser."
+        />
+        <meta
+            id="keywords"
+            name="keywords"
+            content="webrtc, collab, mediasoup, mediasoup-client, self hosted, voip, sip, real-time communications, chat, messaging, meet, webrtc stun, webrtc turn, webrtc p2p, webrtc sfu, video meeting, video chat, video conference, multi video chat, multi video conference, peer to peer, p2p, sfu, rtc, alternative to, zoom, microsoft teams, google meet, jitsi, meeting"
+        />
+
+        <!-- https://ogp.me -->
+
+        <meta property="og:type" content="{{OG_TYPE}}" />
+        <meta property="og:site_name" content="{{OG_SITE_NAME}}" />
+        <meta property="og:title" content="{{OG_TITLE}}" />
+        <meta property="og:description" content="{{OG_DESCRIPTION}}" />
+        <meta property="og:image" content="{{OG_IMAGE}}" />
+        <meta property="og:url" content="{{OG_URL}}" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,600" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
         <link id="icon" rel="shortcut icon" href="../images/collab.png" />
         <link id="appleTouchIcon" rel="apple-touch-icon" href="../images/collab.png" />
-        <title id="title">Collab, Free Video Calls, Messaging and Screen Sharing</title>
         <!-- Js scripts -->
         <script defer src="../js/Brand.js"></script>
         <script async src="../js/Umami.js"></script>
@@ -43,7 +68,7 @@
         
                 <!-- Hero Section -->
                 <section class="flex flex-col lg:flex-row items-start py-20 space-y-12 lg:space-y-0">
-                    <div class="lg:w-2/3 text-left space-y-6 animate__animated animate__fadeInLeft">
+                    <div class="lg:w-2/3 text-left space-y-6 animate__animated animate__fadeIn">
                         <h1 class="text-5xl font-extrabold text-gray-900 leading-tight">
                             Collab
                             <span class="text-blue-600">— Seamless</span> Video Communication
@@ -88,7 +113,7 @@
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 px-12">
                         <!-- Feature 1 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center hover:shadow-xl transform transition hover:scale-105">
+                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
                             <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center">
                                 <img src="../svg/screenSharing.svg" alt="Screen Sharing" class="w-16 h-16 object-contain invert grayscale" />
                             </div>
@@ -96,7 +121,7 @@
                             <p class="text-gray-600">Share your screen, applications, and documents with ease.</p>
                         </div>
                         <!-- Feature 2 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center hover:shadow-xl transform transition hover:scale-105">
+                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
                             <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center">
                                 <img src="../svg/webcamStreaming.svg" alt="WebCam Streaming" class="w-16 h-16 object-contain invert grayscale" />
                             </div>
@@ -104,7 +129,7 @@
                             <p class="text-gray-600">Stream in up to 8K resolution with ultra-clear quality.</p>
                         </div>
                         <!-- Feature 3 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center hover:shadow-xl transform transition hover:scale-105">
+                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
                             <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center">
                                 <img src="../svg/audioStreaming.svg" alt="Audio Streaming" class="w-16 h-16 object-contain invert grayscale" />
                             </div>
@@ -112,7 +137,7 @@
                             <p class="text-gray-600">Crystal clear audio with noise cancellation and echo suppression.</p>
                         </div>
                         <!-- Feature 4 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center hover:shadow-xl transform transition hover:scale-105">
+                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
                             <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center">
                                 <img src="../svg/webcamChat.svg" alt="Chat" class="w-16 h-16 object-contain invert grayscale" />
                             </div>
@@ -120,7 +145,7 @@
                             <p class="text-gray-600">Chat with others in meeting with integrated emoji picker to show your feeling.</p>
                         </div>
                         <!-- Feature 5 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center hover:shadow-xl transform transition hover:scale-105">
+                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
                             <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center">
                                 <img src="../svg/webcamChat.svg" alt="Recording meeting" class="w-16 h-16 object-contain invert grayscale" />
                             </div>
@@ -128,7 +153,7 @@
                             <p class="text-gray-600">Record your Screen, Video, and Audio on Your browser Blob. Save it for using it in the future or to share with others.</p>
                         </div>
                         <!-- Feature 6 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center hover:shadow-xl transform transition hover:scale-105">
+                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
                             <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center">
                                 <img src="../svg/chatgpt.svg" alt="AI Integration" class="w-16 h-16 object-contain invert grayscale" />
                             </div>
@@ -136,7 +161,7 @@
                             <p class="text-gray-600">Access real-time AI-powered assistance during meetings.</p>
                         </div>
                         <!-- Feature 7 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center hover:shadow-xl transform transition hover:scale-105">
+                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
                             <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center">
                                 <img src="../svg/aiAvatars.svg" alt="AI Avatars" class="w-16 h-16 object-contain invert grayscale" />
                             </div>
@@ -144,7 +169,7 @@
                             <p class="text-gray-600">Engage with dynamic AI avatars for immersive meetings.</p>
                         </div>
                         <!-- Feature 8 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center hover:shadow-xl transform transition hover:scale-105">
+                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
                             <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center">
                                 <img src="../svg/virtualBackgrounds.svg" alt="Virtual Backgrounds" class="w-16 h-16 object-contain invert grayscale" />
                             </div>
@@ -152,7 +177,7 @@
                             <p class="text-gray-600">Enhance your privacy and professionalism with custom backgrounds.</p>
                         </div>
                         <!-- Feature 9 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center hover:shadow-xl transform transition hover:scale-105">
+                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
                             <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center">
                                 <img src="../svg/collaborativeWhitboard.svg" alt="Collaborative Whiteboard" class="w-16 h-16 object-contain invert grayscale" />
                             </div>
@@ -160,7 +185,7 @@
                             <p class="text-gray-600">Draw, annotate, and collaborate on a shared virtual whiteboard.</p>
                         </div>
                         <!-- Feature 10 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center hover:shadow-xl transform transition hover:scale-105">
+                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
                             <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center">
                                 <img src="../svg/fileSharing.svg" alt="File Sharing" class="w-16 h-16 object-contain invert grayscale" />
                             </div>
@@ -168,7 +193,7 @@
                             <p class="text-gray-600">Easily share documents, images, and other files with meeting participants.</p>
                         </div>
                         <!-- Feature 11 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center hover:shadow-xl transform transition hover:scale-105">
+                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
                             <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center">
                                 <img src="../svg/broadcasting.svg" alt="Broadcasting" class="w-16 h-16 object-contain invert grayscale" />
                             </div>
@@ -176,7 +201,7 @@
                             <p class="text-gray-600">Broadcasting involves the distribution of audio or video content to a wide audience and supports RTMP streaming.</p>
                         </div>
                         <!-- Feature 12 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center hover:shadow-xl transform transition hover:scale-105">
+                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
                             <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center">
                                 <img src="../svg/rtmp.svg" alt="RTMP Streaming" class="w-16 h-16 object-contain invert grayscale" />
                             </div>
@@ -184,7 +209,7 @@
                             <p class="text-gray-600">Stream live meetings and events to external platforms via RTMP.</p>
                         </div>
                         <!-- Feature 13 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center hover:shadow-xl transform transition hover:scale-105">
+                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
                             <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center">
                                 <img src="../svg/recordingMeeting.svg" alt="Recording Meetings" class="w-16 h-16 object-contain invert grayscale" />
                             </div>
@@ -192,7 +217,7 @@
                             <p class="text-gray-600">Record your meetings to revisit and share them later.</p>
                         </div>
                         <!-- Feature 14 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center hover:shadow-xl transform transition hover:scale-105">
+                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
                             <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center">
                                 <img src="../svg/totalPrivacy.svg" alt="Privacy" class="w-16 h-16 object-contain invert grayscale" />
                             </div>
@@ -200,7 +225,7 @@
                             <p class="text-gray-600">Enjoy end-to-end encryption with no data collection or sharing.</p>
                         </div>
                         <!-- Feature 15 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center hover:shadow-xl transform transition hover:scale-105">
+                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
                             <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center">
                                 <img src="../svg/maximumSecurity.svg" alt="Security" class="w-16 h-16 object-contain invert grayscale" />
                             </div>
@@ -214,8 +239,25 @@
         </div>
 
         <!-- Footer -->
-        <footer class="py-8 bg-gray-50 text-center text-black mt-auto">
-            <p>&copy; 2025 Collab - All rights reserved</p>
+        <footer id="footer" class="site-footer text-gray-700 py-8 max-w-screen-xl mt-auto mx-auto w-full">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="footer-copyright text-center md:text-left">
+                        <p class="text-sm">&copy; 2025 MiroTalk SFU, all rights reserved</p>
+                    </div>
+                    <ul class="footer-links list-reset flex flex-col md:flex-row mt-4 md:mt-0">
+                        <li class="mr-6">
+                            <a href="/about" class="text-gray-600 hover:text-blue-600">About</a>
+                        </li>
+                        <li class="mr-6">
+                            <a href="/privacy" class="text-gray-600 hover:text-blue-600">Privacy Policy</a>
+                        </li>
+                        <li>
+                            <a href="/api/v1/docs/" class="text-gray-600 hover:text-blue-600">Rest API</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </footer>
 
         <!-- Scripts -->

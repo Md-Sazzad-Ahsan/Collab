@@ -713,31 +713,33 @@ function startServer() {
     app.post('/login', async (req, res) => {
         try {
             const { email, password } = checkXSS(req.body);
-
+    
             // Find user by email instead of username
             const user = await User.findOne({ email });
             if (!user) {
-                return res.status(401).render('login', { error: 'Invalid email or password' });
+                log.debug(`User with this email: ${email} doesn't exist`);
+                return res.status(401).sendFile(views.login);  // Use sendFile for static HTML files
             }
-
+    
             const isPasswordCorrect = await bcrypt.compare(password, user.password);
             if (!isPasswordCorrect) {
-                return res.status(401).render('login', { error: 'Invalid email or password' });
+                log.debug(`Wrong Credential`);
+                return res.status(401).sendFile(views.login);  // Use sendFile for static HTML files
             }
-
+    
             // Save to session
             req.session.user = {
                 id: user._id,
                 email: user.email,  // store email instead of username
             };
-
+    
             // Redirect to landing
             return res.redirect('/landing');
         } catch (error) {
             console.error('Login error:', error);
-            return res.status(500).render('login', { error: 'Internal server error' });
+            return res.status(500).sendFile(views.login);  // Use sendFile for static HTML files
         }
-});   
+    });    
 
     // ####################################################
     // KEEP RECORDING ON SERVER DIR
