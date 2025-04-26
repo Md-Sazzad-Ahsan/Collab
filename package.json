@@ -57,9 +57,12 @@
         "node": ">=18"
     },
     "dependencies": {
+        "@aws-sdk/client-s3": "^3.787.0",
+        "@aws-sdk/lib-storage": "^3.787.0",
         "@mattermost/client": "10.6.0",
         "@ngrok/ngrok": "1.4.1",
-        "@sentry/node": "^9.11.0",
+        "@sentry/node": "^9.14.0",
+        "async-mutex": "^0.5.0",
         "axios": "^1.8.4",
         "bcryptjs": "^3.0.2",
         "chokidar": "^4.0.3",
