@@ -12,7 +12,7 @@ loginForm.addEventListener('submit', (e) => {
 });
 
 // Enter key triggers login
-[emailInput, passwordInput].forEach(input => {
+[emailInput, passwordInput].forEach((input) => {
     input.addEventListener('keyup', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -30,18 +30,19 @@ function login() {
         return;
     }
 
-    axios.post('/login', {
-        email: email,
-        password: password,
-    })
-    .then(() => {
-        window.location.href = '/'; // Redirect on success (e.g., homepage or dashboard)
-    })
-    .catch((error) => {
-        const msg = error?.response?.data?.message || 'Wrong credentials. Please try again.';
-        popup('warning', msg);
-        passwordInput.value = '';
-    });
+    axios
+        .post('/login', {
+            email: email,
+            password: password,
+        })
+        .then(() => {
+            window.location.href = '/'; // Redirect on success (e.g., homepage or dashboard)
+        })
+        .catch((error) => {
+            const msg = error?.response?.data?.message || 'Wrong credentials. Please try again.';
+            popup('warning', msg);
+            passwordInput.value = '';
+        });
 }
 
 function filterXSS(input) {

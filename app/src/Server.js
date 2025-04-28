@@ -420,12 +420,14 @@ function startServer() {
 
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
-    app.use(session({
-        secret: 'collab-secret',
-        resave: false,
-        saveUninitialized: false,
-        cookie: { maxAge: 24 * 60 * 60 * 1000 } // 1 day session expiration
-    }));
+    app.use(
+        session({
+            secret: 'collab-secret',
+            resave: false,
+            saveUninitialized: false,
+            cookie: { maxAge: 24 * 60 * 60 * 1000 }, // 1 day session expiration
+        }),
+    );
     app.use((req, res, next) => {
         res.set('Cache-Control', 'no-store');
         next();
@@ -438,7 +440,7 @@ function startServer() {
             res.redirect('/signup');
         }
     });
-    
+
     // Signup page
     app.get('/signup', (req, res) => {
         if (req.session && req.session.user) {
@@ -446,29 +448,29 @@ function startServer() {
         }
         htmlInjector.injectHtml(views.signup, res);
     });
-    
+
     // Handle signup POST
     app.post('/signup', async (req, res) => {
         const { name, email, password } = req.body;
-    
+
         if (!name || !email || !password) {
             return res.status(400).json({ message: 'All fields are required' });
         }
-    
+
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
-    
+
         const newUser = new User({ name, email, password });
         await newUser.save();
-    
+
         req.session.user = {
             id: newUser._id,
             name: newUser.name,
-            email: newUser.email
+            email: newUser.email,
         };
-    
+
         res.redirect('/');
     });
 
@@ -589,7 +591,7 @@ function startServer() {
             // If the user is not authenticated, redirect to login page
             return res.redirect('/login');
         }
-    
+
         // If the user is authenticated, inject the new room HTML view
         htmlInjector.injectHtml(views.newRoom, res);
     });
@@ -612,8 +614,7 @@ function startServer() {
         if (Object.keys(req.query).length > 0) {
             log.debug('Direct Join', req.query);
 
-            const { room, roomPassword, name, audio, video, screen, hide, notify, duration } =
-                checkXSS(req.query);
+            const { room, roomPassword, name, audio, video, screen, hide, notify, duration } = checkXSS(req.query);
 
             if (!room) {
                 log.warn('/join/params room empty', room);
@@ -661,7 +662,7 @@ function startServer() {
         if (!isAuthenticated) {
             // If not authenticated, redirect to signup or login
             log.warn('/join/:roomId: user not logged in');
-            return res.redirect('/signup');  // Or redirect to login page
+            return res.redirect('/signup'); // Or redirect to login page
         }
 
         // If user is authenticated, allow them to join the room
@@ -729,33 +730,33 @@ function startServer() {
     app.post('/login', async (req, res) => {
         try {
             const { email, password } = checkXSS(req.body);
-    
+
             // Find user by email instead of username
             const user = await User.findOne({ email });
             if (!user) {
                 log.debug(`User with this email: ${email} doesn't exist`);
-                return res.status(401).sendFile(views.login);  // Use sendFile for static HTML files
+                return res.status(401).sendFile(views.login); // Use sendFile for static HTML files
             }
-    
+
             const isPasswordCorrect = await bcrypt.compare(password, user.password);
             if (!isPasswordCorrect) {
                 log.debug(`Wrong Credential`);
-                return res.status(401).sendFile(views.login);  // Use sendFile for static HTML files
+                return res.status(401).sendFile(views.login); // Use sendFile for static HTML files
             }
-    
+
             // Save to session
             req.session.user = {
                 id: user._id,
-                email: user.email,  // store email instead of username
+                email: user.email, // store email instead of username
             };
-    
+
             // Redirect to landing
             return res.redirect('/landing');
         } catch (error) {
             console.error('Login error:', error);
-            return res.status(500).sendFile(views.login);  // Use sendFile for static HTML files
+            return res.status(500).sendFile(views.login); // Use sendFile for static HTML files
         }
-    });    
+    });
 
     // ####################################################
     // RECORDING UTILITY
@@ -1320,7 +1321,7 @@ function startServer() {
                 },
             },
 
-             // MongoDB Configuration (no authentication if not needed)
+            // MongoDB Configuration (no authentication if not needed)
             mongodb: {
                 uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/collab',
                 host: process.env.MONGODB_HOST || 'localhost',
@@ -1429,20 +1430,14 @@ function startServer() {
     // ####################################################
     // CONNECT MONGODB
     // ####################################################
-    mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/collab')
-    .then(() => {
-        log.log(
-            `%cConnected to MongoDB`,
-            'font-family:monospace; color: green; font-size: 16px'
-        );
-    })
-    .catch((err) => {
-        log.log(
-            `%cError connecting to MongoDB: ${err}`,
-            'font-family:monospace; color: red; font-size: 16px'
-        );
-    });
-
+    mongoose
+        .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/collab')
+        .then(() => {
+            log.log(`%cConnected to MongoDB`, 'font-family:monospace; color: green; font-size: 16px');
+        })
+        .catch((err) => {
+            log.log(`%cError connecting to MongoDB: ${err}`, 'font-family:monospace; color: red; font-size: 16px');
+        });
 
     // ####################################################
     // WORKERS
@@ -1706,8 +1701,6 @@ function startServer() {
             }
 
             log.info('[Join] - Is Peer presenter', {
-
-
                 roomId: socket.room_id,
                 peer_name: peer_name,
                 peer_presenter: isPresenter,
@@ -2522,54 +2515,55 @@ function startServer() {
         socket.on('getChatGPT', async ({ time, room, name, prompt, context }, cb) => {
             if (!roomExists(socket)) return;
 
-            if (!config?.integrations?.chatGPT?.enabled) return cb({ message: 'AI Assistant seems disabled, try later!' });
+            if (!config?.integrations?.chatGPT?.enabled)
+                return cb({ message: 'AI Assistant seems disabled, try later!' });
 
             // https://platform.openai.com/docs/api-reference/completions/create
             try {
                 // Add the prompt to the context
                 context.push({ role: 'user', content: prompt });
-        
+
                 // Send a request to Ollama's API to generate a response with hardcoded values
                 const response = await fetch('http://localhost:11434/api/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        model: 'llama3.2:1b',       // Hardcoded model
-                        prompt: prompt,          // Use the prompt directly as Ollama expects it
+                        model: 'llama3.2:1b', // Hardcoded model
+                        prompt: prompt, // Use the prompt directly as Ollama expects it
                         // stream: true             // Enable streaming
-                    })
+                    }),
                 });
-        
+
                 if (!response.ok) throw new Error(`API returned status: ${response.status}`);
-        
+
                 let fullMessage = '';
-                
+
                 // Read the stream in chunks to handle real-time streaming response
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let done = false;
-                
+
                 while (!done) {
                     const { value, done: streamDone } = await reader.read();
                     done = streamDone;
                     if (value) {
                         // Decode and parse each chunk of data
                         const chunk = decoder.decode(value, { stream: true });
-                        
+
                         // Assuming each line in the stream is a complete JSON object
                         const json = JSON.parse(chunk);
-                        
+
                         // Append response text to the full message as it streams in
                         if (json.response) fullMessage += json.response;
-                        
+
                         // If streaming is done, end the loop
                         if (json.done) break;
                     }
                 }
-        
+
                 // Add the final response to the context
                 context.push({ role: 'assistant', content: fullMessage.trim() });
-        
+
                 // Log conversation details
                 log.info('Ollama', {
                     time: time,
@@ -2577,12 +2571,12 @@ function startServer() {
                     name: name,
                     context: context,
                 });
-        
+
                 // Callback response to client with the complete message
                 cb({ message: fullMessage.trim(), context: context });
             } catch (error) {
                 log.error('Ollama', error);
-                    cb({ message: error.message });
+                cb({ message: error.message });
             }
         });
 
@@ -3479,19 +3473,19 @@ function startServer() {
 
     function isAllowedRoomAccess(logMessage, req, hostCfg, roomList, roomId) {
         // Check if user is authenticated using the session
-        const isUserAuthenticated = req.session && req.session.user;  // Check session for user authentication
-    
+        const isUserAuthenticated = req.session && req.session.user; // Check session for user authentication
+
         const OIDCUserAuthenticated = OIDC.enabled && req.oidc.isAuthenticated();
         const hostUserAuthenticated = hostCfg.protected && hostCfg.authenticated;
         const roomExist = roomList.has(roomId);
         const roomCount = roomList.size;
         const OIDCAllowRoomCreationForAuthUsers = OIDC.allow_rooms_creation_for_auth_users;
-    
+
         // Modify the condition to allow room creation only for authenticated users
         const allowRoomAccess =
             (isUserAuthenticated && roomExist) || // Allow access if user is authenticated in session
             (isUserAuthenticated && roomCount === 0); // Allow room creation if user is authenticated
-    
+
         log.debug(logMessage, {
             OIDCUserAuthenticated,
             hostUserAuthenticated,
@@ -3507,9 +3501,9 @@ function startServer() {
             },
             allowRoomAccess,
         });
-    
+
         return allowRoomAccess;
-    }    
+    }
 
     async function roomExistsForUser(room) {
         if (hostCfg.protected || hostCfg.user_auth) {

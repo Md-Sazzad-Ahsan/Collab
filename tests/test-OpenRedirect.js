@@ -86,8 +86,7 @@ describe('test-OpenRedirect', function () {
 
     it('should handle query parameters with token', function () {
         req.path = '/join/';
-        req.url =
-            '/join/?room=test&roomPassword=0&name=collab&audio=1&video=1&screen=0&hide=0&notify=0&token=token';
+        req.url = '/join/?room=test&roomPassword=0&name=collab&audio=1&video=1&screen=0&hide=0&notify=0&token=token';
 
         middleware(null, req, res, next);
 

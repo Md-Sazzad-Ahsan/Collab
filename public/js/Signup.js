@@ -13,7 +13,7 @@ signupForm.addEventListener('submit', (e) => {
 });
 
 // Enter key triggers signup
-[usernameInput, emailInput, passwordInput].forEach(input => {
+[usernameInput, emailInput, passwordInput].forEach((input) => {
     input.addEventListener('keyup', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -32,22 +32,23 @@ function signup() {
         return;
     }
 
-    axios.post('/signup', {
-        name: username,
-        email: email,
-        password: password,
-    })
-    .then(() => {
-        window.location.href = '/'; // Redirect on success
-    })
-    .catch((error) => {
-        console.error('Signup error:', error);
-        const msg = error?.response?.data?.message || 'Signup failed. Please try again.';
-        popup('warning', msg);
+    axios
+        .post('/signup', {
+            name: username,
+            email: email,
+            password: password,
+        })
+        .then(() => {
+            window.location.href = '/'; // Redirect on success
+        })
+        .catch((error) => {
+            console.error('Signup error:', error);
+            const msg = error?.response?.data?.message || 'Signup failed. Please try again.';
+            popup('warning', msg);
 
-        // Optional: Clear password field
-        passwordInput.value = '';
-    });
+            // Optional: Clear password field
+            passwordInput.value = '';
+        });
 }
 
 function filterXSS(input) {

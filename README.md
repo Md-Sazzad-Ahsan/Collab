@@ -14,42 +14,41 @@ Before running the project, make sure you have the following installed:
 
 1. **Clone the repository:**
 
-   ```bash
-   git clone https://github.com/AkibHossainOmi/collab.git
-   cd collab
-   ```
+    ```bash
+    git clone https://github.com/AkibHossainOmi/collab.git
+    cd collab
+    ```
 
 2. **Install dependencies:**
 
-   Run the following command to install the necessary dependencies:
+    Run the following command to install the necessary dependencies:
 
-   ```bash
-   npm install
-   ```
+    ```bash
+    npm install
+    ```
 
 3. **Copy the configuration file:**
 
-   Before starting the application, copy the template configuration file:
+    Before starting the application, copy the template configuration file:
 
-   ```bash
-   cp app/src/config.template.js app/src/config.js
-   ```
+    ```bash
+    cp app/src/config.template.js app/src/config.js
+    ```
 
 4. **Install and run Ollama:**
 
-   Install Ollama if you haven't already, and then run the Llama model:
+    Install Ollama if you haven't already, and then run the Llama model:
 
-   ```bash
-   ollama run llama3.2:1b
-   ```
+    ```bash
+    ollama run llama3.2:1b
+    ```
 
 5. **Start the application:**
 
-   To start the application locally, use the following command:
+    To start the application locally, use the following command:
 
-   ```bash
-   npm start
-   ```
+    ```bash
+    npm start
+    ```
 
-   This will run the server, and you should be able to access the app at `http://localhost:3010`. 
-   
+    This will run the server, and you should be able to access the app at `http://localhost:3010`.

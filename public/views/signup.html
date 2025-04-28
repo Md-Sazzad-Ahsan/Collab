@@ -1,111 +1,135 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-     <!-- Title and Icon -->
+    <head>
+        <!-- Title and Icon -->
 
-     <title id="title">Collab - Sign Up</title>
-     <link id="icon" rel="shortcut icon" href="../images/collab.png" />
-     <link id="appleTouchIcon" rel="apple-touch-icon" href="../images/collab.png" />
- 
-     <!-- Meta Information -->
- 
-     <meta
-         id="description"
-         name="description"
-         content="Collab powered by WebRTC and mediasoup, Real-time Simple Secure Fast video calls, messaging and screen sharing capabilities in the browser."
-     />
-     <meta
-         id="keywords"
-         name="keywords"
-         content="webrtc, collab, mediasoup, mediasoup-client, self hosted, voip, sip, real-time communications, chat, messaging, meet, webrtc stun, webrtc turn, webrtc p2p, webrtc sfu, video meeting, video chat, video conference, multi video chat, multi video conference, peer to peer, p2p, sfu, rtc, alternative to, zoom, microsoft teams, google meet, jitsi, meeting"
-     />
- 
-     <!-- https://ogp.me -->
- 
-     <meta property="og:type" content="{{OG_TYPE}}" />
-     <meta property="og:site_name" content="{{OG_SITE_NAME}}" />
-     <meta property="og:title" content="{{OG_TITLE}}" />
-     <meta property="og:description" content="{{OG_DESCRIPTION}}" />
-     <meta property="og:image" content="{{OG_IMAGE}}" />
-     <meta property="og:url" content="{{OG_URL}}" />
+        <title id="title">Collab - Sign Up</title>
+        <link id="icon" rel="shortcut icon" href="../images/collab.png" />
+        <link id="appleTouchIcon" rel="apple-touch-icon" href="../images/collab.png" />
 
-    <!-- Fonts & CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,600" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
-    <link rel="icon" href="../images/collab.png" />
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
+        <!-- Meta Information -->
 
-<body class="min-h-screen flex flex-col bg-gray-50 font-sans text-gray-900 sm:px-10">
+        <meta
+            id="description"
+            name="description"
+            content="Collab powered by WebRTC and mediasoup, Real-time Simple Secure Fast video calls, messaging and screen sharing capabilities in the browser."
+        />
+        <meta
+            id="keywords"
+            name="keywords"
+            content="webrtc, collab, mediasoup, mediasoup-client, self hosted, voip, sip, real-time communications, chat, messaging, meet, webrtc stun, webrtc turn, webrtc p2p, webrtc sfu, video meeting, video chat, video conference, multi video chat, multi video conference, peer to peer, p2p, sfu, rtc, alternative to, zoom, microsoft teams, google meet, jitsi, meeting"
+        />
 
-    <!-- Main content wrapper with flex-grow to push footer down -->
-    <div class="flex-1 flex flex-col justify-center items-center px-4 py-12">
-        
-        <!-- Logo -->
-        <a href="/" class="text-3xl font-bold text-blue-600 mb-10 hover:text-blue-700 transition animate__animated animate__fadeIn">
-            Collab
-        </a>
+        <!-- https://ogp.me -->
 
-        <!-- Signup Card -->
-        <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 space-y-6 animate__animated animate__fadeIn">
-            <h2 class="text-2xl font-semibold text-center text-gray-800">Create your account</h2>
+        <meta property="og:type" content="{{OG_TYPE}}" />
+        <meta property="og:site_name" content="{{OG_SITE_NAME}}" />
+        <meta property="og:title" content="{{OG_TITLE}}" />
+        <meta property="og:description" content="{{OG_DESCRIPTION}}" />
+        <meta property="og:image" content="{{OG_IMAGE}}" />
+        <meta property="og:url" content="{{OG_URL}}" />
 
-            <form id="signupForm" class="space-y-5">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                    <input type="text" id="username" placeholder="username" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none" required />
-                </div>
+        <!-- Fonts & CSS -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,600" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+        <link rel="icon" href="../images/collab.png" />
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input type="email" id="email" placeholder="email" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none" required />
-                </div>
+    <body class="min-h-screen flex flex-col bg-gray-50 font-sans text-gray-900 sm:px-10">
+        <!-- Main content wrapper with flex-grow to push footer down -->
+        <div class="flex-1 flex flex-col justify-center items-center px-4 py-12">
+            <!-- Logo -->
+            <a
+                href="/"
+                class="text-3xl font-bold text-blue-600 mb-10 hover:text-blue-700 transition animate__animated animate__fadeIn"
+            >
+                Collab
+            </a>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <input type="password" id="password" placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none" required />
-                </div>
+            <!-- Signup Card -->
+            <div
+                class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 space-y-6 animate__animated animate__fadeIn"
+            >
+                <h2 class="text-2xl font-semibold text-center text-gray-800">Create your account</h2>
 
-                <button type="submit" id="signupButton" class="w-full py-3 px-4 bg-blue-600 text-white rounded-xl font-semibold text-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg">
-                    Sign Up
-                </button>
-            </form>
+                <form id="signupForm" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <input
+                            type="text"
+                            id="username"
+                            placeholder="username"
+                            class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            required
+                        />
+                    </div>
 
-            <p class="text-sm text-center text-gray-600">
-                Already have an account?
-                <a href="/login" class="text-blue-600 hover:underline">Log in</a>
-            </p>
-        </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input
+                            type="email"
+                            id="email"
+                            placeholder="email"
+                            class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            required
+                        />
+                    </div>
 
-    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            placeholder="••••••••"
+                            class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            required
+                        />
+                    </div>
 
-    <!-- Footer -->
-    <footer id="footer" class="site-footer text-gray-700 py-8 max-w-screen-xl mt-auto mx-auto w-full">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="footer-copyright text-center md:text-left">
-                    <p class="text-sm">&copy; 2025 MiroTalk SFU, all rights reserved</p>
-                </div>
-                <ul class="footer-links list-reset flex flex-col md:flex-row mt-4 md:mt-0">
-                    <li class="mr-6">
-                        <a href="/about" class="text-gray-600 hover:text-blue-600">About</a>
-                    </li>
-                    <li class="mr-6">
-                        <a href="/privacy" class="text-gray-600 hover:text-blue-600">Privacy Policy</a>
-                    </li>
-                    <li>
-                        <a href="/api/v1/docs/" class="text-gray-600 hover:text-blue-600">Rest API</a>
-                    </li>
-                </ul>
+                    <button
+                        type="submit"
+                        id="signupButton"
+                        class="w-full py-3 px-4 bg-blue-600 text-white rounded-xl font-semibold text-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
+                    >
+                        Sign Up
+                    </button>
+                </form>
+
+                <p class="text-sm text-center text-gray-600">
+                    Already have an account?
+                    <a href="/login" class="text-blue-600 hover:underline">Log in</a>
+                </p>
             </div>
         </div>
-    </footer>
 
-    <!-- Axios -->
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <!-- Footer -->
+        <footer id="footer" class="site-footer text-gray-700 py-8 max-w-screen-xl mt-auto mx-auto w-full">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="footer-copyright text-center md:text-left">
+                        <p class="text-sm">&copy; 2025 MiroTalk SFU, all rights reserved</p>
+                    </div>
+                    <ul class="footer-links list-reset flex flex-col md:flex-row mt-4 md:mt-0">
+                        <li class="mr-6">
+                            <a href="/about" class="text-gray-600 hover:text-blue-600">About</a>
+                        </li>
+                        <li class="mr-6">
+                            <a href="/privacy" class="text-gray-600 hover:text-blue-600">Privacy Policy</a>
+                        </li>
+                        <li>
+                            <a href="/api/v1/docs/" class="text-gray-600 hover:text-blue-600">Rest API</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </footer>
 
-    <!-- Custom JS -->
-    <script defer src="../js/signup.js"></script>
-</body>
+        <!-- Axios -->
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+        <!-- Custom JS -->
+        <script defer src="../js/signup.js"></script>
+    </body>
 </html>

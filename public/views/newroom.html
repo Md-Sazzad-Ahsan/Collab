@@ -33,28 +33,30 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
         <link id="icon" rel="shortcut icon" href="../images/collab.png" />
         <link id="appleTouchIcon" rel="apple-touch-icon" href="../images/collab.png" />
-    
+
         <!-- Js scripts -->
         <script defer src="../js/Brand.js"></script>
         <script async src="../js/Umami.js"></script>
-    
+
         <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.8"></script>
         <script src="https://unpkg.com/animejs@3.0.1/lib/anime.min.js"></script>
         <script src="https://unpkg.com/scrollreveal@4.0.0/dist/scrollreveal.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/xss/dist/xss.min.js"></script>
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
-    
+
     <body class="min-h-screen flex flex-col bg-gray-50 font-sans antialiased text-gray-900 sm:px-10">
-    
         <div class="flex-1">
             <div class="max-w-screen-xl mx-auto px-4">
-        
                 <!-- Header with Text Logo -->
                 <header class="py-8 flex justify-between items-center">
                     <div class="flex items-center space-x-6">
                         <!-- Text-based Logo -->
-                        <a href="/" class="text-3xl font-semibold text-blue-600 hover:text-blue-700 transition duration-300">Collab</a>
+                        <a
+                            href="/"
+                            class="text-3xl font-semibold text-blue-600 hover:text-blue-700 transition duration-300"
+                            >Collab</a
+                        >
                     </div>
                     <!-- Add Logout Button -->
                     <div>
@@ -65,10 +67,9 @@
                         >
                             Logout
                         </button>
-
                     </div>
                 </header>
-        
+
                 <!-- Hero Section -->
                 <section class="flex flex-col lg:flex-row items-start py-20 space-y-12 lg:space-y-0">
                     <div class="lg:w-2/3 text-left space-y-6 animate__animated animate__fadeIn">
@@ -101,15 +102,13 @@
                                 Join Room
                             </button>
                         </div>
-                    
+
                         <div id="lastRoomContainer" class="text-sm text-gray-600 mt-3 hidden">
                             <span class="font-medium">Your recent room:</span>
                             <a id="lastRoom" href="#" class="text-blue-600 hover:underline font-medium"></a>
                         </div>
                     </div>
-                </section>  
-
-
+                </section>
             </div>
         </div>
 
@@ -135,7 +134,7 @@
             </div>
         </footer>
 
-         <!-- Additional Scripts -->
+        <!-- Additional Scripts -->
         <script defer src="../js/Utils.js"></script>
         <script defer src="../js/Common.js"></script>
         <script defer src="../js/Landing.js"></script>

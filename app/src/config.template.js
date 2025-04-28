@@ -932,8 +932,7 @@ module.exports = {
                 type: process.env.OG_TYPE || 'app-webrtc',
                 siteName: process.env.OG_SITE_NAME || 'Collab',
                 title: process.env.OG_TITLE || 'Click the link to make a call.',
-                description:
-                    process.env.OG_DESCRIPTION || 'Collab provides real-time video calls and screen sharing.',
+                description: process.env.OG_DESCRIPTION || 'Collab provides real-time video calls and screen sharing.',
                 image: process.env.OG_IMAGE_URL || 'https://sfu.collab.com/images/collab.png',
                 url: process.env.OG_URL || 'https://sfu.collab.com',
             },
