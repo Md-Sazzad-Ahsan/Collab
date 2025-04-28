@@ -1502,7 +1502,7 @@ function roomIsReady() {
 
     !BUTTONS.poll.pollSaveButton && hide(pollSaveButton);
 
-    isWebkitSpeechRecognitionSupported && BUTTONS.chat.chatSpeechStartButton
+    speechRecognition && BUTTONS.chat.chatSpeechStartButton
         ? show(chatSpeechStartButton)
         : (BUTTONS.chat.chatSpeechStartButton = false);
 
