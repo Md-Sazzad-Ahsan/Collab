@@ -4932,8 +4932,11 @@ class RoomClient {
         });
     }
 
-    async showMessage(data) {
-        if (!this.isChatOpen && this.showChatOnMessage) await this.toggleChat();
+    async showMessage(data, toggleChat = true) {
+        if (toggleChat && !this.isChatOpen && this.showChatOnMessage) { 
+            await this.toggleChat();
+        }
+
         this.setMsgAvatar('right', data.peer_name, data.peer_avatar);
         this.appendMessage(
             'right',
@@ -6464,7 +6467,7 @@ class RoomClient {
             to_peer_id: 'all',
             to_peer_name: 'all',
         };
-        this.showMessage(recAction);
+        this.showMessage(recAction, false);
 
         const recData = {
             type: 'recording',
