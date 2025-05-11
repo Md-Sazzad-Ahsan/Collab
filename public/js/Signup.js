@@ -1,46 +1,52 @@
 'use strict';
 
+const usernameInput = document.getElementById('username');
 const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
-const loginForm = document.getElementById('loginForm');
-const loginBtn = document.getElementById('loginButton');
+const signupForm = document.getElementById('signupForm');
+const signupBtn = document.getElementById('signupButton');
 
 // Handle form submission
-loginForm.addEventListener('submit', (e) => {
+signupForm.addEventListener('submit', (e) => {
     e.preventDefault(); // Stop native form submission
-    login();
+    signup();
 });
 
-// Enter key triggers login
-[emailInput, passwordInput].forEach((input) => {
+// Enter key triggers signup
+[usernameInput, emailInput, passwordInput].forEach((input) => {
     input.addEventListener('keyup', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            login();
+            signup();
         }
     });
 });
 
-function login() {
+function signup() {
+    const username = filterXSS(usernameInput.value.trim());
     const email = filterXSS(emailInput.value.trim());
     const password = filterXSS(passwordInput.value.trim());
 
-    if (!email || !password) {
-        popup('warning', 'Email and password are required.');
+    if (!username || !email || !password) {
+        popup('warning', 'All fields are required.');
         return;
     }
 
     axios
-        .post('/login', {
+        .post('/signup', {
+            name: username,
             email: email,
             password: password,
         })
         .then(() => {
-            window.location.href = '/'; // Redirect on success (e.g., homepage or dashboard)
+            window.location.href = '/'; // Redirect on success
         })
         .catch((error) => {
-            const msg = error?.response?.data?.message || 'Wrong credentials. Please try again.';
+            console.error('Signup error:', error);
+            const msg = error?.response?.data?.message || 'Signup failed. Please try again.';
             popup('warning', msg);
+
+            // Optional: Clear password field
             passwordInput.value = '';
         });
 }

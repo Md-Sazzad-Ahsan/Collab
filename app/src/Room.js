@@ -34,6 +34,7 @@ module.exports = class Room {
         this._hostOnlyRecording = false;
         // ##########################
         this.recording = {
+            recSyncServerToS3: (config?.integrations?.aws?.enabled && config?.media?.recording?.uploadToS3) || false,
             recSyncServerRecording: config?.media?.recording?.enabled || false,
             recSyncServerEndpoint: config?.media?.recording?.endpoint || '',
         };
@@ -602,7 +603,6 @@ module.exports = class Room {
                     transport_id: id,
                     iceState: iceState,
                 });
-                this.removePeer(socket_id);
                 transport.close();
             }
         });
@@ -622,7 +622,6 @@ module.exports = class Room {
                     transport_id: id,
                     dtlsState: dtlsState,
                 });
-                this.removePeer(socket_id);
                 transport.close();
             }
         });

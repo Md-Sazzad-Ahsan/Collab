@@ -360,6 +360,7 @@ class RoomClient {
         this.recScreenStream = null;
         this.recording = {
             recSyncServerRecording: false,
+            recSyncServerToS3: false,
             recSyncServerEndpoint: '',
         };
         this.recSyncTime = 4000; // 4 sec
@@ -1337,10 +1338,12 @@ class RoomClient {
         this.socket.on('connect_error', () => {
             if (this.reconnectAttempts < this.maxReconnectAttempts) {
                 this.reconnectAttempts++;
-                reconnectAlert.update({
-                    title: 'Reconnect',
-                    text: `Attempting to reconnect ${this.reconnectAttempts}...`,
-                });
+                if (reconnectAlert) {
+                    reconnectAlert.update({
+                        title: 'Reconnect',
+                        text: `Attempting to reconnect ${this.reconnectAttempts}...`,
+                    });
+                }
             } else {
                 if (!serverAwayShown) {
                     showServerAwayMessage();
@@ -1357,10 +1360,12 @@ class RoomClient {
 
                 const delay = Math.min(this.reconnectInterval * this.reconnectAttempts, this.maxReconnectInterval);
 
-                reconnectAlert.update({
-                    title: 'Reconnect',
-                    text: `Attempting to reconnect in ${delay / 1000}s...`,
-                });
+                if (reconnectAlert) {
+                    reconnectAlert.update({
+                        title: 'Reconnect',
+                        text: `Attempting to reconnect in ${delay / 1000}s...`,
+                    });
+                }
 
                 reconnectTimer = setTimeout(() => {
                     this.socket.connect();
@@ -1368,7 +1373,9 @@ class RoomClient {
                 }, delay);
             } else {
                 console.log('Reconnection limit reached!');
-                reconnectAlert.close();
+                if (reconnectAlert) {
+                    reconnectAlert.close();
+                }
                 showMaxAttemptsAlert();
             }
         };
@@ -1428,7 +1435,7 @@ class RoomClient {
             video: peer_video,
             screen: peer_screen,
             notify: 0,
-            isPresenter: isPresenter,
+            isPresenter: isPresenter || false,
         };
         if (peer_token) queryParams.token = peer_token;
         const url = `${baseUrl}?${Object.entries(queryParams)
@@ -4925,8 +4932,11 @@ class RoomClient {
         });
     }
 
-    async showMessage(data) {
-        if (!this.isChatOpen && this.showChatOnMessage) await this.toggleChat();
+    async showMessage(data, toggleChat = true) {
+        if (toggleChat && !this.isChatOpen && this.showChatOnMessage) {
+            await this.toggleChat();
+        }
+
         this.setMsgAvatar('right', data.peer_name, data.peer_avatar);
         this.appendMessage(
             'right',
@@ -4988,7 +4998,7 @@ class RoomClient {
         const messageData = myMessage ? 'text-start' : 'text-end';
         const timeAndName = myMessage
             ? `<span class="message-data-time">${time}, ${getFromName} ( me ) </span>`
-            : `<span class="message-data-time">${time}, ${getFromName==='ChatGPT'?'AI Assistant':getFromName} </span>`;
+            : `<span class="message-data-time">${time}, ${getFromName === 'ChatGPT' ? 'AI Assistant' : getFromName} </span>`;
 
         const formatMessage = this.formatMsg(getMsg);
         const speechButton = this.isSpeechSynthesisSupported
@@ -5042,7 +5052,7 @@ class RoomClient {
         const typingIndicator = document.createElement('div');
         typingIndicator.id = 'typing-indicator';
         typingIndicator.innerHTML = 'AI Assistant is typing...';
-        if (fromName === "ChatGPT") {
+        if (fromName === 'ChatGPT') {
             const indicator = document.getElementById('typing-indicator');
             chatGPTMessages.removeChild(indicator);
         }
@@ -5063,7 +5073,7 @@ class RoomClient {
 
         const message = getId(`message-${chatMessagesId}`);
         if (message) {
-            if(fromName !== "ChatGPT") chatGPTMessages.insertAdjacentElement('beforeend', typingIndicator);
+            if (fromName !== 'ChatGPT') chatGPTMessages.insertAdjacentElement('beforeend', typingIndicator);
             if (getFromName === 'ChatGPT') {
                 // Stream the message for ChatGPT
                 this.streamMessage(message, getMsg, 100);
@@ -6194,10 +6204,17 @@ class RoomClient {
         }
     }
 
+    generateUUIDv4() {
+        return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+            (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16),
+        );
+    }
+
     getServerRecFileName() {
-        const dateTime = getDataTimeStringFormat();
         const roomName = this.room_id.trim();
-        return `Rec_${roomName}_${dateTime}.webm`;
+        const dateTime = getDataTimeStringFormat();
+        const uuid = this.generateUUIDv4();
+        return `Rec_${roomName}_${dateTime}_${uuid}.webm`;
     }
 
     handleMediaRecorderStart(evt) {
@@ -6214,6 +6231,7 @@ class RoomClient {
     }
 
     async syncRecordingInCloud(data) {
+        if (!this._isRecording) return;
         const arrayBuffer = await data.arrayBuffer();
         const chunkSize = rc.recSyncChunkSize;
         const totalChunks = Math.ceil(arrayBuffer.byteLength / chunkSize);
@@ -6252,11 +6270,34 @@ class RoomClient {
         }
     }
 
-    handleMediaRecorderStop(evt) {
+    async handleMediaRecorderStop(evt) {
         try {
             console.log('MediaRecorder stopped: ', evt);
             rc.recording.recSyncServerRecording ? rc.handleServerRecordingStop() : rc.handleLocalRecordingStop();
             rc.disableRecordingOptions(false);
+            // Only do this if cloud sync was enabled and upload to s3
+            if (rc.recording.recSyncServerRecording && rc.recording.recSyncServerToS3) {
+                try {
+                    const response = await axios.post(
+                        `${rc.recording.recSyncServerEndpoint}/recSyncFinalize?fileName=` + rc.recServerFileName,
+                    );
+                    console.log('Finalized and uploaded to S3:', response.data);
+                    userLog('success', 'Recording successfully uploaded to S3.', 'top-end', 3000);
+                } catch (error) {
+                    let errorMessage = 'Finalization failed! ';
+                    if (error.response) {
+                        errorMessage += error.response.data?.message || 'Server error';
+                        console.error('Finalization error response:', error.response);
+                    } else if (error.request) {
+                        errorMessage += 'No response from server';
+                        console.error('Finalization error: No response', error.request);
+                    } else {
+                        errorMessage += error.message;
+                        console.error('Finalization error:', error.message);
+                    }
+                    userLog('warning', errorMessage, 'top-end', 3000);
+                }
+            }
         } catch (err) {
             console.error('Recording save failed', err);
         }
@@ -6426,7 +6467,7 @@ class RoomClient {
             to_peer_id: 'all',
             to_peer_name: 'all',
         };
-        this.showMessage(recAction);
+        this.showMessage(recAction, false);
 
         const recData = {
             type: 'recording',
@@ -8750,7 +8791,7 @@ class RoomClient {
                     <img src="${imgSrc}" alt="avatar" />
                 </a>
                 <div class="chat-about">
-                    <h6 class="mb-0">${truncatedTitle==='ChatGPT'?'AI Assistant':truncatedTitle}</h6>
+                    <h6 class="mb-0">${truncatedTitle === 'ChatGPT' ? 'AI Assistant' : truncatedTitle}</h6>
                     <span class="status">
                         <i class="fa fa-circle ${status}"></i> ${status} ${participants}
                     </span>

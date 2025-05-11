@@ -1,5 +1,4 @@
-<!doctype html>
-<html lang="en" class="no-js">
+<html>
     <head>
         <!-- Title and Icon -->
 
@@ -8,10 +7,6 @@
         <link id="appleTouchIcon" rel="apple-touch-icon" href="../images/collab.png" />
 
         <!-- Meta Information -->
-
-        <meta charset="utf-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
         <meta
             id="description"
@@ -33,14 +28,13 @@
         <meta property="og:image" content="{{OG_IMAGE}}" />
         <meta property="og:url" content="{{OG_URL}}" />
 
-        <!-- StyleSheet -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,600" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
-        <link rel="stylesheet" type="text/css" href="../css/landing.css" />
+        <link id="icon" rel="shortcut icon" href="../images/collab.png" />
+        <link id="appleTouchIcon" rel="apple-touch-icon" href="../images/collab.png" />
 
         <!-- Js scripts -->
-
         <script defer src="../js/Brand.js"></script>
         <script async src="../js/Umami.js"></script>
 
@@ -48,107 +42,103 @@
         <script src="https://unpkg.com/animejs@3.0.1/lib/anime.min.js"></script>
         <script src="https://unpkg.com/scrollreveal@4.0.0/dist/scrollreveal.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/xss/dist/xss.min.js"></script>
+        <script src="https://cdn.tailwindcss.com"></script>
     </head>
-    <body class="is-boxed has-animations">
-        <div class="body-wrap">
-            <header class="site-header">
-                <div class="container">
-                    <div class="site-header-inner">
-                        <div class="brand header-brand">
-                            <h1 class="m-0">
-                                <a href="/">
-                                    <img
-                                        class="header-logo-image"
-                                        src="../images/collab.png"
-                                        alt="collab-webrtc-logo"
-                                        width="96"
-                                        height="auto"
-                                    />
-                                    <!-- <img
-                                        class="header-logo-image reveal-from-left"
-                                        src="../images/collab-mc.png"
-                                        alt="collab-webrtc-logo"
-                                        width="96"
-                                        height="auto"
-                                    /> -->
-                                </a>
-                            </h1>
-                        </div>
+
+    <body class="min-h-screen flex flex-col bg-gray-50 font-sans antialiased text-gray-900 sm:px-10">
+        <div class="flex-1">
+            <div class="max-w-screen-xl mx-auto px-4">
+                <!-- Header with Text Logo -->
+                <header class="py-8 flex justify-between items-center">
+                    <div class="flex items-center space-x-6">
+                        <!-- Text-based Logo -->
+                        <a
+                            href="/"
+                            class="text-3xl font-semibold text-blue-600 hover:text-blue-700 transition duration-300"
+                            >Collab</a
+                        >
                     </div>
-                </div>
-            </header>
-
-            <main>
-                <section class="hero">
-                    <div class="container">
-                        <div class="hero-inner">
-                            <div class="hero-copy reveal-from-bottom">
-                                <h1 id="newRoomTitle" class="hero-title mt-0">
-                                    Pick name. <br />
-                                    Share URL. <br />
-                                    Start conference.
-                                </h1>
-                                <p id="newRoomDescription" class="hero-paragraph">
-                                    Each room has its disposable URL. Just pick a room name and share your custom URL.
-                                    It's that easy.
-                                </p>
-                            </div>
-                            <div class="hero-figure anime-element">
-                                <svg class="placeholder" width="528" height="396" viewBox="0 0 528 396">
-                                    <rect width="528" height="396" style="fill: transparent" />
-                                </svg>
-                                <div class="hero-figure-box hero-figure-box-01" data-rotation="45deg"></div>
-                                <div class="hero-figure-box hero-figure-box-02" data-rotation="-45deg"></div>
-                                <div class="hero-figure-box hero-figure-box-03" data-rotation="0deg"></div>
-                                <div class="hero-figure-box hero-figure-box-04" data-rotation="-135deg"></div>
-                                <div class="hero-figure-box hero-figure-box-05"></div>
-                                <div class="hero-figure-box hero-figure-box-06"></div>
-                                <div class="hero-figure-box hero-figure-box-07"></div>
-                                <div class="hero-figure-box hero-figure-box-08" data-rotation="-22deg"></div>
-                                <div class="hero-figure-box hero-figure-box-09" data-rotation="-52deg"></div>
-                                <div class="hero-figure-box hero-figure-box-10" data-rotation="-50deg"></div>
-                            </div>
-                        </div>
+                    <!-- Add Logout Button -->
+                    <div>
+                        <button
+                            id="logoutButton"
+                            class="px-4 py-2 bg-transparent text-red-600 font-semibold rounded-lg text-lg hover:bg-red-100 border border-red-600 transition duration-300 ease-in-out shadow-md hover:shadow-lg"
+                            onclick="logout()"
+                        >
+                            Logout
+                        </button>
                     </div>
-                </section>
+                </header>
 
-                <hr />
+                <!-- Hero Section -->
+                <section class="flex flex-col lg:flex-row items-start py-20 space-y-12 lg:space-y-0">
+                    <div class="lg:w-2/3 text-left space-y-6 animate__animated animate__fadeIn">
+                        <h1 class="text-5xl font-extrabold text-gray-900 leading-tight">
+                            Collab
+                            <span class="text-blue-600">— Seamless</span> Video Communication
+                        </h1>
+                        <p class="text-lg text-gray-600 max-w-xl lg:mx-0 text-left">
+                            No downloads. No delays. Just click, name a room, and connect.
+                        </p>
+                        <div class="flex flex-col sm:flex-row items-start sm:space-x-4 space-y-4 sm:space-y-0">
+                            <input
+                                id="roomName"
+                                class="w-full sm:w-auto px-5 py-3 text-lg border border-gray-300 rounded-xl shadow focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                                type="text"
+                                placeholder="Enter room name"
+                                maxlength="36"
+                            />
+                            <button
+                                id="genRoomButton"
+                                title="Generate Room Name"
+                                class="mt-3 sm:mt-0 w-12 h-12 flex items-center justify-center rounded-xl bg-white border border-gray-300 hover:bg-blue-100 text-blue-600 transition duration-200 shadow-sm"
+                            >
+                                <i class="fas fa-random text-lg"></i>
+                            </button>
+                            <button
+                                id="joinRoomButton"
+                                class="mt-3 sm:mt-0 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl text-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
+                            >
+                                Join Room
+                            </button>
+                        </div>
 
-                <section class="cta section mb-32">
-                    <div class="container">
-                        <div class="cta-inner section-inner br-12">
-                            <h3 id="joinDescription" class="section-title mt-0">
-                                Pick a room name.<br />
-                                How about this one?
-                            </h3>
-                            <div>
-                                <div class="mb-24">
-                                    <label for="roomName"></label>
-                                    <div class="form-group-desktop">
-                                        <input id="roomName" class="form-input" type="text" maxlength="36" value="" />
-                                        <button
-                                            id="genRoomButton"
-                                            class="button button-primary br-6 mr-8 mb-8 fas fa-arrows-rotate"
-                                        ></button>
-                                        <button id="joinRoomButton" class="button button-primary pulse">
-                                            Join Room
-                                        </button>
-                                    </div>
-                                </div>
-                                <div id="lastRoomContainer" class="last-room">
-                                    <span id="joinLastLabel">Your recent room:</span>
-                                    <a id="lastRoom"></a>
-                                </div>
-                            </div>
+                        <div id="lastRoomContainer" class="text-sm text-gray-600 mt-3 hidden">
+                            <span class="font-medium">Your recent room:</span>
+                            <a id="lastRoom" href="#" class="text-blue-600 hover:underline font-medium"></a>
                         </div>
                     </div>
                 </section>
-            </main>
+            </div>
         </div>
 
+        <!-- Footer -->
+        <footer id="footer" class="site-footer text-gray-700 py-8 max-w-screen-xl mt-auto mx-auto w-full">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="footer-copyright text-center md:text-left">
+                        <p class="text-sm">&copy; 2025 MiroTalk SFU, all rights reserved</p>
+                    </div>
+                    <ul class="footer-links list-reset flex flex-col md:flex-row mt-4 md:mt-0">
+                        <li class="mr-6">
+                            <a href="/about" class="text-gray-600 hover:text-blue-600">About</a>
+                        </li>
+                        <li class="mr-6">
+                            <a href="/privacy" class="text-gray-600 hover:text-blue-600">Privacy Policy</a>
+                        </li>
+                        <li>
+                            <a href="/api/v1/docs/" class="text-gray-600 hover:text-blue-600">Rest API</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Additional Scripts -->
         <script defer src="../js/Utils.js"></script>
-        <script defer src="../js/Landing.js"></script>
         <script defer src="../js/Common.js"></script>
+        <script defer src="../js/Landing.js"></script>
+        <script defer src="../js/Logout.js"></script>
         <script async defer src="https://buttons.github.io/buttons.js"></script>
     </body>
 </html>
