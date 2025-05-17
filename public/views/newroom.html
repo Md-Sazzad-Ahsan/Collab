@@ -45,31 +45,35 @@
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
 
-    <body class="min-h-screen flex flex-col bg-gray-50 font-sans antialiased text-gray-900 sm:px-10">
-        <div class="flex-1">
-            <div class="max-w-screen-xl mx-auto px-4">
-                <!-- Header with Text Logo -->
-                <header class="py-8 flex justify-between items-center">
-                    <div class="flex items-center space-x-6">
-                        <!-- Text-based Logo -->
-                        <a
-                            href="/"
-                            class="text-3xl font-semibold text-blue-600 hover:text-blue-700 transition duration-300"
-                            >Collab</a
-                        >
-                    </div>
-                    <!-- Add Logout Button -->
-                    <div>
-                        <button
-                            id="logoutButton"
-                            class="px-4 py-2 bg-transparent text-red-600 font-semibold rounded-lg text-lg hover:bg-red-100 border border-red-600 transition duration-300 ease-in-out shadow-md hover:shadow-lg"
-                            onclick="logout()"
-                        >
-                            Logout
-                        </button>
-                    </div>
-                </header>
+    <body class="min-h-screen flex flex-col bg-gray-50 font-sans antialiased text-gray-900">
 
+        <!-- Header with Text Logo -->
+        <header class="w-full bg-white shadow-md">
+            <div class="max-w-screen-xl mx-auto py-6 px-4 flex justify-between items-center sm:px-10">
+                <!-- Logo Section -->
+                <div class="flex items-center space-x-12">
+                    <a href="/" class="text-3xl font-semibold text-blue-600 hover:text-blue-700 transition duration-300">
+                        Collab
+                    </a>
+                    <nav class="hidden md:flex space-x-8">
+                        <a href="/" class="text-lg font-medium text-gray-700 hover:text-blue-600 transition duration-300">Home</a>
+                        <a href="/features" class="text-lg font-medium text-gray-700 hover:text-blue-600 transition duration-300">Features</a>
+                        <a href="/pricing" class="text-lg font-medium text-gray-700 hover:text-blue-600 transition duration-300">Pricing</a>
+                        <a href="/contact" class="text-lg font-medium text-gray-700 hover:text-blue-600 transition duration-300">Contact</a>
+                    </nav>
+                </div>
+
+                <!-- Logout Button -->
+                <button
+                    id="logoutButton"
+                    class="px-4 py-2 bg-red-50 text-red-600 font-semibold rounded-lg text-lg border border-red-600 transition duration-300 ease-in-out shadow-sm hover:bg-red-100 hover:text-red-700 hover:shadow-md hidden"
+                >
+                    Logout
+                </button>
+            </div>
+        </header>
+        <div class="flex-1">
+            <div class="max-w-screen-xl mx-auto px-4 sm:px-10">
                 <!-- Hero Section -->
                 <section class="flex flex-col lg:flex-row items-start py-20 space-y-12 lg:space-y-0">
                     <div class="lg:w-2/3 text-left space-y-6 animate__animated animate__fadeIn">
@@ -113,8 +117,8 @@
         </div>
 
         <!-- Footer -->
-        <footer id="footer" class="site-footer text-gray-700 py-8 max-w-screen-xl mt-auto mx-auto w-full">
-            <div class="container mx-auto px-4">
+        <footer id="footer" class="site-footer text-gray-700 py-8 max-w-screen-xl mt-auto mx-auto w-full sm:px-10">
+            <div class="container mx-auto">
                 <div class="flex flex-col md:flex-row justify-between items-center">
                     <div class="footer-copyright text-center md:text-left">
                         <p class="text-sm">&copy; 2025 MiroTalk SFU, all rights reserved</p>
@@ -133,12 +137,12 @@
                 </div>
             </div>
         </footer>
-
-        <!-- Additional Scripts -->
+        <!-- Scripts -->
         <script defer src="../js/Utils.js"></script>
         <script defer src="../js/Common.js"></script>
         <script defer src="../js/Landing.js"></script>
         <script defer src="../js/Logout.js"></script>
         <script async defer src="https://buttons.github.io/buttons.js"></script>
+        <script src="../js/Auth.js"></script>
     </body>
 </html>

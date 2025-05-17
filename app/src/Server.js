@@ -710,6 +710,14 @@ function startServer() {
         }
     });
 
+    app.get('/session-status', (req, res) => {
+        if (req.session && req.session.user) {
+            res.json({ loggedIn: true });
+        } else {
+            res.json({ loggedIn: false });
+        }
+    });
+
     // handle logged on host protected
     app.get('/logged', (req, res) => {
         const ip = getIP(req);
