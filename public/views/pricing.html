@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Title and Icon -->
+
+        <title id="title">Collab - Create your Room name and start the new call.</title>
+        <link id="icon" rel="shortcut icon" href="../images/collab.png" />
+        <link id="appleTouchIcon" rel="apple-touch-icon" href="../images/collab.png" />
+
+        <!-- Meta Information -->
+
+        <meta
+            id="description"
+            name="description"
+            content="Collab powered by WebRTC and mediasoup, Real-time Simple Secure Fast video calls, messaging and screen sharing capabilities in the browser."
+        />
+        <meta
+            id="keywords"
+            name="keywords"
+            content="webrtc, collab, mediasoup, mediasoup-client, self hosted, voip, sip, real-time communications, chat, messaging, meet, webrtc stun, webrtc turn, webrtc p2p, webrtc sfu, video meeting, video chat, video conference, multi video chat, multi video conference, peer to peer, p2p, sfu, rtc, alternative to, zoom, microsoft teams, google meet, jitsi, meeting"
+        />
+
+        <!-- https://ogp.me -->
+
+        <meta property="og:type" content="{{OG_TYPE}}" />
+        <meta property="og:site_name" content="{{OG_SITE_NAME}}" />
+        <meta property="og:title" content="{{OG_TITLE}}" />
+        <meta property="og:description" content="{{OG_DESCRIPTION}}" />
+        <meta property="og:image" content="{{OG_IMAGE}}" />
+        <meta property="og:url" content="{{OG_URL}}" />
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,600" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+        <link id="icon" rel="shortcut icon" href="../images/collab.png" />
+        <link id="appleTouchIcon" rel="apple-touch-icon" href="../images/collab.png" />
+
+        <!-- Js scripts -->
+        <script defer src="../js/Brand.js"></script>
+        <script async src="../js/Umami.js"></script>
+
+        <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.8"></script>
+        <script src="https://unpkg.com/animejs@3.0.1/lib/anime.min.js"></script>
+        <script src="https://unpkg.com/scrollreveal@4.0.0/dist/scrollreveal.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/xss/dist/xss.min.js"></script>
+        <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex flex-col bg-gray-50 font-sans antialiased text-gray-900">
+    <header class="w-full bg-white shadow-md">
+        <div class="max-w-screen-xl mx-auto py-6 px-4 flex justify-between items-center sm:px-10">
+            <div class="flex items-center space-x-12">
+                <a href="/" class="text-3xl font-semibold text-blue-600 hover:text-blue-700 transition duration-300">Collab</a>
+                <nav class="hidden md:flex space-x-8">
+                    <a href="/" class="text-lg font-medium text-gray-700 hover:text-blue-600 transition duration-300">Home</a>
+                    <a href="/features" class="text-lg font-medium text-gray-700 hover:text-blue-600 transition duration-300">Features</a>
+                    <a href="/pricing" class="text-lg font-medium text-gray-700 hover:text-blue-600 transition duration-300">Pricing</a>
+                    <a href="/contact" class="text-lg font-medium text-gray-700 hover:text-blue-600 transition duration-300">Contact</a>
+                </nav>
+            </div>
+            <button class="px-4 py-2 bg-red-50 text-red-600 font-semibold rounded-lg text-lg border border-red-600 transition duration-300 ease-in-out shadow-sm hover:bg-red-100 hover:text-red-700 hover:shadow-md hidden">
+                Logout
+            </button>
+        </div>
+    </header>
+    <main class="flex-1">
+        <section class="max-w-screen-xl mx-auto px-4 sm:px-10 py-20">
+            <h1 class="text-5xl font-extrabold text-gray-900 leading-tight text-center mb-12">Choose Your Plan</h1>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-10">
+                <!-- Free Plan -->
+                <div class="bg-white border border-gray-200 rounded-2xl p-8 shadow-md hover:shadow-lg transition duration-300">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Free</h2>
+                    <p class="text-gray-600 mb-6">Perfect for individuals and small teams getting started.</p>
+                    <ul class="text-gray-700 space-y-4 mb-6">
+                        <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> Unlimited Meetings</li>
+                        <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> Basic Analytics</li>
+                        <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> Screen Sharing</li>
+                        <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> Text Chat</li>
+                    </ul>
+                    <button class="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl text-lg hover:bg-blue-700 transition-all duration-300">Get Started</button>
+                </div>
+                <!-- Pro Plan -->
+                <div class="bg-white border border-gray-200 rounded-2xl p-8 shadow-md hover:shadow-lg transition duration-300">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Pro</h2>
+                    <p class="text-gray-600 mb-6">For professionals and businesses looking to scale.</p>
+                    <ul class="text-gray-700 space-y-4 mb-6">
+                        <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> All Free Features</li>
+                        <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> Priority Support</li>
+                        <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> Advanced Analytics</li>
+                        <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> Custom Branding</li>
+                        <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> Recording and Transcription</li>
+                    </ul>
+                    <button class="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl text-lg hover:bg-blue-700 transition-all duration-300">Upgrade to Pro</button>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer class="text-gray-700 py-8 max-w-screen-xl mt-auto mx-auto w-full sm:px-10">
+        <div class="container mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <p class="text-sm">&copy; 2025 MiroTalk SFU, all rights reserved</p>
+                <ul class="flex flex-col md:flex-row mt-4 md:mt-0">
+                    <li class="mr-6"><a href="/about" class="text-gray-600 hover:text-blue-600">About</a></li>
+                    <li class="mr-6"><a href="/privacy" class="text-gray-600 hover:text-blue-600">Privacy Policy</a></li>
+                    <li><a href="/api/v1/docs/" class="text-gray-600 hover:text-blue-600">Rest API</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

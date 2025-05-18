@@ -227,9 +227,12 @@ const views = {
     room: path.join(__dirname, '../../', 'public/views/Room.html'),
     rtmpStreamer: path.join(__dirname, '../../', 'public/views/RtmpStreamer.html'),
     whoAreYou: path.join(__dirname, '../../', 'public/views/whoAreYou.html'),
+    pricing: path.join(__dirname, '../../', 'public/views/pricing.html'),
+    contact: path.join(__dirname, '../../', 'public/views/contact.html'),
+    features: path.join(__dirname, '../../', 'public/views/features.html'),
 };
 
-const filesPath = [views.landing, views.newRoom, views.room, views.login, views.signup];
+const filesPath = [views.landing, views.newRoom, views.room, views.login, views.signup, views.pricing, views.contact, views.features];
 
 const htmlInjector = new HtmlInjector(filesPath, config.ui.brand);
 
@@ -682,6 +685,21 @@ function startServer() {
     // privacy policy
     app.get('/privacy', (req, res) => {
         res.sendFile(views.privacy);
+    });
+
+    //pricing
+    app.get('/pricing', (req, res) => {
+        res.sendFile(views.pricing);
+    });
+
+    //contact
+    app.get('/contact', (req, res) => {
+        res.sendFile(views.contact);
+    });
+
+    //features
+    app.get('/features', (req, res) => {
+        res.sendFile(views.features);
     });
 
     // collab about
