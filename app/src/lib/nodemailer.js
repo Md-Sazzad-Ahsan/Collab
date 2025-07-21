@@ -36,6 +36,27 @@ const transport = nodemailer.createTransport({
     },
 });
 
+function sendEmailVerification(email, token) {
+    const verifyLink = `${config?.server?.hostUrl}/verify-email?email=${email}&token=${token}`;
+
+    const subject = 'Verify your email';
+    const body = `
+        <h2>Email Verification Required</h2>
+        <p>Thank you for registering! Please click the link below to verify your email address:</p>
+        <a href="${verifyLink}">${verifyLink}</a>
+        <p>This link will expire in 24 hours or after use.</p>
+    `;
+
+    return transport
+        .sendMail({
+            from: EMAIL_USERNAME,
+            to: email,
+            subject,
+            html: body,
+        })
+        .catch((err) => log.error('sendEmailVerification Error', err));
+}
+
 // ####################################################
 // EMAIL SEND ALERTS AND NOTIFICATIONS
 // ####################################################
@@ -150,4 +171,5 @@ function getCurrentDataTime() {
 
 module.exports = {
     sendEmailAlert,
+    sendEmailVerification,
 };

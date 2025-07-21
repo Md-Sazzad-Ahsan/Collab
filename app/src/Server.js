@@ -230,9 +230,10 @@ const views = {
     pricing: path.join(__dirname, '../../', 'public/views/pricing.html'),
     contact: path.join(__dirname, '../../', 'public/views/contact.html'),
     features: path.join(__dirname, '../../', 'public/views/features.html'),
+    verifyEmail: path.join(__dirname, '../../', 'public/views/verifyemail.html'),
 };
 
-const filesPath = [views.landing, views.newRoom, views.room, views.login, views.signup, views.pricing, views.contact, views.features];
+const filesPath = [views.landing, views.newRoom, views.room, views.login, views.signup, views.pricing, views.contact, views.features, views.verifyEmail];
 
 const htmlInjector = new HtmlInjector(filesPath, config.ui.brand);
 
@@ -465,16 +466,23 @@ function startServer() {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        const newUser = new User({ name, email, password });
+        const verificationToken = crypto.lib.WordArray.random(32).toString();
+
+        const newUser = new User({
+            name,
+            email,
+            password,
+            isVerified: false,
+            verificationToken,
+        });
+
         await newUser.save();
 
-        req.session.user = {
-            id: newUser._id,
-            name: newUser.name,
-            email: newUser.email,
-        };
+        res.send('Please check your email to verify your account.');
 
-        res.redirect('/');
+        nodemailer.sendEmailVerification(email, verificationToken)
+        .then(() => log.log(`%cVerification email sent to ${email}`, 'font-family:monospace; color: green; font-size: 16px'))
+        .catch(err => log.error(`Error sending verification email to ${email}`, err));
     });
 
     // OpenID Connect - Dynamically set baseURL based on incoming host and protocol
@@ -757,32 +765,52 @@ function startServer() {
         try {
             const { email, password } = checkXSS(req.body);
 
-            // Find user by email instead of username
             const user = await User.findOne({ email });
             if (!user) {
                 log.debug(`User with this email: ${email} doesn't exist`);
-                return res.status(401).sendFile(views.login); // Use sendFile for static HTML files
+                return res.status(401).sendFile(views.login);
+            }
+
+            if (!user.isVerified) {
+                log.debug(`User not verified: ${email}`);
+                return res.status(403).send('Please verify your email before logging in.');
             }
 
             const isPasswordCorrect = await bcrypt.compare(password, user.password);
             if (!isPasswordCorrect) {
                 log.debug(`Wrong Credential`);
-                return res.status(401).sendFile(views.login); // Use sendFile for static HTML files
+                return res.status(401).sendFile(views.login);
             }
 
-            // Save to session
             req.session.user = {
                 id: user._id,
-                email: user.email, // store email instead of username
+                email: user.email,
+                isPremium: user.isPremium || false,
             };
 
-            // Redirect to landing
             return res.redirect('/landing');
         } catch (error) {
             console.error('Login error:', error);
-            return res.status(500).sendFile(views.login); // Use sendFile for static HTML files
+            return res.status(500).sendFile(views.login);
         }
     });
+
+    app.get('/verify-email', async (req, res) => {
+        const { email, token } = req.query;
+
+        const user = await User.findOne({ email, verificationToken: token });
+
+        if (!user) {
+            return res.status(400).send('Invalid or expired verification link.');
+        }
+
+        user.isVerified = true;
+        user.verificationToken = undefined; // Invalidate the token
+        await user.save();
+
+        res.sendFile(views.verifyEmail);
+    });
+
 
     // ####################################################
     // RECORDING UTILITY

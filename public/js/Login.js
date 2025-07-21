@@ -4,10 +4,11 @@ const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
 const loginForm = document.getElementById('loginForm');
 const loginBtn = document.getElementById('loginButton');
+const errorBox = document.getElementById('loginError');
 
 // Handle form submission
 loginForm.addEventListener('submit', (e) => {
-    e.preventDefault(); // Stop native form submission
+    e.preventDefault();
     login();
 });
 
@@ -31,26 +32,33 @@ function login() {
     }
 
     axios
-        .post('/login', {
-            email: email,
-            password: password,
-        })
+        .post('/login', { email, password })
         .then(() => {
-            window.location.href = '/'; // Redirect on success (e.g., homepage or dashboard)
+            window.location.href = '/';
         })
         .catch((error) => {
-            const msg = error?.response?.data?.message || 'Wrong credentials. Please try again.';
+            let msg = 'Something went wrong.';
+
+            if (error?.response?.data?.message) {
+                msg = error.response.data.message;
+            } else if (error?.response?.status === 401) {
+                msg = 'Invalid email or password.';
+            } else if (error?.response?.status === 403) {
+                msg = 'Email not verified. Please check your inbox.';
+            }
+
             popup('warning', msg);
             passwordInput.value = '';
         });
 }
 
 function filterXSS(input) {
-    // Basic input sanitation
     return input.replace(/[<>]/g, '');
 }
 
 function popup(type, message) {
-    // Replace with custom toast/modal later
-    alert(message);
+    if (!errorBox) return;
+
+    errorBox.textContent = message;
+    errorBox.classList.remove('hidden');
 }

@@ -1,4 +1,3 @@
-// models/User.js
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
@@ -7,6 +6,10 @@ const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+
+    // Add these for email verification:
+    isVerified: { type: Boolean, default: false },
+    verificationToken: { type: String },
 });
 
 // Hash the password before saving it to the database
