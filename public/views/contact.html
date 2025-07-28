@@ -46,22 +46,7 @@
         <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen flex flex-col bg-gray-50 font-sans antialiased text-gray-900">
-    <header class="w-full bg-white shadow-md">
-        <div class="max-w-screen-xl mx-auto py-6 px-4 flex justify-between items-center sm:px-10">
-            <div class="flex items-center space-x-12">
-                <a href="/" class="text-3xl font-semibold text-blue-600 hover:text-blue-700 transition duration-300">Collab</a>
-                <nav class="hidden md:flex space-x-8">
-                    <a href="/" class="text-lg font-medium text-gray-700 hover:text-blue-600 transition duration-300">Home</a>
-                    <a href="/features" class="text-lg font-medium text-gray-700 hover:text-blue-600 transition duration-300">Features</a>
-                    <a href="/pricing" class="text-lg font-medium text-gray-700 hover:text-blue-600 transition duration-300">Pricing</a>
-                    <a href="/contact" class="text-lg font-medium text-gray-700 hover:text-blue-600 transition duration-300">Contact</a>
-                </nav>
-            </div>
-            <button class="px-4 py-2 bg-red-50 text-red-600 font-semibold rounded-lg text-lg border border-red-600 transition duration-300 ease-in-out shadow-sm hover:bg-red-100 hover:text-red-700 hover:shadow-md hidden">
-                Logout
-            </button>
-        </div>
-    </header>
+    <div id="header-placeholder"></div>
     <main class="flex-1">
         <div class="max-w-screen-xl mx-auto px-4 sm:px-10">
             <section class="max-w-3xl py-16 animate__animated animate__fadeIn">
@@ -86,17 +71,8 @@
             </section>
         </div>
     </main>
-    <footer class="text-gray-700 py-8 max-w-screen-xl mt-auto mx-auto w-full sm:px-10">
-        <div class="container mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <p class="text-sm">&copy; 2025 MiroTalk SFU, all rights reserved</p>
-                <ul class="flex flex-col md:flex-row mt-4 md:mt-0">
-                    <li class="mr-6"><a href="/about" class="text-gray-600 hover:text-blue-600">About</a></li>
-                    <li class="mr-6"><a href="/privacy" class="text-gray-600 hover:text-blue-600">Privacy Policy</a></li>
-                    <li><a href="/api/v1/docs/" class="text-gray-600 hover:text-blue-600">Rest API</a></li>
-                </ul>
-            </div>
-        </div>
-    </footer>
+    <div id="footer-placeholder"></div>
+    <script defer src="../js/layoutLoader.js"></script>
+    <script defer src="../js/Auth.js"></script>
 </body>
 </html>

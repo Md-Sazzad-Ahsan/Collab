@@ -17,20 +17,13 @@
         <script async src="../js/Umami.js"></script>
     </head>
 
-    <body class="min-h-screen flex flex-col bg-gray-50 font-sans antialiased text-gray-900 sm:px-10">
+    <body class="min-h-screen flex flex-col bg-gray-50 font-sans text-gray-900">
+        <!-- Header -->
+        <div id="header-placeholder"></div>
+
         <!-- Wrapper -->
         <div class="flex-1">
-            <div class="max-w-screen-xl mx-auto px-4">
-                <!-- Header -->
-                <header class="py-8 flex justify-between items-center">
-                    <a
-                        href="/"
-                        class="text-3xl font-semibold text-blue-600 hover:text-blue-700 transition duration-300"
-                    >
-                        Collab
-                    </a>
-                </header>
-
+            <div class="max-w-screen-xl mx-auto px-4 sm:px-10">
                 <!-- 404 Section -->
                 <section class="flex flex-col items-start py-20 animate__animated animate__fadeInUp">
                     <div class="text-left space-y-6">
@@ -52,8 +45,8 @@
         </div>
 
         <!-- Footer -->
-        <footer class="py-8 bg-gray-50 text-center text-black mt-auto">
-            <p>&copy; 2025 Collab - All rights reserved</p>
-        </footer>
+        <div id="footer-placeholder"></div>
+        <script defer src="../js/layoutLoader.js"></script>
+        <script defer src="../js/Auth.js"></script>
     </body>
 </html>

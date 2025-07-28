@@ -231,9 +231,11 @@ const views = {
     contact: path.join(__dirname, '../../', 'public/views/contact.html'),
     features: path.join(__dirname, '../../', 'public/views/features.html'),
     verifyEmail: path.join(__dirname, '../../', 'public/views/verifyemail.html'),
+    emailInvalid: path.join(__dirname, '../../', 'public/views/emailInvalid.html'),
+    emailAlreadyVerified: path.join(__dirname, '../../', 'public/views/emailAlreadyVerified.html'),
 };
 
-const filesPath = [views.landing, views.newRoom, views.room, views.login, views.signup, views.pricing, views.contact, views.features, views.verifyEmail];
+const filesPath = [views.landing, views.newRoom, views.room, views.login, views.signup, views.pricing, views.contact, views.features, views.verifyEmail, views.emailInvalid, views.emailAlreadyVerified];
 
 const htmlInjector = new HtmlInjector(filesPath, config.ui.brand);
 
@@ -798,18 +800,31 @@ function startServer() {
     app.get('/verify-email', async (req, res) => {
         const { email, token } = req.query;
 
-        const user = await User.findOne({ email, verificationToken: token });
+        try {
+            const user = await User.findOne({ email });
 
-        if (!user) {
-            return res.status(400).send('Invalid or expired verification link.');
+            // If user already verified
+            if (user.isVerified) {
+                return res.sendFile(views.emailAlreadyVerified); // create a nice HTML page for this
+            }
+
+            // If user not found or token doesn't match
+            if (!user || user.verificationToken !== token) {
+                return res.status(400).sendFile(views.emailInvalid);
+            }
+
+            // Mark user as verified
+            user.isVerified = true;
+            user.verificationToken = undefined; // Invalidate the token
+            await user.save();
+
+            res.sendFile(views.verifyEmail); // success page
+        } catch (err) {
+            console.error('Email verification error:', err);
+            res.status(500).send('Server error during email verification.');
         }
-
-        user.isVerified = true;
-        user.verificationToken = undefined; // Invalidate the token
-        await user.save();
-
-        res.sendFile(views.verifyEmail);
     });
+
 
 
     // ####################################################

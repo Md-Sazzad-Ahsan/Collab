@@ -45,7 +45,16 @@ function signup() {
         })
         .catch((error) => {
             console.error('Signup error:', error);
-            const msg = error?.response?.data || 'Signup failed. Please try again.';
+
+            let msg = 'Signup failed. Please try again.';
+            if (error?.response?.data) {
+                if (typeof error.response.data === 'string') {
+                    msg = error.response.data;
+                } else if (typeof error.response.data === 'object' && error.response.data.message) {
+                    msg = error.response.data.message;
+                }
+            }
+
             popup(msg);
             passwordInput.value = '';
         });
