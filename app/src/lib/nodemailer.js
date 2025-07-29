@@ -39,78 +39,49 @@ const transport = nodemailer.createTransport({
 function sendEmailVerification(email, token) {
     const verifyLink = `${config?.server?.hostUrl}/verify-email?email=${email}&token=${token}`;
 
-    const subject = 'Verify your email';
+    const subject = 'Please Confirm Your Email Address';
     const body = 
     `
     <!DOCTYPE html>
     <html>
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Verify Your Collab Account</title>
-        <style type="text/css">
-            @media screen and (max-width: 600px) {
-                .main-container {
-                    width: 100% !important;
-                    padding: 24px !important;
-                }
-                .content-card {
-                    padding: 24px !important;
-                }
-                .heading {
-                    font-size: 24px !important;
-                }
-            }
-        </style>
+        <title>Email Verification - Collab</title>
     </head>
-    <body style="margin:0;padding:0;background-color:#f9fafb;font-family:Arial,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
-        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <body style="margin:0;padding:0;background-color:#f5f5f5;font-family:Segoe UI, Arial, sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
             <tr>
-                <td align="center" style="padding:40px 10px;">
-                    <table class="main-container" width="600" border="0" cellspacing="0" cellpadding="0" style="background-color:#ffffff;border-radius:12px;padding:48px;box-shadow:0 10px 25px rgba(0,0,0,0.05);">
+                <td align="center">
+                    <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border:1px solid #e0e0e0;border-radius:8px;padding:32px;">
                         <tr>
-                            <td align="center" style="padding-bottom:32px;">
-                                <h1 class="heading" style="font-size:30px;font-weight:800;margin:0;color:#111827;line-height:1.25;">
-                                    <span style="color:#2563eb;">Verify</span> your email address
-                                </h1>
+                            <td style="padding-bottom:24px;">
+                                <h2 style="margin:0;color:#333333;font-weight:600;font-size:22px;">Email Verification Required</h2>
                             </td>
                         </tr>
                         <tr>
-                            <td class="content-card" style="background-color:#f8fafc;border-radius:12px;padding:32px;margin-bottom:40px;border:1px solid #e2e8f0;">
-                                <p style="font-size:18px;color:#4b5563;text-align:center;margin:0 0 24px 0;line-height:1.5;">
-                                    Thanks for signing up for <strong style="color:#111827;">Collab</strong>! Please confirm your email to activate your account.
-                                </p>
-                                <div style="text-align:center;">
-                                    <a href="${verifyLink}" style="display:inline-block;background-color:#2563eb;color:#ffffff;padding:12px 32px;font-size:16px;font-weight:600;border-radius:12px;text-decoration:none;">
-                                        Verify Email Address
-                                    </a>
-                                </div>
+                            <td style="font-size:15px;color:#555555;line-height:1.6;padding-bottom:24px;">
+                                Dear User,<br><br>
+                                We received a request to create an account with your email address on <strong>Collab</strong>. To complete the registration process, please verify your email by clicking the button below.
                             </td>
                         </tr>
                         <tr>
-                            <td style="padding-bottom:16px;">&nbsp;</td>
-                        </tr>
-                        <tr>
-                            <td align="center" style="padding-bottom:15px;">
-                                <p style="font-size:16px;color:#6b7280;text-align:center;margin:0;font-style:italic;">
-                                    "No downloads. No delays. Just click and connect."
-                                </p>
+                            <td style="text-align:center;padding-bottom:32px;">
+                                <a href="${verifyLink}" style="background-color:#2563eb;color:#ffffff;text-decoration:none;padding:12px 24px;font-size:15px;border-radius:4px;display:inline-block;">
+                                    Verify Email
+                                </a>
                             </td>
                         </tr>
                         <tr>
-                            <td align="center" style="padding-bottom:32px;">
-                                <div style="background-color:#fef2f2;color:#dc2626;padding:8px 16px;border-radius:50px;font-size:14px;display:inline-block;">
-                                    <span style="width:12px;height:12px;background-color:#dc2626;border-radius:50%;margin-right:8px;display:inline-block;vertical-align:middle;"></span>
-                                    <span style="vertical-align:middle;">Link expires in 24 hours</span>
-                                </div>
+                            <td style="font-size:14px;color:#777777;line-height:1.5;padding-bottom:24px;">
+                                This verification link will expire in <strong>24 hours</strong>. If you did not initiate this request, no further action is required and you may safely ignore this message.
                             </td>
                         </tr>
                         <tr>
-                            <td style="border-top:1px solid #e5e7eb;padding-top:32px;">
-                                <p style="font-size:12px;color:#9ca3af;text-align:center;margin:0;">
-                                    If you didn't request this email, you can safely ignore it.<br>
-                                    <span style="color:#2563eb;font-weight:600;">Collab Team</span>
-                                </p>
+                            <td style="font-size:14px;color:#999999;border-top:1px solid #e0e0e0;padding-top:24px;">
+                                Regards,<br>
+                                <strong>Collab Support Team</strong><br>
+                                <span style="font-size:13px;color:#aaaaaa;">This is an automated message. Please do not reply.</span>
                             </td>
                         </tr>
                     </table>
@@ -123,7 +94,7 @@ function sendEmailVerification(email, token) {
 
     return transport
         .sendMail({
-            from: EMAIL_USERNAME,
+            from: `"Collab Support Team" <${EMAIL_USERNAME}>`,
             to: email,
             subject,
             html: body,
