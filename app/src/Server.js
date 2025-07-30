@@ -41,8 +41,14 @@ const packageJson = require('../../package.json');
 const session = require('express-session');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const User = require('./models/User'); // Import the User model
+const User = require('./models/User');
+const Payment = require('./models/Payment');
+const Subscription = require('./models/Subscription');
 const bcrypt = require('bcryptjs');
+const SSLCommerzPayment = require('sslcommerz-lts');
+const store_id = process.env.SSLCZ_STORE_ID;
+const store_passwd = process.env.SSLCZ_STORE_PASSWORD;
+const is_live = false;
 
 // Incoming Stream to RTPM
 const { v4: uuidv4 } = require('uuid');
@@ -233,9 +239,12 @@ const views = {
     verifyEmail: path.join(__dirname, '../../', 'public/views/verifyemail.html'),
     emailInvalid: path.join(__dirname, '../../', 'public/views/emailInvalid.html'),
     emailAlreadyVerified: path.join(__dirname, '../../', 'public/views/emailAlreadyVerified.html'),
+    paymentSuccess: path.join(__dirname, '../../', 'public/views/payment-success.html'),
+    paymentFail: path.join(__dirname, '../../', 'public/views/payment-fail.html'),
+    paymentCancel: path.join(__dirname, '../../', 'public/views/payment-cancel.html'),
 };
 
-const filesPath = [views.landing, views.newRoom, views.room, views.login, views.signup, views.pricing, views.contact, views.features, views.verifyEmail, views.emailInvalid, views.emailAlreadyVerified];
+const filesPath = [views.landing, views.newRoom, views.room, views.login, views.signup, views.pricing, views.contact, views.features, views.verifyEmail, views.emailInvalid, views.emailAlreadyVerified, views.paymentSuccess, views.paymentFail, views.paymentCancel];
 
 const htmlInjector = new HtmlInjector(filesPath, config.ui.brand);
 
@@ -517,6 +526,162 @@ function startServer() {
             }
         });
     }
+
+    // 1. INITIATE PAYMENT
+    app.post('/init-payment', async (req, res) => {
+        try {
+            const sessionUser = req.session.user;
+            if (!sessionUser?.id) return res.status(401).send('Unauthorized');
+
+            const { amount } = req.body;
+            if (!amount || isNaN(amount) || amount <= 0) return res.status(400).send('Invalid amount');
+
+            const user = await User.findById(sessionUser.id);
+            if (!user) return res.status(404).send('User not found');
+
+            const activeSub = await Subscription.findOne({
+                user: user._id,
+                status: 'active',
+                endDate: { $gt: new Date() },
+            });
+
+            if (activeSub) {
+                return res.status(400).json({ error: 'You already have an active premium subscription.' });
+            }
+
+            const now = new Date();
+            const datePart = now.toISOString().slice(0, 10).replace(/-/g, '');
+            const rand = Math.random().toString(36).slice(2, 8).toUpperCase();
+            const tran_id = `tran_${datePart}_${rand}`;
+
+            await Payment.create({
+                user: user._id,
+                transactionId: tran_id,
+                amount,
+                status: 'Pending',
+            });
+
+            const data = {
+                total_amount: amount,
+                currency: 'BDT',
+                tran_id,
+                success_url: `${host}/payment-success?tran_id=${tran_id}`,
+                fail_url: `${host}/payment-fail?tran_id=${tran_id}`,
+                cancel_url: `${host}/payment-cancel?tran_id=${tran_id}`,
+                ipn_url: `${host}/ipn`,
+                cus_name: user.name,
+                cus_email: user.email,
+                cus_phone: user.phone || '01700000000',
+                shipping_method: 'NO',
+                product_name: 'Monthly Premium Subscription',
+                product_category: 'Subscription',
+                product_profile: 'general',
+            };
+
+            const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
+            const apiResponse = await sslcz.init(data);
+            res.json({ url: apiResponse.GatewayPageURL });
+
+        } catch (err) {
+            console.error('init-payment error:', err);
+            res.status(500).send('Payment initiation failed');
+        }
+    });
+
+
+    // 2. SUCCESS PAGE
+    app.all('/payment-success', async (req, res) => {
+        if (!req.session.user || !req.session.user.id) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        const { tran_id } = req.query;
+        if (!tran_id) return res.status(400).send('Missing transaction ID');
+
+        const payment = await Payment.findOne({ transactionId: tran_id });
+        if (!payment) return res.status(404).send('Payment not found');
+
+        if (payment.status !== 'Success') {
+            const now = new Date();
+            const expiry = new Date(now);
+            expiry.setDate(now.getDate() + 30);
+
+            payment.status = 'Success';
+            payment.payment_date = now;
+            await payment.save();
+
+            await Subscription.create({
+            user: payment.user,
+            startDate: now,
+            endDate: expiry,
+            status: 'active',
+            });
+        }
+
+        res.sendFile(views.paymentSuccess);
+    });
+
+
+    // 3. FAIL & CANCEL
+    app.all('/payment-fail', async (req, res) => {
+        if (!req.session.user || !req.session.user.id) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        const { tran_id } = req.query;
+        if (tran_id) await Payment.deleteOne({ transactionId: tran_id, status: 'Pending' });
+        res.sendFile(views.paymentFail);
+    });
+
+    app.all('/payment-cancel', async (req, res) => {
+        if (!req.session.user || !req.session.user.id) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        const { tran_id } = req.query;
+        if (tran_id) await Payment.deleteOne({ transactionId: tran_id, status: 'Pending' });
+        res.sendFile(views.paymentCancel);
+    });
+
+
+    // 4. FETCH PAYMENT DETAILS (AUTH REQUIRED)
+    app.get('/payment-details', async (req, res) => {
+        if (!req.session.user?.id) return res.status(401).json({ error: "Unauthorized" });
+
+        const { tran_id } = req.query;
+        const payment = await Payment.findOne({ transactionId: tran_id, user: req.session.user.id }).lean();
+        if (!payment) return res.status(404).json({ error: "Payment not found" });
+
+        res.json(payment);
+    });
+
+    app.get('/user-subscription', async (req, res) => {
+        try {
+            if (!req.session.user?.id) return res.status(401).json({ error: 'Unauthorized' });
+
+            const userId = req.session.user.id;
+
+            // Find active subscription
+            const activeSub = await Subscription.findOne({
+            user: userId,
+            status: 'active',
+            endDate: { $gte: new Date() },
+            }).sort({ endDate: -1 });
+
+            if (activeSub) {
+            return res.json({
+                isPremium: true,
+                expiryDate: activeSub.endDate,
+            });
+            } else {
+            return res.json({
+                isPremium: false,
+                expiryDate: null,
+            });
+            }
+        } catch (error) {
+            console.error('User subscription error:', error);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+    });
+
 
     // Route to display user information
     app.get('/profile', OIDCAuth, (req, res) => {

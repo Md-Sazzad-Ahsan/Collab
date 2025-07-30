@@ -3,13 +3,15 @@ const bcrypt = require('bcryptjs');
 
 // Define the user schema
 const userSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
 
-    // Add these for email verification:
-    isVerified: { type: Boolean, default: false },
-    verificationToken: { type: String },
+  isVerified: { type: Boolean, default: false },
+  verificationToken: { type: String },
+
+  is_premium: { type: Boolean, default: false },
+  premium_expiry: { type: Date },
 });
 
 // Hash the password before saving it to the database
