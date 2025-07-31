@@ -8521,10 +8521,25 @@ class RoomClient {
         });
     }
 
-    confirmPeerAction(action, data) {
+    async confirmPeerAction(action, data) {
         console.log('Confirm peer action', action);
         switch (action) {
             case 'ban':
+
+                // ####################################################
+                // Premium Access
+                // ####################################################
+                const res = await fetch('/user-subscription', { method: 'GET', credentials: 'include' });
+                const json = await res.json();
+
+                if (!json.isPremium) {
+                    userLog('warning', 'Upgrade to premium to use the Ban feature', 'top-end', 5000);
+                    return; // Block ban action if not premium
+                }
+                // ####################################################
+                // Premium Access
+                // ####################################################
+
                 let banConfirmed = false;
                 Swal.fire({
                     background: swalBackground,

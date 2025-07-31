@@ -787,8 +787,24 @@ function setRecognitionLanguage(recognition, languageCode) {
     console.log(`Voice recognition language set to: ${languageCode}`);
 }
 
-function startSpeech() {
+async function startSpeech() {
     try {
+        // ####################################################
+        // Premium Access
+        // ####################################################
+        const res = await fetch('/user-subscription');
+        if (!res.ok) throw new Error('Failed to check subscription');
+
+        const data = await res.json();
+
+        if (!data.isPremium) {
+            userLog('warning', 'Upgrade to premium to use speech recognition', 'top-end', 5000);
+            return; // Don't start recognition
+        }
+        // ####################################################
+        // Premium Access
+        // ####################################################
+
         recognition.lang = languageHandlers[currentLanguage]?.langCode || 'en-US';
         recognition.start();
     } catch (error) {

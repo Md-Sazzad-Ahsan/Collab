@@ -52,3 +52,39 @@ Before running the project, make sure you have the following installed:
     ```
 
     This will run the server, and you should be able to access the app at `http://localhost:3010`.
+
+## Additional Features Beyond Google Meet
+
+Collab offers several advanced features that are not available in platforms like Google Meet:
+
+- **Geolocation Tracking**  
+  Enables tracking of participants real-time locations during meetings.
+
+- **File Sharing Within Meetings**  
+  Allows users to send and receive files directly inside the meeting interface.
+
+- **AI Meeting Assistant**  
+  An intelligent assistant capable of summarizing discussions, generating responses, and enhancing productivity.
+
+- **Participant Ban Option**  
+  Provides the ability to block or remove users from a meeting session with full control.
+
+- **Customizable Meeting Themes**  
+  Supports personalized themes or branded meeting room appearances.
+
+- **AI-Generated Video Avatars**  
+  Allows users to represent themselves using animated AI avatars.
+
+- **Real-time Text-to-Speech and Speech-to-Text Conversion**  
+  Facilitates accessibility and multi-language communication through voice and text conversion.
+
+- **Voice Command Control**  
+  Enables hands-free interaction by allowing meeting controls via voice recognition.
+
+- **Built-in Whiteboard and Collaborative Editor**  
+  Includes integrated tools for real-time sketching, note-taking, and code or document editing.
+
+- **Snapshot**  
+  Allows users to take screenshots of the meeting screen with easy clicks, eliminating the need for complex keyboard shortcuts.
+
+---
