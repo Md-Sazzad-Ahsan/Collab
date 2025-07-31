@@ -5048,13 +5048,16 @@ class RoomClient {
         `;
 
         this.collectMessages(time, getFromName, getMsg);
-        console.log('Append message to:', { to_id: getToId, to_name: getToName });
+
         const typingIndicator = document.createElement('div');
         typingIndicator.id = 'typing-indicator';
-        typingIndicator.innerHTML = 'AI Assistant is typing...';
-        if (fromName === 'ChatGPT') {
+        typingIndicator.innerHTML = (getToId === 'ChatGPT' && fromName !== 'ChatGPT') ? 'AI Assistant is typing...' : '';
+
+        if (fromName === 'ChatGPT' || getToId !== 'ChatGPT') {
             const indicator = document.getElementById('typing-indicator');
-            chatGPTMessages.removeChild(indicator);
+            if (indicator && indicator.parentNode) {
+                indicator.remove();
+            }
         }
 
         console.log('Append message to:', { to_id: getToId, to_name: getToName });
@@ -5074,6 +5077,13 @@ class RoomClient {
         const message = getId(`message-${chatMessagesId}`);
         if (message) {
             if (fromName !== 'ChatGPT') chatGPTMessages.insertAdjacentElement('beforeend', typingIndicator);
+            else
+            {
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator && indicator.parentNode) {
+                    indicator.remove();
+                }
+            }
             if (getFromName === 'ChatGPT') {
                 // Stream the message for ChatGPT
                 this.streamMessage(message, getMsg, 100);

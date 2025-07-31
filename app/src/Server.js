@@ -46,6 +46,7 @@ const Payment = require('./models/Payment');
 const Subscription = require('./models/Subscription');
 const bcrypt = require('bcryptjs');
 const SSLCommerzPayment = require('sslcommerz-lts');
+const sharedSession = require('express-socket.io-session');
 const store_id = process.env.SSLCZ_STORE_ID;
 const store_passwd = process.env.SSLCZ_STORE_PASSWORD;
 const is_live = false;
@@ -71,6 +72,13 @@ const slackEnabled = config?.integrations?.slack?.enabled || false;
 const slackSigningSecret = config?.integrations?.slack?.signingSecret || '';
 
 const app = express();
+
+const sessionMiddleware = session({
+    secret: 'collab-secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 24 * 60 * 60 * 1000 },
+});
 
 const options = {
     cert: fs.readFileSync(path.join(__dirname, config?.server?.ssl.cert || '../ssl/cert.pem'), 'utf-8'),
@@ -435,14 +443,7 @@ function startServer() {
 
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
-    app.use(
-        session({
-            secret: 'collab-secret',
-            resave: false,
-            saveUninitialized: false,
-            cookie: { maxAge: 24 * 60 * 60 * 1000 }, // 1 day session expiration
-        }),
-    );
+    app.use(sessionMiddleware);
     app.use((req, res, next) => {
         res.set('Cache-Control', 'no-store');
         next();
@@ -495,6 +496,22 @@ function startServer() {
         .then(() => log.log(`%cVerification email sent to ${email}`, 'font-family:monospace; color: green; font-size: 16px'))
         .catch(err => log.error(`Error sending verification email to ${email}`, err));
     });
+
+    app.post('/contact-us', async (req, res) => {
+        const { email, name, message } = req.body;
+
+        if (!email || !name || !message) {
+            return res.status(400).json({ error: 'All fields are required.' });
+        }
+
+        try {
+            await nodemailer.sendUserMessageToAdmin(email, name, message);
+            res.status(200).json({ message: 'Message sent successfully.' });
+        } catch (err) {
+            res.status(500).json({ error: 'Failed to send message.' });
+        }
+    });
+
 
     // OpenID Connect - Dynamically set baseURL based on incoming host and protocol
     if (OIDC.enabled) {
@@ -952,7 +969,8 @@ function startServer() {
             req.session.user = {
                 id: user._id,
                 email: user.email,
-                isPremium: user.isPremium || false,
+                isPremium: user.is_premium || false,
+                premiumExpiry: user.premium_expiry || null
             };
 
             return res.redirect('/landing');
@@ -1749,6 +1767,9 @@ function startServer() {
     // ####################################################
     // SOCKET IO
     // ####################################################
+    io.use(sharedSession(sessionMiddleware, {
+        autoSave: true
+    }));
 
     io.on('connection', (socket) => {
         socket.on('clientError', (error) => {
@@ -2749,30 +2770,40 @@ function startServer() {
         socket.on('getChatGPT', async ({ time, room, name, prompt, context }, cb) => {
             if (!roomExists(socket)) return;
 
-            if (!config?.integrations?.chatGPT?.enabled)
-                return cb({ message: 'AI Assistant seems disabled, try later!' });
+            // Get the user info from socket (adjust according to your session structure)
+            const user = socket.handshake?.session?.user;
 
-            // https://platform.openai.com/docs/api-reference/completions/create
+            console.log("user:", JSON.stringify(user, null, 2));
+            // If user not available or not premium or expired
+            const now = new Date();
+            if (
+                !user ||
+                !user.isPremium ||
+                (user.premium_expiry && new Date(user.premium_expiry) < now)
+            ) {
+                return cb({ message: 'Upgrade to premium to use AI Assistant.' });
+            }
+
+            if (!config?.integrations?.chatGPT?.enabled) {
+                return cb({ message: 'AI Assistant seems disabled, try later!' });
+            }
+
             try {
                 // Add the prompt to the context
                 context.push({ role: 'user', content: prompt });
 
-                // Send a request to Ollama's API to generate a response with hardcoded values
                 const response = await fetch('http://localhost:11434/api/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        model: 'llama3.2:1b', // Hardcoded model
-                        prompt: prompt, // Use the prompt directly as Ollama expects it
-                        // stream: true             // Enable streaming
+                        model: 'llama3.2:1b',
+                        prompt: prompt,
                     }),
                 });
 
                 if (!response.ok) throw new Error(`API returned status: ${response.status}`);
 
                 let fullMessage = '';
-
-                // Read the stream in chunks to handle real-time streaming response
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let done = false;
@@ -2781,24 +2812,15 @@ function startServer() {
                     const { value, done: streamDone } = await reader.read();
                     done = streamDone;
                     if (value) {
-                        // Decode and parse each chunk of data
                         const chunk = decoder.decode(value, { stream: true });
-
-                        // Assuming each line in the stream is a complete JSON object
                         const json = JSON.parse(chunk);
-
-                        // Append response text to the full message as it streams in
                         if (json.response) fullMessage += json.response;
-
-                        // If streaming is done, end the loop
                         if (json.done) break;
                     }
                 }
 
-                // Add the final response to the context
                 context.push({ role: 'assistant', content: fullMessage.trim() });
 
-                // Log conversation details
                 log.info('Ollama', {
                     time: time,
                     room: room,
@@ -2806,7 +2828,6 @@ function startServer() {
                     context: context,
                 });
 
-                // Callback response to client with the complete message
                 cb({ message: fullMessage.trim(), context: context });
             } catch (error) {
                 log.error('Ollama', error);

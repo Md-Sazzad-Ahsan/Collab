@@ -36,7 +36,7 @@ const transport = nodemailer.createTransport({
     },
 });
 
-function sendEmailVerification(email, token) {
+async function sendEmailVerification(email, token) {
     const verifyLink = `${config?.server?.hostUrl}/verify-email?email=${email}&token=${token}`;
 
     const subject = 'Please Confirm Your Email Address';
@@ -92,14 +92,17 @@ function sendEmailVerification(email, token) {
     </html>
     `;
 
-    return transport
-        .sendMail({
-            from: `"Collab Support Team" <${EMAIL_USERNAME}>`,
-            to: email,
-            subject,
-            html: body,
-        })
-        .catch((err) => log.error('sendEmailVerification Error', err));
+    try {
+        return await transport
+            .sendMail({
+                from: `"Collab Support Team" <${EMAIL_USERNAME}>`,
+                to: email,
+                subject,
+                html: body,
+            });
+    } catch (err) {
+        return log.error('sendEmailVerification Error', err);
+    }
 }
 
 // ####################################################
@@ -214,7 +217,64 @@ function getCurrentDataTime() {
     return `${currentTime}:${milliseconds}`;
 }
 
+async function sendUserMessageToAdmin(userEmail, userName, userMessage) {
+    const subject = `Collab Contact Message - ${userName}`;
+
+    const body = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8" />
+    <title>New Contact Message - Collab</title>
+    </head>
+    <body style="background-color: #f9fafb; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 24px; color: #1f2937;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: auto; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 0 8px rgba(0,0,0,0.05); padding: 24px;">
+        <tr>
+        <td>
+            <h2 style="margin: 0 0 20px 0; font-size: 24px; font-weight: 700; color: #2563eb; border-bottom: 4px solid #3b82f6; padding-bottom: 8px;">
+            New Contact Message
+            </h2>
+            <p style="font-size: 15px; color: #374151; margin-bottom: 24px;">
+            You have received a new message via the <strong>Collab</strong> contact form:
+            </p>
+            <table role="presentation" width="100%" style="font-size: 15px; color: #374151; border-collapse: collapse;">
+            <tr>
+                <td style="font-weight: 600; padding: 6px 8px; vertical-align: top; width: 120px;">Name:</td>
+                <td style="padding: 6px 8px;">${userName}</td>
+            </tr>
+            <tr>
+                <td style="font-weight: 600; padding: 6px 8px; vertical-align: top;">Email:</td>
+                <td style="padding: 6px 8px;">${userEmail}</td>
+            </tr>
+            <tr>
+                <td style="font-weight: 600; padding: 6px 8px; vertical-align: top;">Message:</td>
+                <td style="padding: 6px 8px; white-space: pre-wrap;">${userMessage}</td>
+            </tr>
+            <tr>
+                <td style="font-weight: 600; padding: 6px 8px; vertical-align: top;">Sent At:</td>
+                <td style="padding: 6px 8px;">${getCurrentDataTime()}</td>
+            </tr>
+            </table>
+            <p style="font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 16px; margin-top: 32px; text-align: center;">
+            This message was sent via the Collab platform. Please respond directly to the user's email if needed.
+            </p>
+        </td>
+        </tr>
+    </table>
+    </body>
+    </html>
+    `;
+
+    return transport.sendMail({
+        from: `"${userEmail}" <${EMAIL_USERNAME}>`, // display name = user email
+        to: EMAIL_SEND_TO,                          // send to your own admin/support email
+        subject,
+        html: body,
+    }).catch((err) => log.error('sendUserMessageToAdmin Error', err));
+}
+
 module.exports = {
     sendEmailAlert,
     sendEmailVerification,
+    sendUserMessageToAdmin,
 };

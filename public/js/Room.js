@@ -27,7 +27,7 @@ const socket = io({
 });
 
 let survey = {
-    enabled: true,
+    enabled: false,
     url: 'https://www.questionpro.com/t/AUs7VZq02P',
 };
 
