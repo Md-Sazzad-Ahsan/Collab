@@ -40,8 +40,7 @@ async function sendEmailVerification(email, token) {
     const verifyLink = `${config?.server?.hostUrl}/verify-email?email=${email}&token=${token}`;
 
     const subject = 'Please Confirm Your Email Address';
-    const body = 
-    `
+    const body = `
     <!DOCTYPE html>
     <html>
     <head>
@@ -93,13 +92,12 @@ async function sendEmailVerification(email, token) {
     `;
 
     try {
-        return await transport
-            .sendMail({
-                from: `"Collab Support Team" <${EMAIL_USERNAME}>`,
-                to: email,
-                subject,
-                html: body,
-            });
+        return await transport.sendMail({
+            from: `"Collab Support Team" <${EMAIL_USERNAME}>`,
+            to: email,
+            subject,
+            html: body,
+        });
     } catch (err) {
         return log.error('sendEmailVerification Error', err);
     }
@@ -265,12 +263,14 @@ async function sendUserMessageToAdmin(userEmail, userName, userMessage) {
     </html>
     `;
 
-    return transport.sendMail({
-        from: `"${userEmail}" <${EMAIL_USERNAME}>`, // display name = user email
-        to: EMAIL_SEND_TO,                          // send to your own admin/support email
-        subject,
-        html: body,
-    }).catch((err) => log.error('sendUserMessageToAdmin Error', err));
+    return transport
+        .sendMail({
+            from: `"${userEmail}" <${EMAIL_USERNAME}>`, // display name = user email
+            to: EMAIL_SEND_TO, // send to your own admin/support email
+            subject,
+            html: body,
+        })
+        .catch((err) => log.error('sendUserMessageToAdmin Error', err));
 }
 
 module.exports = {

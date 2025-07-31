@@ -5051,7 +5051,7 @@ class RoomClient {
 
         const typingIndicator = document.createElement('div');
         typingIndicator.id = 'typing-indicator';
-        typingIndicator.innerHTML = (getToId === 'ChatGPT' && fromName !== 'ChatGPT') ? 'AI Assistant is typing...' : '';
+        typingIndicator.innerHTML = getToId === 'ChatGPT' && fromName !== 'ChatGPT' ? 'AI Assistant is typing...' : '';
 
         if (fromName === 'ChatGPT' || getToId !== 'ChatGPT') {
             const indicator = document.getElementById('typing-indicator');
@@ -5077,8 +5077,7 @@ class RoomClient {
         const message = getId(`message-${chatMessagesId}`);
         if (message) {
             if (fromName !== 'ChatGPT') chatGPTMessages.insertAdjacentElement('beforeend', typingIndicator);
-            else
-            {
+            else {
                 const indicator = document.getElementById('typing-indicator');
                 if (indicator && indicator.parentNode) {
                     indicator.remove();
@@ -8525,7 +8524,6 @@ class RoomClient {
         console.log('Confirm peer action', action);
         switch (action) {
             case 'ban':
-
                 // ####################################################
                 // Premium Access
                 // ####################################################

@@ -6,10 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         const userRes = await axios.get('/user-subscription');
-        const {
-            isPremium,
-            expiryDate
-        } = userRes.data;
+        const { isPremium, expiryDate } = userRes.data;
 
         if (isPremium) {
             // Hide Free Plan card
@@ -32,12 +29,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 upgradeBtn.textContent = `Active until ${new Date(expiryDate).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'short',
-                    day: 'numeric'
+                    day: 'numeric',
                 })}`;
                 upgradeBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
                 upgradeBtn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'cursor-default');
             }
-
         } else {
             // Free user experience
             if (upgradeBtn) {
@@ -78,7 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
 
             const response = await axios.post('/init-payment', {
-                amount: 500
+                amount: 500,
             });
 
             if (response.data.url) {

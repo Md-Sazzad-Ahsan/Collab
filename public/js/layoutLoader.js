@@ -1,15 +1,15 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const headerPlaceholder = document.getElementById("header-placeholder");
+document.addEventListener('DOMContentLoaded', () => {
+    const headerPlaceholder = document.getElementById('header-placeholder');
     if (headerPlaceholder) {
-        fetch("/views/header.html")
+        fetch('/views/header.html')
             .then((res) => res.text())
             .then((html) => {
                 headerPlaceholder.innerHTML = html;
 
                 // Attach logout handler AFTER header is loaded
-                const logoutButton = document.getElementById("logoutButton");
+                const logoutButton = document.getElementById('logoutButton');
                 if (logoutButton) {
-                    logoutButton.addEventListener("click", () => {
+                    logoutButton.addEventListener('click', () => {
                         // Logout logic
                         fetch('/logout', {
                             method: 'GET', // Or POST depending on backend
@@ -34,16 +34,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     checkLoginStatus();
                 }
             })
-            .catch((err) => console.error("Failed to load header:", err));
+            .catch((err) => console.error('Failed to load header:', err));
     }
 
-    const footerPlaceholder = document.getElementById("footer-placeholder");
+    const footerPlaceholder = document.getElementById('footer-placeholder');
     if (footerPlaceholder) {
-        fetch("/views/footer.html")
+        fetch('/views/footer.html')
             .then((res) => res.text())
             .then((html) => {
                 footerPlaceholder.innerHTML = html;
             })
-            .catch((err) => console.error("Failed to load footer:", err));
+            .catch((err) => console.error('Failed to load footer:', err));
     }
 });

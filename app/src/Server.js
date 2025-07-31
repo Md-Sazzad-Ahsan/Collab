@@ -252,7 +252,22 @@ const views = {
     paymentCancel: path.join(__dirname, '../../', 'public/views/payment-cancel.html'),
 };
 
-const filesPath = [views.landing, views.newRoom, views.room, views.login, views.signup, views.pricing, views.contact, views.features, views.verifyEmail, views.emailInvalid, views.emailAlreadyVerified, views.paymentSuccess, views.paymentFail, views.paymentCancel];
+const filesPath = [
+    views.landing,
+    views.newRoom,
+    views.room,
+    views.login,
+    views.signup,
+    views.pricing,
+    views.contact,
+    views.features,
+    views.verifyEmail,
+    views.emailInvalid,
+    views.emailAlreadyVerified,
+    views.paymentSuccess,
+    views.paymentFail,
+    views.paymentCancel,
+];
 
 const htmlInjector = new HtmlInjector(filesPath, config.ui.brand);
 
@@ -492,9 +507,15 @@ function startServer() {
 
         res.send('Please check your email to verify your account.');
 
-        nodemailer.sendEmailVerification(email, verificationToken)
-        .then(() => log.log(`%cVerification email sent to ${email}`, 'font-family:monospace; color: green; font-size: 16px'))
-        .catch(err => log.error(`Error sending verification email to ${email}`, err));
+        nodemailer
+            .sendEmailVerification(email, verificationToken)
+            .then(() =>
+                log.log(
+                    `%cVerification email sent to ${email}`,
+                    'font-family:monospace; color: green; font-size: 16px',
+                ),
+            )
+            .catch((err) => log.error(`Error sending verification email to ${email}`, err));
     });
 
     app.post('/contact-us', async (req, res) => {
@@ -511,7 +532,6 @@ function startServer() {
             res.status(500).json({ error: 'Failed to send message.' });
         }
     });
-
 
     // OpenID Connect - Dynamically set baseURL based on incoming host and protocol
     if (OIDC.enabled) {
@@ -598,18 +618,16 @@ function startServer() {
             const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
             const apiResponse = await sslcz.init(data);
             res.json({ url: apiResponse.GatewayPageURL });
-
         } catch (err) {
             console.error('init-payment error:', err);
             res.status(500).send('Payment initiation failed');
         }
     });
 
-
     // 2. SUCCESS PAGE
     app.all('/payment-success', async (req, res) => {
         if (!req.session.user || !req.session.user.id) {
-            return res.status(401).json({ error: "Unauthorized" });
+            return res.status(401).json({ error: 'Unauthorized' });
         }
         const { tran_id } = req.query;
         if (!tran_id) return res.status(400).send('Missing transaction ID');
@@ -627,21 +645,20 @@ function startServer() {
             await payment.save();
 
             await Subscription.create({
-            user: payment.user,
-            startDate: now,
-            endDate: expiry,
-            status: 'active',
+                user: payment.user,
+                startDate: now,
+                endDate: expiry,
+                status: 'active',
             });
         }
 
         res.sendFile(views.paymentSuccess);
     });
 
-
     // 3. FAIL & CANCEL
     app.all('/payment-fail', async (req, res) => {
         if (!req.session.user || !req.session.user.id) {
-            return res.status(401).json({ error: "Unauthorized" });
+            return res.status(401).json({ error: 'Unauthorized' });
         }
         const { tran_id } = req.query;
         if (tran_id) await Payment.deleteOne({ transactionId: tran_id, status: 'Pending' });
@@ -650,21 +667,20 @@ function startServer() {
 
     app.all('/payment-cancel', async (req, res) => {
         if (!req.session.user || !req.session.user.id) {
-            return res.status(401).json({ error: "Unauthorized" });
+            return res.status(401).json({ error: 'Unauthorized' });
         }
         const { tran_id } = req.query;
         if (tran_id) await Payment.deleteOne({ transactionId: tran_id, status: 'Pending' });
         res.sendFile(views.paymentCancel);
     });
 
-
     // 4. FETCH PAYMENT DETAILS (AUTH REQUIRED)
     app.get('/payment-details', async (req, res) => {
-        if (!req.session.user?.id) return res.status(401).json({ error: "Unauthorized" });
+        if (!req.session.user?.id) return res.status(401).json({ error: 'Unauthorized' });
 
         const { tran_id } = req.query;
         const payment = await Payment.findOne({ transactionId: tran_id, user: req.session.user.id }).lean();
-        if (!payment) return res.status(404).json({ error: "Payment not found" });
+        if (!payment) return res.status(404).json({ error: 'Payment not found' });
 
         res.json(payment);
     });
@@ -677,28 +693,27 @@ function startServer() {
 
             // Find active subscription
             const activeSub = await Subscription.findOne({
-            user: userId,
-            status: 'active',
-            endDate: { $gte: new Date() },
+                user: userId,
+                status: 'active',
+                endDate: { $gte: new Date() },
             }).sort({ endDate: -1 });
 
             if (activeSub) {
-            return res.json({
-                isPremium: true,
-                expiryDate: activeSub.endDate,
-            });
+                return res.json({
+                    isPremium: true,
+                    expiryDate: activeSub.endDate,
+                });
             } else {
-            return res.json({
-                isPremium: false,
-                expiryDate: null,
-            });
+                return res.json({
+                    isPremium: false,
+                    expiryDate: null,
+                });
             }
         } catch (error) {
             console.error('User subscription error:', error);
             return res.status(500).json({ error: 'Internal server error' });
         }
     });
-
 
     // Route to display user information
     app.get('/profile', OIDCAuth, (req, res) => {
@@ -970,7 +985,7 @@ function startServer() {
                 id: user._id,
                 email: user.email,
                 isPremium: user.is_premium || false,
-                premiumExpiry: user.premium_expiry || null
+                premiumExpiry: user.premium_expiry || null,
             };
 
             return res.redirect('/landing');
@@ -1007,8 +1022,6 @@ function startServer() {
             res.status(500).send('Server error during email verification.');
         }
     });
-
-
 
     // ####################################################
     // RECORDING UTILITY
@@ -1767,9 +1780,11 @@ function startServer() {
     // ####################################################
     // SOCKET IO
     // ####################################################
-    io.use(sharedSession(sessionMiddleware, {
-        autoSave: true
-    }));
+    io.use(
+        sharedSession(sessionMiddleware, {
+            autoSave: true,
+        }),
+    );
 
     io.on('connection', (socket) => {
         socket.on('clientError', (error) => {
@@ -2773,14 +2788,10 @@ function startServer() {
             // Get the user info from socket (adjust according to your session structure)
             const user = socket.handshake?.session?.user;
 
-            console.log("user:", JSON.stringify(user, null, 2));
+            console.log('user:', JSON.stringify(user, null, 2));
             // If user not available or not premium or expired
             const now = new Date();
-            if (
-                !user ||
-                !user.isPremium ||
-                (user.premium_expiry && new Date(user.premium_expiry) < now)
-            ) {
+            if (!user || !user.isPremium || (user.premium_expiry && new Date(user.premium_expiry) < now)) {
                 return cb({ message: 'Upgrade to premium to use AI Assistant.' });
             }
 
