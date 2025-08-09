@@ -2788,11 +2788,9 @@ console.log(user);
         socket.on('getChatGPT', async ({ time, room, name, prompt, context }, cb) => {
             if (!roomExists(socket)) return;
 
-            // Get the user info from socket (adjust according to your session structure)
             const user = socket.handshake?.session?.user;
-
             console.log('user:', JSON.stringify(user, null, 2));
-            // If user not available or not premium or expired
+
             const now = new Date();
             if (!user || !user.isPremium || (user.premium_expiry && new Date(user.premium_expiry) < now)) {
                 return cb({ message: 'Upgrade to premium to use AI Assistant.' });
@@ -2806,23 +2804,23 @@ console.log(user);
                 context.push({ role: 'user', content: prompt });
 
                 const requestData = {
-                model: process.env.CHATGPT_MODEL,
-                messages: [
-                    {
-                    role: "user",
-                    content: prompt,  // Plain text only
-                    },
-                ],
-                stream: true,
+                    model: process.env.CHATGPT_MODEL,
+                    messages: [
+                        {
+                            role: "user",
+                            content: prompt,
+                        },
+                    ],
+                    stream: true,
                 };
 
                 const response = await fetch(process.env.CHATGPT_BASE_PATH, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${process.env.CHATGPT_API_KEY}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(requestData),
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${process.env.CHATGPT_API_KEY}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(requestData),
                 });
 
                 if (!response.ok) throw new Error(`API returned status: ${response.status}`);
@@ -2833,30 +2831,38 @@ console.log(user);
                 let fullMessage = '';
 
                 while (!done) {
-                const { value, done: streamDone } = await reader.read();
-                done = streamDone;
-                if (value) {
-                    const chunkText = decoder.decode(value, { stream: true });
-                    const lines = chunkText.split('\n').filter(line => line.trim() !== '');
+                    const { value, done: streamDone } = await reader.read();
+                    done = streamDone;
+                    if (value) {
+                        const chunkText = decoder.decode(value, { stream: true });
+                        const lines = chunkText.split('\n').filter(line => line.trim() !== '');
 
-                    for (const line of lines) {
-                    if (line === 'data: [DONE]' || line === '[DONE]') {
-                        done = true;
-                        break;
-                    }
-                    if (line.startsWith('data: ')) {
-                        try {
-                        const json = JSON.parse(line.replace(/^data: /, ''));
-                        const delta = json.choices?.[0]?.delta;
-                        if (delta?.content) {
-                            fullMessage += delta.content;
+                        for (const line of lines) {
+                            if (line === 'data: [DONE]' || line === '[DONE]') {
+                                done = true;
+                                break;
+                            }
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const json = JSON.parse(line.replace(/^data: /, ''));
+                                    const delta = json.choices?.[0]?.delta;
+                                    if (delta?.content) {
+                                        fullMessage += delta.content;
+                                    }
+                                } catch (e) {
+                                    // ignore JSON parse errors for incomplete chunks
+                                }
+                            }
                         }
-                        } catch (e) {
-                        // ignore JSON parse errors for incomplete chunks
-                        }
-                    }
                     }
                 }
+
+                const metaLine = "designed by Meta";
+                if (fullMessage.includes(metaLine)) {
+                    fullMessage = fullMessage.replace(
+                        metaLine,
+                        `${metaLine} and further trained by Md. Akib Hossain Omi and Md. Ahsan Himu for their final year project.`
+                    );
                 }
 
                 context.push({ role: 'assistant', content: fullMessage.trim() });
