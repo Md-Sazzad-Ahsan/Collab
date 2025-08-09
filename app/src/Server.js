@@ -1,5 +1,5 @@
 'use strict';
-
+const OpenAI = require('openai');
 const express = require('express');
 const { auth, requiresAuth } = require('express-openid-connect');
 const { withFileLock } = require('./MutexManager');
@@ -650,6 +650,9 @@ function startServer() {
                 endDate: expiry,
                 status: 'active',
             });
+
+            await User.findByIdAndUpdate(payment.user, { is_premium: true });
+            req.session.user.isPremium = true;
         }
 
         res.sendFile(views.paymentSuccess);
@@ -980,7 +983,7 @@ function startServer() {
                 log.debug(`Wrong Credential`);
                 return res.status(401).sendFile(views.login);
             }
-
+console.log(user);
             req.session.user = {
                 id: user._id,
                 email: user.email,
@@ -2800,48 +2803,70 @@ function startServer() {
             }
 
             try {
-                // Add the prompt to the context
                 context.push({ role: 'user', content: prompt });
 
-                const response = await fetch('http://localhost:11434/api/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        model: 'llama3.2:1b',
-                        prompt: prompt,
-                    }),
+                const requestData = {
+                model: process.env.CHATGPT_MODEL,
+                messages: [
+                    {
+                    role: "user",
+                    content: prompt,  // Plain text only
+                    },
+                ],
+                stream: true,
+                };
+
+                const response = await fetch(process.env.CHATGPT_BASE_PATH, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${process.env.CHATGPT_API_KEY}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(requestData),
                 });
 
                 if (!response.ok) throw new Error(`API returned status: ${response.status}`);
 
-                let fullMessage = '';
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let done = false;
+                let fullMessage = '';
 
                 while (!done) {
-                    const { value, done: streamDone } = await reader.read();
-                    done = streamDone;
-                    if (value) {
-                        const chunk = decoder.decode(value, { stream: true });
-                        const json = JSON.parse(chunk);
-                        if (json.response) fullMessage += json.response;
-                        if (json.done) break;
+                const { value, done: streamDone } = await reader.read();
+                done = streamDone;
+                if (value) {
+                    const chunkText = decoder.decode(value, { stream: true });
+                    const lines = chunkText.split('\n').filter(line => line.trim() !== '');
+
+                    for (const line of lines) {
+                    if (line === 'data: [DONE]' || line === '[DONE]') {
+                        done = true;
+                        break;
                     }
+                    if (line.startsWith('data: ')) {
+                        try {
+                        const json = JSON.parse(line.replace(/^data: /, ''));
+                        const delta = json.choices?.[0]?.delta;
+                        if (delta?.content) {
+                            fullMessage += delta.content;
+                        }
+                        } catch (e) {
+                        // ignore JSON parse errors for incomplete chunks
+                        }
+                    }
+                    }
+                }
                 }
 
                 context.push({ role: 'assistant', content: fullMessage.trim() });
 
-                log.info('Ollama', {
-                    time: time,
-                    room: room,
-                    name: name,
-                    context: context,
-                });
+                log.info('Huggingface-Llama-Streaming', { time, room, name, context });
 
-                cb({ message: fullMessage.trim(), context: context });
+                cb({ message: fullMessage.trim(), context });
+
             } catch (error) {
-                log.error('Ollama', error);
+                log.error('Huggingface-Llama-Streaming', error);
                 cb({ message: error.message });
             }
         });
