@@ -47,6 +47,7 @@ const Subscription = require('./models/Subscription');
 const bcrypt = require('bcryptjs');
 const SSLCommerzPayment = require('sslcommerz-lts');
 const sharedSession = require('express-socket.io-session');
+const { scheduleSubscription, initScheduler } = require('./SubscriptionManager');
 const store_id = process.env.SSLCZ_STORE_ID;
 const store_passwd = process.env.SSLCZ_STORE_PASSWORD;
 const is_live = false;
@@ -644,7 +645,7 @@ function startServer() {
             payment.payment_date = now;
             await payment.save();
 
-            await Subscription.create({
+            const newSub = await Subscription.create({
                 user: payment.user,
                 startDate: now,
                 endDate: expiry,
@@ -653,6 +654,7 @@ function startServer() {
 
             await User.findByIdAndUpdate(payment.user, { is_premium: true });
             req.session.user.isPremium = true;
+            scheduleSubscription(newSub);
         }
 
         res.sendFile(views.paymentSuccess);
@@ -983,12 +985,10 @@ function startServer() {
                 log.debug(`Wrong Credential`);
                 return res.status(401).sendFile(views.login);
             }
-console.log(user);
             req.session.user = {
                 id: user._id,
                 email: user.email,
                 isPremium: user.is_premium || false,
-                premiumExpiry: user.premium_expiry || null,
             };
 
             return res.redirect('/landing');
@@ -1702,6 +1702,11 @@ console.log(user);
         .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/collab')
         .then(() => {
             log.log(`%cConnected to MongoDB`, 'font-family:monospace; color: green; font-size: 16px');
+            // ####################################################
+            // Schedule Subscription Expiry
+            // ####################################################
+            initScheduler();
+            log.log(`%cScheduled Subscription Expiry`, 'font-family:monospace; color: green; font-size: 16px');
         })
         .catch((err) => {
             log.log(`%cError connecting to MongoDB: ${err}`, 'font-family:monospace; color: red; font-size: 16px');
@@ -2789,10 +2794,9 @@ console.log(user);
             if (!roomExists(socket)) return;
 
             const user = socket.handshake?.session?.user;
-            console.log('user:', JSON.stringify(user, null, 2));
 
             const now = new Date();
-            if (!user || !user.isPremium || (user.premium_expiry && new Date(user.premium_expiry) < now)) {
+            if (!user || !user.isPremium) {
                 return cb({ message: 'Upgrade to premium to use AI Assistant.' });
             }
 
@@ -2807,7 +2811,7 @@ console.log(user);
                     model: process.env.CHATGPT_MODEL,
                     messages: [
                         {
-                            role: "user",
+                            role: 'user',
                             content: prompt,
                         },
                     ],
@@ -2815,10 +2819,10 @@ console.log(user);
                 };
 
                 const response = await fetch(process.env.CHATGPT_BASE_PATH, {
-                    method: "POST",
+                    method: 'POST',
                     headers: {
                         Authorization: `Bearer ${process.env.CHATGPT_API_KEY}`,
-                        "Content-Type": "application/json",
+                        'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(requestData),
                 });
@@ -2835,7 +2839,7 @@ console.log(user);
                     done = streamDone;
                     if (value) {
                         const chunkText = decoder.decode(value, { stream: true });
-                        const lines = chunkText.split('\n').filter(line => line.trim() !== '');
+                        const lines = chunkText.split('\n').filter((line) => line.trim() !== '');
 
                         for (const line of lines) {
                             if (line === 'data: [DONE]' || line === '[DONE]') {
@@ -2857,11 +2861,11 @@ console.log(user);
                     }
                 }
 
-                const metaLine = "designed by Meta";
+                const metaLine = 'designed by Meta';
                 if (fullMessage.includes(metaLine)) {
                     fullMessage = fullMessage.replace(
                         metaLine,
-                        `${metaLine} and further trained by Md. Akib Hossain Omi and Md. Ahsan Himu for their final year project.`
+                        `${metaLine} and further trained by Md. Akib Hossain Omi and Md. Ahsan Himu for their final year project.`,
                     );
                 }
 
@@ -2870,7 +2874,6 @@ console.log(user);
                 log.info('Huggingface-Llama-Streaming', { time, room, name, context });
 
                 cb({ message: fullMessage.trim(), context });
-
             } catch (error) {
                 log.error('Huggingface-Llama-Streaming', error);
                 cb({ message: error.message });
