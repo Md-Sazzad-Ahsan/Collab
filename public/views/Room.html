@@ -1012,18 +1012,18 @@ access to use this app.
 
                     <div id="tabVideoAI" class="tabcontent">
                         <div class="avatarsVideoAI">
-                            <video id="avatarVideoAIPreview" poster="../images/loader.gif"></video>
+                            <video id="avatarVideoAIPreview" poster="../images/loader.gif" style="display: none;"></video>
                             <hr />
                             <table class="settingsTable">
                                 <tr id="avatars">
                                     <td>
                                         <div class="title">
                                             <i class="fa-solid fa-users-line"></i>
-                                            <p>Show free avatars</p>
+                                            <p>Show Avatars</p>
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="form-check form-switch form-switch-md">
+                                        <div class="form-check form-switch form-switch-md" style="display: none;">
                                             <input
                                                 id="switchAvatars"
                                                 class="form-check-input"
@@ -1036,23 +1036,24 @@ access to use this app.
                             </table>
                             <hr />
                             <div class="container-flex">
-                                <div id="avatarVideoAIcontainer"></div>
+                                <div id="avatarVideoAIcontainer">
+                                    <div id="avatarLoader" class="avatar-loader">
+                                        <div class="spinner"></div>
+                                        <p class="loader-text">Loading avatars...</p>
+                                    </div>
+                                </div>
                                 <hr />
-                                <select id="avatarQuality" class="form-select text-light bg-dark">
+                                <select id="avatarQuality" class="form-select text-light bg-dark" style="display: none;">
                                     <option value="low">Avatar Quality - Low</option>
                                     <option value="medium" selected>Avatar Quality - Medium</option>
                                     <option value="legacy_medium">Avatar Quality - Legacy medium</option>
                                     <option value="high">Avatar Quality - High</option>
                                     <option value="very_high" selected>Avatar Quality - Very high</option>
                                 </select>
-                                <select
-                                    id="avatarVoiceIDs"
-                                    name="avatarVoiceIDs"
-                                    class="form-select text-light bg-dark"
-                                >
+                                <select id="avatarVoiceIDs" name="avatarVoiceIDs" class="form-select text-light bg-dark" style="display: none;">
                                     <option value="">Select Avatar Voice</option>
                                 </select>
-                                <div id="audio-container">
+                                <div id="audio-container" style="display: none;">
                                     <audio id="avatarPreviewAudio" controls></audio>
                                 </div>
                                 <button id="avatarVideoAIStart" class="btn-custom">

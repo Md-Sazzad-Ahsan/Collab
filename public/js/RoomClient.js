@@ -181,7 +181,7 @@ const VideoAI = {
     active: false,
     info: {},
     avatarId: null,
-    avatarName: 'Monica',
+    avatarName: 'Collab Avatar',
     avatarVoice: null,
     quality: 'medium',
     virtualBackground: true,
@@ -9224,7 +9224,10 @@ class RoomClient {
             .then(function (completion) {
                 const avatarVideoAIPreview = document.getElementById('avatarVideoAIPreview');
                 const avatarVideoAIcontainer = document.getElementById('avatarVideoAIcontainer');
-                avatarVideoAIcontainer.innerHTML = ''; // cleanup the avatar container
+                const avatarLoader = document.getElementById('avatarLoader');
+
+                avatarLoader.style.display = 'none';
+                avatarVideoAIcontainer.innerHTML = '';
 
                 const excludedIds = [
                     'josh_lite3_20230714',
@@ -9254,6 +9257,11 @@ class RoomClient {
                     'Monica in Sleeveless',
                 ];
 
+                completion.response.avatars.sort((a, b) => {
+                    if (showFreeAvatars && a.avatar_name.startsWith('Tyler')) return -1;
+                    if (showFreeAvatars && b.avatar_name.startsWith('Tyler')) return 1;
+                    return 0;
+                });
                 //console.log('AVATARS LISTS', completion.response.avatars);
                 completion.response.avatars.forEach((avatar) => {
                     if (
@@ -9307,12 +9315,12 @@ class RoomClient {
                         avatarVideoAIcontainer.append(div);
 
                         // Show the first available free avatar
-                        if (showFreeAvatars && avatar.avatar_name === 'Kristin in Black Suit') {
+                        if (showFreeAvatars && avatar.avatar_name === 'Tyler in Suit') {
                             avatarVideoAIPreview.setAttribute('src', avatar.preview_video_url);
                             avatarVideoAIPreview.playsInline = true;
                             avatarVideoAIPreview.autoplay = true;
                             avatarVideoAIPreview.controls = true;
-                            avatarVideoAIPreview.volume = 0.5;
+                            avatarVideoAIPreview.volume = 0;
                         }
                     }
                 });
@@ -9379,6 +9387,23 @@ class RoomClient {
     }
 
     async handleVideoAI() {
+        // ####################################################
+        // Premium Access
+        // ####################################################
+        const res = await fetch('/user-subscription');
+        if (!res.ok) throw new Error('Failed to check subscription');
+
+        const data = await res.json();
+
+        // if (!data.isPremium) {
+        //     // Show warning instead of starting session
+        //     userLog('warning', 'Upgrade to premium to use AI Avatar', 'top-end', 5000);
+        //     return;
+        // }
+
+        // ####################################################
+        // Premium user: run your existing logic
+        // ####################################################
         const vb = document.createElement('div');
         vb.setAttribute('id', 'avatar__vb');
         vb.className = 'videoAvatarMenuBar fadein';
@@ -9457,6 +9482,12 @@ class RoomClient {
         handleAspectRatio();
 
         await this.streamingNew();
+        if (!data.isPremium) {
+        setTimeout(() => {
+            this.stopSession();
+            userLog('warning', 'Upgrade to premium to use AI Avatar for longer time', 'top-end', 5000);
+        }, 30000);
+    }
     }
 
     async streamingNew() {
