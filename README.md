@@ -88,3 +88,21 @@ Collab offers several advanced features that are not available in platforms like
   Allows users to take screenshots of the meeting screen with easy clicks, eliminating the need for complex keyboard shortcuts.
 
 ---
+
+## Premium Features
+
+The following advanced features are available under **Collab Premium**:
+
+- **AI Assistant**  
+  A powerful virtual assistant that helps with note-taking, task management, and meeting insights.
+
+- **AI Avatar**  
+  An intelligent avatar seamlessly integrated with the AI Assistant, capable of reading text aloud and enhancing the meeting experience.
+
+- **User Ban**  
+  Provides premium-level moderation control to remove and permanently ban disruptive participants.
+
+- **Voice Command Control**  
+  Unlock advanced voice interactions to seamlessly control meeting functions hands-free.
+
+---
