@@ -1,7 +1,7 @@
 const displayFields = {
     amount: 'Amount',
     currency: 'Currency',
-    transactionId: 'Bank Transaction ID',
+    transactionId: 'Transaction ID',
     status: 'Status',
     payment_date: 'Payment Date',
 };

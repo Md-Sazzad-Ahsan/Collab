@@ -599,7 +599,10 @@ function startServer() {
                 status: 'Pending',
             });
 
-            const data = {
+            // Prepare data for SSLCOMMERZ session API
+            const post_data = {
+                store_id,
+                store_passwd,
                 total_amount: amount,
                 currency: 'BDT',
                 tran_id,
@@ -616,12 +619,28 @@ function startServer() {
                 product_profile: 'general',
             };
 
-            const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
-            const apiResponse = await sslcz.init(data);
-            res.json({ url: apiResponse.GatewayPageURL });
+            // Server-to-server call to SSLCOMMERZ (direct gwprocess)
+            const response = await axios.post(
+                process.env.SSLCOMMERZ_SESSION_API,
+                new URLSearchParams(post_data).toString(),
+                {
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false }) // sandbox only
+                }
+            );
+
+            const result = response.data;
+
+            if (result?.status === 'SUCCESS' && result?.GatewayPageURL) {
+                return res.json({ url: result.GatewayPageURL });
+            } else {
+                console.error('SSLCOMMERZ API error:', result);
+                return res.status(500).send('Payment initiation failed');
+            }
+
         } catch (err) {
-            console.error('init-payment error:', err);
-            res.status(500).send('Payment initiation failed');
+            console.error('init-payment error:', err.response?.data || err.message || err);
+            return res.status(500).send('Payment initiation failed');
         }
     });
 
