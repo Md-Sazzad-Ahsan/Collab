@@ -15,7 +15,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!params?.tran_id) return alert('Transaction ID missing.');
 
     try {
-        const res = await fetch(`/payment-details?tran_id=${encodeURIComponent(params?.tran_id)}`);
+        const res = await fetch(`/payment-details?tran_id=${encodeURIComponent(params.tran_id)}`, {
+            credentials: 'include', // <--- send cookies
+        });
+
         if (!res.ok) {
             if (res.status === 401) alert('Please log in to view payment details.');
             else if (res.status === 404) alert('Payment details not found.');
