@@ -48,6 +48,57 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (typeof checkLoginStatus === 'function') {
                     checkLoginStatus();
                 }
+
+                // Initialize mobile sidebar toggle (since inline scripts in fetched HTML won't execute)
+                const toggleBtn = headerPlaceholder.querySelector('[data-collapse-toggle="navbar-default"]');
+                const sidebar = headerPlaceholder.querySelector('#navbar-default');
+                const overlay = document.getElementById('navbar-overlay');
+                const closeBtn = headerPlaceholder.querySelector('#navbar-close');
+
+                if (toggleBtn && sidebar && overlay) {
+                    const openSidebar = () => {
+                        sidebar.classList.remove('hidden', 'translate-x-full');
+                        overlay.classList.remove('hidden');
+                        document.body.classList.add('overflow-hidden');
+                        toggleBtn.setAttribute('aria-expanded', 'true');
+                    };
+
+                    const closeSidebar = () => {
+                        sidebar.classList.add('translate-x-full');
+                        overlay.classList.add('hidden');
+                        document.body.classList.remove('overflow-hidden');
+                        toggleBtn.setAttribute('aria-expanded', 'false');
+                    };
+
+                    toggleBtn.addEventListener('click', () => {
+                        const isClosed = sidebar.classList.contains('translate-x-full') || sidebar.classList.contains('hidden');
+                        if (isClosed) openSidebar(); else closeSidebar();
+                    });
+
+                    overlay.addEventListener('click', closeSidebar);
+                    if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+                    sidebar.querySelectorAll('a').forEach((a) => a.addEventListener('click', closeSidebar));
+
+                    // Ensure correct state on resize
+                    const mq = window.matchMedia('(min-width: 768px)');
+                    const handleMq = (e) => {
+                        if (e.matches) {
+                            // Desktop
+                            sidebar.classList.remove('hidden', 'translate-x-full');
+                            overlay.classList.add('hidden');
+                            document.body.classList.remove('overflow-hidden');
+                            toggleBtn.setAttribute('aria-expanded', 'true');
+                        } else {
+                            // Mobile initial state closed
+                            sidebar.classList.add('hidden', 'translate-x-full');
+                            overlay.classList.add('hidden');
+                            document.body.classList.remove('overflow-hidden');
+                            toggleBtn.setAttribute('aria-expanded', 'false');
+                        }
+                    };
+                    handleMq(mq);
+                    mq.addEventListener('change', handleMq);
+                }
             })
             .catch((err) => console.error('Failed to load header:', err));
     }
