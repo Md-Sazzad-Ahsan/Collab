@@ -678,8 +678,8 @@ function startServer() {
                 new URLSearchParams(post_data).toString(),
                 {
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false }) // sandbox only
-                }
+                    httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false }), // sandbox only
+                },
             );
 
             const result = response.data;
@@ -690,7 +690,6 @@ function startServer() {
                 console.error('SSLCOMMERZ API error:', result);
                 return res.status(500).send('Payment initiation failed');
             }
-
         } catch (err) {
             console.error('init-payment error:', err.response?.data || err.message || err);
             return res.status(500).send('Payment initiation failed');
