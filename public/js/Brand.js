@@ -36,7 +36,7 @@ let BRAND = {
         description:
             'Start your next video call with a single click. No download, plug-in, or login is required. Just get straight to talking, messaging, and sharing your screen.',
         joinDescription: 'Pick a room name.<br />How about this one?',
-        joinButtonLabel: 'JOIN ROOM',
+        joinButtonLabel: 'Join',
         joinLastLabel: 'Your recent room:',
     },
     site: {
@@ -145,8 +145,9 @@ function customizeApp() {
     if (joinDescription && BRAND.app?.joinDescription) {
         joinDescription.innerHTML = BRAND.app.joinDescription;
     }
-    if (joinRoomBtn && BRAND.app?.joinButtonLabel) {
-        joinRoomBtn.innerText = BRAND.app.joinButtonLabel;
+    if (joinRoomBtn) {
+        // Force the landing Join button label to 'Join'
+        joinRoomBtn.innerText = 'Join';
     }
     if (joinLastLabel && BRAND.app?.joinLastLabel) {
         joinLastLabel.innerText = BRAND.app.joinLastLabel;

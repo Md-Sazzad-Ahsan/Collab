@@ -144,7 +144,7 @@ adjective = adjective.charAt(0).toUpperCase() + adjective.substring(1);
 // ####################################################################
 
 let i = 0;
-let txt = num + adjective + noun;
+let txt = getShortId(9);
 let speed = 100;
 
 function typeWriter() {
@@ -165,7 +165,7 @@ if (roomName) {
         window.sessionStorage.roomID = false;
         joinRoom();
     } else {
-        typeWriter();
+        // keep input empty; do not auto-fill with typewriter
     }
 
     roomName.onkeyup = (e) => {
@@ -185,25 +185,98 @@ const lastRoom = document.getElementById('lastRoom');
 const lastRoomName = window.localStorage.lastRoom ? window.localStorage.lastRoom : '';
 
 if (lastRoomContainer && lastRoom && lastRoomName) {
-    lastRoomContainer.style.display = 'inline-flex';
+    lastRoomContainer.style.display = 'block';
     lastRoom.setAttribute('href', '/join/?room=' + lastRoomName);
     lastRoom.innerText = lastRoomName;
 }
 
-const genRoomButton = document.getElementById('genRoomButton');
 const joinRoomButton = document.getElementById('joinRoomButton');
+const createRoomButton = document.getElementById('createRoomButton');
 const adultCnt = document.getElementById('adultCnt');
-
-if (genRoomButton) {
-    genRoomButton.onclick = () => {
-        genRoom();
-    };
-}
+const roomNameInput = document.getElementById('roomName');
 
 if (joinRoomButton) {
     joinRoomButton.onclick = () => {
+        const isMobile = window.matchMedia && window.matchMedia('(max-width: 639px)').matches; // Tailwind sm breakpoint
+        // Mobile behavior: reveal input and hide Create on first tap
+        if (isMobile) {
+            const isInputHiddenByClass = roomNameInput && roomNameInput.classList.contains('hidden');
+            if (isInputHiddenByClass) {
+                roomNameInput.classList.remove('hidden');
+                const createBtn = document.getElementById('createRoomButton');
+                if (createBtn) createBtn.classList.add('hidden');
+                updateJoinButtonState();
+                roomNameInput.focus();
+                return;
+            }
+        }
+        // Desktop behavior: if input is empty, ignore click
+        if (!isMobile) {
+            const hasText = roomNameInput && roomNameInput.value.trim().length > 0;
+            if (!hasText) return;
+        }
+        // Desktop or already revealed on mobile: proceed to join
         joinRoom();
     };
+}
+
+if (createRoomButton) {
+    createRoomButton.onclick = () => {
+        genRoom();
+        joinRoom();
+    };
+}
+
+// Visual state for Join button: inactive (gray) when input empty, active (blue) when not
+function updateJoinButtonState() {
+    if (!joinRoomButton || !roomNameInput) return;
+    const isMobile = window.matchMedia && window.matchMedia('(max-width: 639px)').matches; // Tailwind sm breakpoint
+    const inputHidden = roomNameInput.classList.contains('hidden');
+    const hasText = roomNameInput.value.trim().length > 0;
+    // On mobile, always keep Join interactive and primary
+    if (isMobile) {
+        joinRoomButton.classList.remove('text-gray-400', 'cursor-default', 'pointer-events-none');
+        joinRoomButton.setAttribute('aria-disabled', 'false');
+        joinRoomButton.tabIndex = 0;
+        // Clear any desktop inline overrides when switching breakpoints
+        joinRoomButton.style.color = '';
+        joinRoomButton.style.pointerEvents = '';
+        joinRoomButton.style.cursor = '';
+        joinRoomButton.style.textDecoration = '';
+        return;
+    }
+    // If input is hidden (mobile pre-reveal), keep Join interactive and primary
+    if (inputHidden) {
+        joinRoomButton.classList.remove('text-gray-400', 'cursor-default', 'pointer-events-none');
+        return;
+    }
+    if (hasText) {
+        joinRoomButton.classList.remove('text-gray-400', 'cursor-default', 'pointer-events-none');
+        joinRoomButton.classList.add('text-blue-600', 'hover:underline');
+        joinRoomButton.setAttribute('aria-disabled', 'false');
+        joinRoomButton.tabIndex = 0;
+        // Clear inline overrides so sm: classes can apply
+        joinRoomButton.style.color = '';
+        joinRoomButton.style.pointerEvents = '';
+        joinRoomButton.style.cursor = '';
+        joinRoomButton.style.textDecoration = '';
+    } else {
+        joinRoomButton.classList.remove('text-blue-600', 'hover:underline');
+        joinRoomButton.classList.add('text-gray-400', 'cursor-default', 'pointer-events-none');
+        joinRoomButton.setAttribute('aria-disabled', 'true');
+        joinRoomButton.tabIndex = -1;
+        // Enforce disabled look on larger screens overriding sm: classes
+        joinRoomButton.style.color = '#9CA3AF'; // Tailwind gray-400
+        joinRoomButton.style.pointerEvents = 'none';
+        joinRoomButton.style.cursor = 'default';
+        joinRoomButton.style.textDecoration = 'none';
+    }
+}
+
+// Initialize and listen for changes
+if (roomNameInput) {
+    updateJoinButtonState();
+    roomNameInput.addEventListener('input', updateJoinButtonState);
 }
 
 if (adultCnt) {
@@ -213,13 +286,25 @@ if (adultCnt) {
 }
 
 function genRoom() {
-    document.getElementById('roomName').value = getUUID4();
+    document.getElementById('roomName').value = getShortId(9);
 }
 
 function getUUID4() {
     return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
         (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16),
     );
+}
+
+// Generate a short, URL-safe ID of specified length (default 9) using Web Crypto
+function getShortId(len = 9) {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const bytes = new Uint8Array(len);
+    crypto.getRandomValues(bytes);
+    let id = '';
+    for (let i = 0; i < len; i++) {
+        id += alphabet[bytes[i] % alphabet.length];
+    }
+    return id;
 }
 
 function joinRoom() {
