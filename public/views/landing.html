@@ -1,6 +1,8 @@
 <html>
     <head>
-        <!-- Title and Icon -->
+        <!-- Title, Icons, and Meta -->
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
 
         <title id="title">Collab, Free Video Calls, Messaging and Screen Sharing</title>
         <link id="icon" rel="shortcut icon" href="../images/collab.png" />
@@ -19,22 +21,28 @@
         />
 
         <!-- https://ogp.me -->
-
         <meta property="og:type" content="{{OG_TYPE}}" />
         <meta property="og:site_name" content="{{OG_SITE_NAME}}" />
         <meta property="og:title" content="{{OG_TITLE}}" />
         <meta property="og:description" content="{{OG_DESCRIPTION}}" />
         <meta property="og:image" content="{{OG_IMAGE}}" />
         <meta property="og:url" content="{{OG_URL}}" />
+
+        <!-- Styles -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,600" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
-        <link id="icon" rel="shortcut icon" href="../images/collab.png" />
-        <link id="appleTouchIcon" rel="apple-touch-icon" href="../images/collab.png" />
-        <!-- Js scripts -->
+
+        <style>
+            /* App-wide font and helpers without touching functionality */
+            .app-font { font-family: Inter, "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; }
+            .text-balance { text-wrap: balance; }
+        </style>
+
+        <!-- Scripts -->
         <script defer src="../js/Brand.js"></script>
         <script async src="../js/Umami.js"></script>
-
         <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.8"></script>
         <script src="https://unpkg.com/animejs@3.0.1/lib/anime.min.js"></script>
         <script src="https://unpkg.com/scrollreveal@4.0.0/dist/scrollreveal.min.js"></script>
@@ -42,282 +50,308 @@
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
 
-    <body class="min-h-screen flex flex-col bg-gray-50 font-sans antialiased text-gray-900">
+    <body class="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 to-white font-sans app-font antialiased text-gray-900">
+        <!-- Decorative Background -->
+        <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+            <!-- Subtle radial gradient backdrop -->
+            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-50 via-white to-transparent"></div>
+            <!-- Soft gradient blobs -->
+            <div class="absolute -top-20 -left-24 h-72 w-72 bg-blue-200/40 blur-3xl rounded-full"></div>
+            <div class="absolute top-40 -right-24 h-80 w-80 bg-indigo-200/40 blur-3xl rounded-full"></div>
+            <div class="absolute -bottom-24 left-1/2 -translate-x-1/2 h-96 w-96 bg-cyan-100/40 blur-3xl rounded-full"></div>
+            <!-- Subtle dot grid texture using SVG pattern -->
+            <svg class="absolute inset-0 w-full h-full opacity-40 text-blue-100" aria-hidden="true">
+                <defs>
+                    <pattern id="dot-grid" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
+                        <circle cx="1" cy="1" r="1" fill="currentColor"></circle>
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#dot-grid)"></rect>
+            </svg>
+            <!-- Geometric outlines -->
+            <div class="absolute left-12 top-28 w-40 h-40 border-2 border-blue-200/50 rounded-2xl rotate-12"></div>
+            <div class="absolute right-16 top-12 w-28 h-28 border-2 border-indigo-200/50 rounded-full -rotate-6"></div>
+            <div class="absolute right-24 bottom-24 w-48 h-48 border-2 border-cyan-200/50 rounded-3xl rotate-45"></div>
+        </div>
         <!-- Header with Text Logo -->
         <div id="header-placeholder"></div>
         <div class="flex-1">
-            <div class="max-w-screen-xl mx-auto px-4 sm:px-10">
+            <div class="max-w-screen-xl mx-auto px-4 sm:px-8 lg:px-12">
                 <!-- Hero Section -->
-                <section class="flex flex-col lg:flex-row items-start py-20 space-y-12 lg:space-y-0">
-                    <div class="lg:w-2/3 text-left space-y-6 animate__animated animate__fadeIn">
-                        <h1 class="text-5xl font-extrabold text-gray-900 leading-tight">
+                <section class="flex flex-col lg:flex-row items-center lg:items-start py-32 sm:py-16 md:py-24 space-y-10 lg:space-y-0">
+                    <div class="lg:w-3/4 text-center sm:text-left space-y-6 animate__animated animate__fadeIn">
+                        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 leading-[1.1] tracking-tight text-balance">
                             Collab
                             <span class="text-blue-600">— Seamless</span> Video Communication
                         </h1>
-                        <p class="text-lg text-gray-600 max-w-xl lg:mx-0 text-left">
+                        <p class="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl lg:mx-0 text-center sm:text-left text-balance">
                             No downloads. No delays. Just click, name a room, and connect.
                         </p>
-                        <div class="flex flex-col sm:flex-row items-start sm:space-x-4 space-y-4 sm:space-y-0">
+                        <div class="w-full sm:inline-block sm:w-auto">
+                        <div id="rowActionRow" class="flex flex-row justify-center sm:justify-start items-center gap-2 flex-nowrap">
+                            <button
+                                id="createRoomButton"
+                                class="flex-none min-w-[120px] sm:min-w-0 px-5 sm:px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl text-base sm:text-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all duration-200 shadow whitespace-nowrap inline-flex items-center justify-center gap-2"
+                            >
+                                <i class="fas fa-plus"></i>
+                                <span>Create Room</span>
+                            </button>
+                            <label for="roomName" class="sr-only">Room name</label>
                             <input
                                 id="roomName"
-                                class="w-full sm:w-auto px-5 py-3 text-lg border border-gray-300 rounded-xl shadow focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                                class="hidden sm:block flex-1 min-w-0 sm:flex-none sm:w-56 px-3 sm:px-6 py-3 ml-5 sm:ml-0 text-base sm:text-lg border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition"
                                 type="text"
-                                placeholder="Enter room name"
+                                placeholder="Enter room code"
                                 maxlength="36"
                             />
                             <button
-                                id="genRoomButton"
-                                title="Generate Room Name"
-                                class="mt-3 sm:mt-0 w-12 h-12 flex items-center justify-center rounded-xl bg-white border border-gray-300 hover:bg-blue-100 text-blue-600 transition duration-200 shadow-sm"
-                            >
-                                <i class="fas fa-random text-lg"></i>
-                            </button>
-                            <button
                                 id="joinRoomButton"
-                                class="mt-3 sm:mt-0 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl text-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
+                                class="flex-none min-w-[120px] sm:min-w-0 px-5 sm:px-6 py-3 mr-5 sm:mr-0 bg-blue-600 text-white font-semibold rounded-xl text-base sm:text-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all duration-200 shadow whitespace-nowrap normal-case sm:px-2 sm:py-2 sm:bg-transparent sm:text-blue-600 sm:hover:bg-transparent sm:hover:underline sm:focus:ring-0 sm:shadow-none"
                             >
-                                Join Room
+                                Join
                             </button>
                         </div>
-
-                        <div id="lastRoomContainer" class="text-sm text-gray-600 mt-3 hidden">
-                            <span class="font-medium">Your recent room:</span>
+                        
+                        <div id="lastRoomContainer" class="text-sm text-gray-600 mt-2 hidden">
+                            <span class="font-medium">Your recent room: </span>
                             <a id="lastRoom" href="#" class="text-blue-600 hover:underline font-medium"></a>
+                        </div>
                         </div>
                     </div>
                 </section>
 
-                <section class="mt-10 py-20 bg-white rounded-lg shadow-xl mt-auto">
-                    <div class="text-center mb-12">
-                        <h2 class="text-3xl font-semibold text-gray-800 mb-4">Powerful Features</h2>
-                        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                <section class="hidden mt-6 md:mt-10 py-14 md:py-20 bg-white rounded-2xl shadow-xl border border-gray-100">
+                    <div class="text-center mb-10 md:mb-12 px-6">
+                        <p class="uppercase tracking-wider text-xs font-semibold text-blue-600 mb-2">Features</p>
+                        <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 text-balance">Powerful Features</h2>
+                        <p class="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
                             Everything you need for smooth and secure video communication.
                         </p>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 px-12">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-10 px-6 sm:px-8 lg:px-12">
                         <!-- Feature 1 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
+                        <div class="bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition text-center">
                             <div
-                                class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center"
+                                class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-5 md:mb-6 p-3 md:p-4 bg-white rounded-full shadow border border-gray-200 flex items-center justify-center"
                             >
                                 <img
                                     src="../svg/screenSharing.svg"
                                     alt="Screen Sharing"
-                                    class="w-16 h-16 object-contain invert grayscale"
+                                    class="w-12 h-12 md:w-16 md:h-16 object-contain invert grayscale"
                                 />
                             </div>
-                            <h4 class="text-xl font-semibold text-gray-800 mb-2">Screen Sharing</h4>
-                            <p class="text-gray-600">Share your screen, applications, and documents with ease.</p>
+                            <h4 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">Screen Sharing</h4>
+                            <p class="text-gray-600 text-sm md:text-base">Share your screen, applications, and documents with ease.</p>
                         </div>
                         <!-- Feature 2 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
+                        <div class="bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition text-center">
                             <div
-                                class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center"
+                                class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-5 md:mb-6 p-3 md:p-4 bg-white rounded-full shadow border border-gray-200 flex items-center justify-center"
                             >
                                 <img
                                     src="../svg/webcamStreaming.svg"
                                     alt="WebCam Streaming"
-                                    class="w-16 h-16 object-contain invert grayscale"
+                                    class="w-12 h-12 md:w-16 md:h-16 object-contain invert grayscale"
                                 />
                             </div>
-                            <h4 class="text-xl font-semibold text-gray-800 mb-2">WebCam Streaming</h4>
-                            <p class="text-gray-600">Stream in up to 8K resolution with ultra-clear quality.</p>
+                            <h4 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">WebCam Streaming</h4>
+                            <p class="text-gray-600 text-sm md:text-base">Stream in up to 8K resolution with ultra-clear quality.</p>
                         </div>
                         <!-- Feature 3 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
+                        <div class="bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition text-center">
                             <div
-                                class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center"
+                                class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-5 md:mb-6 p-3 md:p-4 bg-white rounded-full shadow border border-gray-200 flex items-center justify-center"
                             >
                                 <img
                                     src="../svg/audioStreaming.svg"
                                     alt="Audio Streaming"
-                                    class="w-16 h-16 object-contain invert grayscale"
+                                    class="w-12 h-12 md:w-16 md:h-16 object-contain invert grayscale"
                                 />
                             </div>
-                            <h4 class="text-xl font-semibold text-gray-800 mb-2">Audio Streaming</h4>
-                            <p class="text-gray-600">
+                            <h4 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">Audio Streaming</h4>
+                            <p class="text-gray-600 text-sm md:text-base">
                                 Crystal clear audio with noise cancellation and echo suppression.
                             </p>
                         </div>
                         <!-- Feature 4 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
+                        <div class="bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition text-center">
                             <div
-                                class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center"
+                                class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-5 md:mb-6 p-3 md:p-4 bg-white rounded-full shadow border border-gray-200 flex items-center justify-center"
                             >
                                 <img
                                     src="../svg/webcamChat.svg"
                                     alt="Chat"
-                                    class="w-16 h-16 object-contain invert grayscale"
+                                    class="w-12 h-12 md:w-16 md:h-16 object-contain invert grayscale"
                                 />
                             </div>
-                            <h4 class="text-xl font-semibold text-gray-800 mb-2">Chat</h4>
-                            <p class="text-gray-600">
+                            <h4 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">Chat</h4>
+                            <p class="text-gray-600 text-sm md:text-base">
                                 Chat with others in meeting with integrated emoji picker to show your feeling.
                             </p>
                         </div>
                         <!-- Feature 5 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
+                        <div class="bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition text-center">
                             <div
-                                class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center"
+                                class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-5 md:mb-6 p-3 md:p-4 bg-white rounded-full shadow border border-gray-200 flex items-center justify-center"
                             >
                                 <img
                                     src="../svg/webcamChat.svg"
                                     alt="Recording meeting"
-                                    class="w-16 h-16 object-contain invert grayscale"
+                                    class="w-12 h-12 md:w-16 md:h-16 object-contain invert grayscale"
                                 />
                             </div>
-                            <h4 class="text-xl font-semibold text-gray-800 mb-2">Recording meeting</h4>
-                            <p class="text-gray-600">
+                            <h4 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">Recording meeting</h4>
+                            <p class="text-gray-600 text-sm md:text-base">
                                 Record your Screen, Video, and Audio on Your browser Blob. Save it for using it in the
                                 future or to share with others.
                             </p>
                         </div>
                         <!-- Feature 6 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
+                        <div class="bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition text-center">
                             <div
-                                class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center"
+                                class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-5 md:mb-6 p-3 md:p-4 bg-white rounded-full shadow border border-gray-200 flex items-center justify-center"
                             >
                                 <img
                                     src="../svg/chatgpt.svg"
                                     alt="AI Integration"
-                                    class="w-16 h-16 object-contain invert grayscale"
+                                    class="w-12 h-12 md:w-16 md:h-16 object-contain invert grayscale"
                                 />
                             </div>
-                            <h4 class="text-xl font-semibold text-gray-800 mb-2">AI Integration</h4>
-                            <p class="text-gray-600">Access real-time AI-powered assistance during meetings.</p>
+                            <h4 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">AI Integration</h4>
+                            <p class="text-gray-600 text-sm md:text-base">Access real-time AI-powered assistance during meetings.</p>
                         </div>
                         <!-- Feature 7 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
+                        <div class="bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition text-center">
                             <div
-                                class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center"
+                                class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-5 md:mb-6 p-3 md:p-4 bg-white rounded-full shadow border border-gray-200 flex items-center justify-center"
                             >
                                 <img
                                     src="../svg/aiAvatars.svg"
                                     alt="AI Avatars"
-                                    class="w-16 h-16 object-contain invert grayscale"
+                                    class="w-12 h-12 md:w-16 md:h-16 object-contain invert grayscale"
                                 />
                             </div>
-                            <h4 class="text-xl font-semibold text-gray-800 mb-2">AI Avatars</h4>
-                            <p class="text-gray-600">Engage with dynamic AI avatars for immersive meetings.</p>
+                            <h4 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">AI Avatars</h4>
+                            <p class="text-gray-600 text-sm md:text-base">Engage with dynamic AI avatars for immersive meetings.</p>
                         </div>
                         <!-- Feature 8 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
+                        <div class="bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition text-center">
                             <div
-                                class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center"
+                                class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-5 md:mb-6 p-3 md:p-4 bg-white rounded-full shadow border border-gray-200 flex items-center justify-center"
                             >
                                 <img
                                     src="../svg/virtualBackgrounds.svg"
                                     alt="Virtual Backgrounds"
-                                    class="w-16 h-16 object-contain invert grayscale"
+                                    class="w-12 h-12 md:w-16 md:h-16 object-contain invert grayscale"
                                 />
                             </div>
-                            <h4 class="text-xl font-semibold text-gray-800 mb-2">Virtual Backgrounds</h4>
-                            <p class="text-gray-600">
+                            <h4 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">Virtual Backgrounds</h4>
+                            <p class="text-gray-600 text-sm md:text-base">
                                 Enhance your privacy and professionalism with custom backgrounds.
                             </p>
                         </div>
                         <!-- Feature 9 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
+                        <div class="bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition text-center">
                             <div
-                                class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center"
+                                class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-5 md:mb-6 p-3 md:p-4 bg-white rounded-full shadow border border-gray-200 flex items-center justify-center"
                             >
                                 <img
                                     src="../svg/collaborativeWhitboard.svg"
                                     alt="Collaborative Whiteboard"
-                                    class="w-16 h-16 object-contain invert grayscale"
+                                    class="w-12 h-12 md:w-16 md:h-16 object-contain invert grayscale"
                                 />
                             </div>
-                            <h4 class="text-xl font-semibold text-gray-800 mb-2">Collaborative Whiteboard</h4>
-                            <p class="text-gray-600">Draw, annotate, and collaborate on a shared virtual whiteboard.</p>
+                            <h4 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">Collaborative Whiteboard</h4>
+                            <p class="text-gray-600 text-sm md:text-base">Draw, annotate, and collaborate on a shared virtual whiteboard.</p>
                         </div>
                         <!-- Feature 10 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
+                        <div class="bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition text-center">
                             <div
-                                class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center"
+                                class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-5 md:mb-6 p-3 md:p-4 bg-white rounded-full shadow border border-gray-200 flex items-center justify-center"
                             >
                                 <img
                                     src="../svg/fileSharing.svg"
                                     alt="File Sharing"
-                                    class="w-16 h-16 object-contain invert grayscale"
+                                    class="w-12 h-12 md:w-16 md:h-16 object-contain invert grayscale"
                                 />
                             </div>
-                            <h4 class="text-xl font-semibold text-gray-800 mb-2">File Sharing</h4>
-                            <p class="text-gray-600">
+                            <h4 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">File Sharing</h4>
+                            <p class="text-gray-600 text-sm md:text-base">
                                 Easily share documents, images, and other files with meeting participants.
                             </p>
                         </div>
                         <!-- Feature 11 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
+                        <div class="bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition text-center">
                             <div
-                                class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center"
+                                class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-5 md:mb-6 p-3 md:p-4 bg-white rounded-full shadow border border-gray-200 flex items-center justify-center"
                             >
                                 <img
                                     src="../svg/broadcasting.svg"
                                     alt="Broadcasting"
-                                    class="w-16 h-16 object-contain invert grayscale"
+                                    class="w-12 h-12 md:w-16 md:h-16 object-contain invert grayscale"
                                 />
                             </div>
-                            <h4 class="text-xl font-semibold text-gray-800 mb-2">Broadcasting</h4>
-                            <p class="text-gray-600">
+                            <h4 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">Broadcasting</h4>
+                            <p class="text-gray-600 text-sm md:text-base">
                                 Broadcasting involves the distribution of audio or video content to a wide audience and
                                 supports RTMP streaming.
                             </p>
                         </div>
                         <!-- Feature 12 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
+                        <div class="bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition text-center">
                             <div
-                                class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center"
+                                class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-5 md:mb-6 p-3 md:p-4 bg-white rounded-full shadow border border-gray-200 flex items-center justify-center"
                             >
                                 <img
                                     src="../svg/rtmp.svg"
                                     alt="RTMP Streaming"
-                                    class="w-16 h-16 object-contain invert grayscale"
+                                    class="w-12 h-12 md:w-16 md:h-16 object-contain invert grayscale"
                                 />
                             </div>
-                            <h4 class="text-xl font-semibold text-gray-800 mb-2">RTMP Streaming</h4>
-                            <p class="text-gray-600">Stream live meetings and events to external platforms via RTMP.</p>
+                            <h4 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">RTMP Streaming</h4>
+                            <p class="text-gray-600 text-sm md:text-base">Stream live meetings and events to external platforms via RTMP.</p>
                         </div>
                         <!-- Feature 13 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
+                        <div class="bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition text-center">
                             <div
-                                class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center"
+                                class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-5 md:mb-6 p-3 md:p-4 bg-white rounded-full shadow border border-gray-200 flex items-center justify-center"
                             >
                                 <img
                                     src="../svg/recordingMeeting.svg"
                                     alt="Recording Meetings"
-                                    class="w-16 h-16 object-contain invert grayscale"
+                                    class="w-12 h-12 md:w-16 md:h-16 object-contain invert grayscale"
                                 />
                             </div>
-                            <h4 class="text-xl font-semibold text-gray-800 mb-2">Recording Meetings</h4>
-                            <p class="text-gray-600">Record your meetings to revisit and share them later.</p>
+                            <h4 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">Recording Meetings</h4>
+                            <p class="text-gray-600 text-sm md:text-base">Record your meetings to revisit and share them later.</p>
                         </div>
                         <!-- Feature 14 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
+                        <div class="bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition text-center">
                             <div
-                                class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center"
+                                class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-5 md:mb-6 p-3 md:p-4 bg-white rounded-full shadow border border-gray-200 flex items-center justify-center"
                             >
                                 <img
                                     src="../svg/totalPrivacy.svg"
                                     alt="Privacy"
-                                    class="w-16 h-16 object-contain invert grayscale"
+                                    class="w-12 h-12 md:w-16 md:h-16 object-contain invert grayscale"
                                 />
                             </div>
-                            <h4 class="text-xl font-semibold text-gray-800 mb-2">Total Privacy</h4>
-                            <p class="text-gray-600">Enjoy end-to-end encryption with no data collection or sharing.</p>
+                            <h4 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">Total Privacy</h4>
+                            <p class="text-gray-600 text-sm md:text-base">Enjoy end-to-end encryption with no data collection or sharing.</p>
                         </div>
                         <!-- Feature 15 -->
-                        <div class="bg-gray-50 p-8 rounded-lg shadow-md text-center">
+                        <div class="bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition text-center">
                             <div
-                                class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center"
+                                class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-5 md:mb-6 p-3 md:p-4 bg-white rounded-full shadow border border-gray-200 flex items-center justify-center"
                             >
                                 <img
                                     src="../svg/maximumSecurity.svg"
                                     alt="Security"
-                                    class="w-16 h-16 object-contain invert grayscale"
+                                    class="w-12 h-12 md:w-16 md:h-16 object-contain invert grayscale"
                                 />
                             </div>
-                            <h4 class="text-xl font-semibold text-gray-800 mb-2">Maximum Security</h4>
-                            <p class="text-gray-600">WebRTC encryption ensures your meetings are secure with SRTP.</p>
+                            <h4 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">Maximum Security</h4>
+                            <p class="text-gray-600 text-sm md:text-base">WebRTC encryption ensures your meetings are secure with SRTP.</p>
                         </div>
                     </div>
                 </section>
