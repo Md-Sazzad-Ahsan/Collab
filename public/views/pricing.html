@@ -1,6 +1,8 @@
 <!doctype html>
 <html>
     <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title id="title">Collab - Create your Room name and start the new call.</title>
         <link id="icon" rel="shortcut icon" href="../images/collab.png" />
         <link id="appleTouchIcon" rel="apple-touch-icon" href="../images/collab.png" />
@@ -27,6 +29,11 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,600" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
+
+        <style>
+            .app-font { font-family: Inter, "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; }
+        </style>
         <link id="icon" rel="shortcut icon" href="../images/collab.png" />
         <link id="appleTouchIcon" rel="apple-touch-icon" href="../images/collab.png" />
 
@@ -41,35 +48,35 @@
         <script src="https://cdn.jsdelivr.net/npm/xss/dist/xss.min.js"></script>
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
-    <body class="min-h-screen flex flex-col bg-gray-50 font-sans antialiased text-gray-900">
+    <body class="min-h-screen flex flex-col bg-white font-sans app-font antialiased text-gray-900">
         <div id="header-placeholder"></div>
         <main id="mainContent" class="flex-1 hidden animate__animated animate__fadeIn">
-            <section class="max-w-screen-xl mx-auto px-4 sm:px-10 py-20">
-                <h1 class="text-5xl font-extrabold text-gray-900 leading-tight text-center mb-12">Choose Your Plan</h1>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-10">
+            <section class="max-w-screen-xl mx-auto px-4 sm:px-8 py-16 sm:py-20">
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-blue-700 text-center leading-tight mb-2 sm:mb-3">Choose Your Plan</h1>
+                <h2 class="text-slate-600 text-base sm:text-lg text-center max-w-2xl mx-auto mb-8 sm:mb-10">Find the perfect plan for your team and start collaborating effortlessly with powerful, secure video meetings.</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12">
                     <!-- Free Plan -->
                     <div
                         id="freePlanCard"
-                        class="bg-white border border-gray-200 rounded-2xl p-8 shadow-md hover:shadow-lg transition duration-300"
+                        class="relative group bg-white border border-slate-200/70 rounded-2xl p-6 sm:p-8 shadow-sm shadow-slate-100 hover:shadow-xl hover:-translate-y-0.5 hover:border-slate-300 transition-all duration-200"
                     >
-                        <h2 class="text-3xl font-bold text-gray-900 mb-1">Free</h2>
-                        <p class="text-gray-600 mb-1">Perfect for individuals and small teams getting started.</p>
-                        <p class="text-xl font-semibold text-gray-900 mb-6">Free</p>
-                        <ul class="text-gray-700 space-y-4 mb-6">
-                            <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> Unlimited Meetings</li>
-                            <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> Basic Meeting Features</li>
-                            <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> Screen Recording</li>
-                            <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> File Sharing</li>
-                            <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> Live Location Sharing</li>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-1">Basic (Free)</h2>
+                        <p class="text-slate-600 mb-1">Perfect for individuals and small teams getting started.</p>
+                        <div class="mt-3 mb-6"><span class="text-3xl sm:text-4xl font-extrabold text-slate-900">$0</span><span class="text-slate-500 font-medium ml-1">/month</span></div>
+                        <ul class="text-slate-700 space-y-3 sm:space-y-4 mb-6 pt-4 mt-2 border-t border-slate-200">
+                            <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mr-2 mt-0.5"></i> <span>Unlimited Meetings</span></li>
+                            <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mr-2 mt-0.5"></i> <span>Basic Meeting Features</span></li>
+                            <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mr-2 mt-0.5"></i> <span>Screen Recording</span></li>
+                            <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mr-2 mt-0.5"></i> <span>File Sharing</span></li>
+                            <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mr-2 mt-0.5"></i> <span>Live Location Sharing</span></li>
                             <li>
-                                <i class="fas fa-check-circle text-blue-600 mr-2"></i> In-Meeting Polls, Whiteboard &
-                                Text Editor
+                                <i class="fas fa-check-circle text-blue-600 mr-2"></i>Polls, Whiteboard & Text Editor
                             </li>
                         </ul>
                         <button
                             id="freePlanBtn"
                             disabled
-                            class="w-full py-3 bg-gray-400 text-white font-semibold rounded-xl text-lg cursor-not-allowed"
+                            class="w-full py-3 bg-slate-300 text-white font-semibold rounded-xl text-base sm:text-lg cursor-not-allowed"
                         >
                             Current Plan
                         </button>
@@ -77,92 +84,120 @@
                     <!-- Pro Plan -->
                     <div
                         id="proPlanCard"
-                        class="bg-white border border-gray-200 rounded-2xl p-8 shadow-md hover:shadow-lg transition duration-300 relative"
+                        class="relative group bg-white border border-slate-200/70 rounded-2xl p-6 sm:p-8 shadow-sm shadow-slate-100 hover:shadow-xl hover:-translate-y-0.5 hover:border-slate-300 transition-all duration-200"
                     >
                         <div
                             class="pro-highlight absolute top-4 right-4 bg-blue-600 text-white text-xs font-semibold rounded-full px-3 py-1 select-none"
                         >
-                            PRO
+                            Gold
                         </div>
-                        <h2 class="text-3xl font-bold text-gray-900 mb-1">Pro</h2>
-                        <p class="text-gray-600 mb-1">For professionals and businesses looking to scale.</p>
-                        <p class="text-xl font-semibold text-gray-900 mb-6">$10 / month</p>
-                        <ul class="text-gray-700 space-y-4 mb-6">
-                            <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> All Free Features</li>
-                            <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> Priority Support</li>
-                            <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> AI Assistant</li>
-                            <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> AI Avatar</li>
-                            <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> User Ban</li>
-                            <li><i class="fas fa-check-circle text-blue-600 mr-2"></i> Voice Command Control</li>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-1">Premium</h2>
+                        <p class="text-slate-600 mb-1">For professionals and businesses looking to scale.</p>
+                        <div class="mt-3 mb-6"><span class="text-3xl sm:text-4xl font-extrabold text-slate-900">$10</span><span class="text-slate-500 font-medium ml-1">/month</span></div>
+                        <ul class="text-slate-700 space-y-3 sm:space-y-4 mb-6 pt-4 mt-2 border-t border-slate-200">
+                            <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mr-2 mt-0.5"></i> <span>All Free Features</span></li>
+                            <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mr-2 mt-0.5"></i> <span>Priority Support</span></li>
+                            <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mr-2 mt-0.5"></i> <span>AI Assistant</span></li>
+                            <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mr-2 mt-0.5"></i> <span>AI Avatar</span></li>
+                            <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mr-2 mt-0.5"></i> <span>User Ban</span></li>
+                            <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mr-2 mt-0.5"></i> <span>Voice Command Control</span></li>
                         </ul>
                         <button
                             id="proPlanBtn"
-                            class="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl text-lg hover:bg-blue-700 transition-all duration-300"
+                            class="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl text-base sm:text-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all duration-200 shadow group-hover:shadow-lg active:scale-[.99]"
                         >
-                            Upgrade to Pro
+                            Upgrade to Premium
+                        </button>
+                    </div>
+                    <!-- Yearly Plan -->
+                    <div
+                        id="yearlyPlanCard"
+                        class="relative group bg-white border border-slate-200/70 rounded-2xl p-6 sm:p-8 shadow-sm shadow-slate-100 hover:shadow-xl hover:-translate-y-0.5 hover:border-slate-300 transition-all duration-200"
+                    >
+                        <div
+                            class="absolute top-4 right-4 bg-indigo-600 text-white text-xs font-semibold rounded-full px-3 py-1 select-none"
+                        >
+                            Platinum
+                        </div>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-1">Premium Plus</h2>
+                        <p class="text-slate-600 mb-1">All Premium features billed annually at a discount.</p>
+                        <div class="mt-3 mb-6"><span class="text-3xl sm:text-4xl font-extrabold text-slate-900">$100</span><span class="text-slate-500 font-medium ml-1">/year</span></div>
+                        <ul class="text-slate-700 space-y-3 sm:space-y-4 mb-6 pt-4 mt-2 border-t border-slate-200">
+                            <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mr-2 mt-0.5"></i> <span>All Free Features</span></li>
+                            <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mr-2 mt-0.5"></i> <span>Priority Support</span></li>
+                            <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mr-2 mt-0.5"></i> <span>AI Assistant</span></li>
+                            <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mr-2 mt-0.5"></i> <span>AI Avatar</span></li>
+                            <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mr-2 mt-0.5"></i> <span>User Ban</span></li>
+                            <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mr-2 mt-0.5"></i> <span>Voice Command Control</span></li>
+                        </ul>
+                        <button
+                            id="yearlyPlanBtn"
+                            class="w-full py-3 bg-indigo-600 text-white font-semibold rounded-xl text-base sm:text-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-200 transition-all duration-200 shadow group-hover:shadow-lg active:scale-[.99]"
+                        >
+                            Choose Premium Plus
                         </button>
                     </div>
                 </div>
             </section>
-            <section class="max-w-screen-xl mx-auto px-4 sm:px-10 py-20 border-t border-gray-200">
-                <h2 class="text-4xl font-extrabold text-gray-900 leading-tight text-center mb-12">Compare Plans</h2>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
+            <section class="max-w-screen-xl mx-auto px-4 sm:px-8 py-16 sm:py-20 border-t border-slate-200">
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight text-center mb-8 sm:mb-12">Compare Plans</h2>
+                <div class="overflow-x-auto bg-white border border-slate-200 rounded-xl shadow-sm">
+                    <table class="w-full text-left border-collapse text-slate-800">
                         <thead>
-                            <tr>
-                                <th class="py-4 px-6 text-gray-900 font-bold text-lg">Features</th>
-                                <th class="py-4 px-6 text-gray-900 font-bold text-lg text-center">Free</th>
-                                <th class="py-4 px-6 text-gray-900 font-bold text-lg text-center">Pro</th>
+                            <tr class="bg-slate-50">
+                                <th class="py-4 px-6 text-slate-900 font-bold text-base sm:text-lg">Features</th>
+                                <th class="py-4 px-6 text-slate-900 font-bold text-base sm:text-lg text-center">Free</th>
+                                <th class="py-4 px-6 text-slate-900 font-bold text-base sm:text-lg text-center">Premium</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            <tr>
-                                <td class="py-4 px-6">Unlimited Meetings</td>
+                        <tbody class="divide-y divide-slate-200">
+                            <tr class="hover:bg-slate-50/60">
+                                <td class="py-4 px-6 text-slate-700">Unlimited Meetings</td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-check text-blue-600"></i></td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-check text-blue-600"></i></td>
                             </tr>
-                            <tr>
-                                <td class="py-4 px-6">Screen Recording</td>
+                            <tr class="hover:bg-slate-50/60">
+                                <td class="py-4 px-6 text-slate-700">Screen Recording</td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-check text-blue-600"></i></td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-check text-blue-600"></i></td>
                             </tr>
-                            <tr>
-                                <td class="py-4 px-6">File Sharing</td>
+                            <tr class="hover:bg-slate-50/60">
+                                <td class="py-4 px-6 text-slate-700">File Sharing</td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-check text-blue-600"></i></td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-check text-blue-600"></i></td>
                             </tr>
-                            <tr>
-                                <td class="py-4 px-6">Live Location Sharing</td>
+                            <tr class="hover:bg-slate-50/60">
+                                <td class="py-4 px-6 text-slate-700">Live Location Sharing</td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-check text-blue-600"></i></td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-check text-blue-600"></i></td>
                             </tr>
-                            <tr>
-                                <td class="py-4 px-6">In-Meeting Polls, Whiteboard & Text Editor</td>
+                            <tr class="hover:bg-slate-50/60">
+                                <td class="py-4 px-6 text-slate-700">In-Meeting Polls, Whiteboard & Text Editor</td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-check text-blue-600"></i></td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-check text-blue-600"></i></td>
                             </tr>
-                            <tr>
-                                <td class="py-4 px-6">Priority Support</td>
+                            <tr class="hover:bg-slate-50/60">
+                                <td class="py-4 px-6 text-slate-700">Priority Support</td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-times text-red-500"></i></td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-check text-blue-600"></i></td>
                             </tr>
-                            <tr>
-                                <td class="py-4 px-6">AI Assistant</td>
+                            <tr class="hover:bg-slate-50/60">
+                                <td class="py-4 px-6 text-slate-700">AI Assistant</td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-times text-red-500"></i></td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-check text-blue-600"></i></td>
                             </tr>
-                            <tr>
-                                <td class="py-4 px-6">AI Avatar</td>
+                            <tr class="hover:bg-slate-50/60">
+                                <td class="py-4 px-6 text-slate-700">AI Avatar</td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-times text-red-500"></i></td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-check text-blue-600"></i></td>
                             </tr>
-                            <tr>
-                                <td class="py-4 px-6">User Ban</td>
+                            <tr class="hover:bg-slate-50/60">
+                                <td class="py-4 px-6 text-slate-700">User Ban</td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-times text-red-500"></i></td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-check text-blue-600"></i></td>
                             </tr>
-                            <tr>
-                                <td class="py-4 px-6">Voice Command Control</td>
+                            <tr class="hover:bg-slate-50/60">
+                                <td class="py-4 px-6 text-slate-700">Voice Command Control</td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-times text-red-500"></i></td>
                                 <td class="py-4 px-6 text-center"><i class="fas fa-check text-blue-600"></i></td>
                             </tr>

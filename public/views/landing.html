@@ -54,7 +54,7 @@
         <!-- Header with Text Logo -->
         <div id="header-placeholder"></div>
         <div class="flex-1">
-            <div class="max-w-screen-xl mx-auto px-4 sm:px-8">
+            <div class="max-w-screen-xl mx-auto">
                 <!-- Hero Section -->
                 <section class="flex flex-col lg:flex-row items-center lg:items-start pt-20 sm:pt-20 space-y-16 lg:space-y-0 lg:space-x-20">
                     <div class="lg:w-1/2 text-center sm:text-left space-y-8 animate__animated animate__fadeIn">
@@ -76,7 +76,7 @@
                                 class="flex-none min-w-[120px] sm:min-w-0 px-6 sm:px-8 py-3 bg-indigo-600 text-white font-medium rounded-xl text-base sm:text-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-200 transition-all duration-200 shadow-md hover:shadow-lg whitespace-nowrap inline-flex items-center justify-center gap-2"
                             >
                                 <i class="fas fa-plus"></i>
-                                <span>Create Room</span>
+                                <span>Start Meeting</span>
                             </button>
                             <label for="roomName" class="sr-only">Room name</label>
                             <input
@@ -88,13 +88,13 @@
                             />
                             <button
                                 id="joinRoomButton"
-                                class="flex-none min-w-[120px] sm:min-w-0 px-5 sm:px-6 py-3 mr-5 sm:mr-0 bg-blue-600 text-white font-semibold rounded-xl text-base sm:text-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all duration-200 shadow whitespace-nowrap normal-case sm:px-2 sm:py-2 sm:bg-transparent sm:text-blue-600 sm:hover:bg-transparent sm:hover:underline sm:focus:ring-0 sm:shadow-none"
+                                class="flex-none min-w-[150px] sm:min-w-0 px-5 sm:px-6 py-3 mr-5 sm:mr-0 bg-blue-600 text-white font-semibold rounded-xl text-base sm:text-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all duration-200 shadow whitespace-nowrap normal-case sm:px-2 sm:py-2 sm:bg-transparent sm:text-blue-600 sm:hover:bg-transparent sm:hover:underline sm:focus:ring-0 sm:shadow-none"
                             >
                                 Join
                             </button>
                         </div>
                         
-                        <div id="lastRoomContainer" class="text-sm text-gray-600 mt-2 hidden">
+                        <div id="lastRoomContainer" class="text-sm text-gray-600 mt-5 hidden">
                             <span class="font-medium">Your recent room: </span>
                             <a id="lastRoom" href="#" class="text-blue-600 hover:underline font-medium"></a>
                         </div>
@@ -102,7 +102,7 @@
                     </div>
                     
                     <!-- Bento Grid Images -->
-                    <div class="lg:w-1/2 grid grid-cols-2 grid-rows-2 gap-4 h-96">
+                    <div class="lg:w-1/2 grid grid-cols-2 grid-rows-2 gap-4 h-96 px-5 sm:px-0">
                         <!-- Large image - spans 2 rows -->
                         <div class="row-span-2 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl p-6 flex items-center justify-center shadow-sm">
                             <img src="../svg/undraw-one.svg" alt="Collaboration illustration" class="w-full h-full object-contain">
@@ -119,7 +119,7 @@
                 </section>
 
                 <!-- Features Cards Section -->
-                <section class="py-16">
+                <section class="py-16 px-5 sm:px-0">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
                         <!-- AI Assistance Card -->
                         <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
