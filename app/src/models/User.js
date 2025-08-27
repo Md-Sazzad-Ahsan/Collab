@@ -11,6 +11,9 @@ const userSchema = new mongoose.Schema({
     verificationToken: { type: String },
 
     is_premium: { type: Boolean, default: false },
+
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
 });
 
 // Hash the password before saving it to the database

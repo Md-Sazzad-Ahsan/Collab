@@ -2,6 +2,8 @@
 const { Queue, Worker } = require('bullmq');
 const IORedis = require('ioredis');
 const Subscription = require('./models/Subscription');
+const Logger = require('./Logger');
+const log = new Logger('Server');
 
 // Redis connection
 const connection = new IORedis({
@@ -27,17 +29,17 @@ const worker = new Worker(
         if (user) {
             user.is_premium = false;
             await user.save();
-            console.log(`User ${user.email} premium expired.`);
+            log.log(`User ${user.email} premium expired.`);
         }
 
         await Subscription.findByIdAndDelete(subscriptionId);
-        console.log(`Deleted subscription for user ${user.email}`);
+        log.log(`Deleted subscription for user ${user.email}`);
     },
     { connection },
 );
 
-worker.on('completed', (job) => console.log(`Job ${job.id} completed`));
-worker.on('failed', (job, err) => console.error(`Job ${job.id} failed: ${err.message}`));
+worker.on('completed', (job) => log.log(`Job ${job.id} completed`));
+worker.on('failed', (job, err) => log.error(`Job ${job.id} failed: ${err.message}`));
 
 // Schedule a subscription expiry
 async function scheduleSubscription(subscription) {
@@ -50,7 +52,7 @@ async function scheduleSubscription(subscription) {
         await subscriptionQueue.add('expire', { subscriptionId: subscription._id }, { delay });
     }
 
-    console.log(`Scheduled subscription expiry for user ${subscription.user} at ${subscription.endDate}`);
+    log.log(`Scheduled subscription expiry for user ${subscription.user} at ${subscription.endDate}`);
 }
 
 // Initialize scheduler on startup
@@ -60,9 +62,12 @@ async function initScheduler() {
         for (const sub of activeSubs) {
             await scheduleSubscription(sub);
         }
-        console.log(`Loaded and scheduled ${activeSubs.length} active subscriptions.`);
+        log.log(
+            `%cLoaded and scheduled ${activeSubs.length} active subscriptions.`,
+            'font-family:monospace; color: green; font-size: 16px',
+        );
     } catch (err) {
-        console.error('Error initializing subscription scheduler:', err);
+        log.error('Error initializing subscription scheduler:', err);
     }
 }
 

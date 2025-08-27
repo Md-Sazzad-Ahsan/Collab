@@ -9483,11 +9483,11 @@ class RoomClient {
 
         await this.streamingNew();
         if (!data.isPremium) {
-        setTimeout(() => {
-            this.stopSession();
-            userLog('warning', 'Upgrade to premium to use AI Avatar for longer time', 'top-end', 5000);
-        }, 30000);
-    }
+            setTimeout(() => {
+                this.stopSession();
+                userLog('warning', 'Upgrade to premium to use AI Avatar for longer time', 'top-end', 5000);
+            }, 30000);
+        }
     }
 
     async streamingNew() {

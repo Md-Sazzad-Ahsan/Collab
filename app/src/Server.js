@@ -251,6 +251,9 @@ const views = {
     paymentSuccess: path.join(__dirname, '../../', 'public/views/payment-success.html'),
     paymentFail: path.join(__dirname, '../../', 'public/views/payment-fail.html'),
     paymentCancel: path.join(__dirname, '../../', 'public/views/payment-cancel.html'),
+    forget: path.join(__dirname, '../../', 'public/views/forget.html'),
+    reset: path.join(__dirname, '../../', 'public/views/reset.html'),
+    resetInvalid: path.join(__dirname, '../../', 'public/views/resetinvalid.html'),
 };
 
 const filesPath = [
@@ -268,6 +271,9 @@ const filesPath = [
     views.paymentSuccess,
     views.paymentFail,
     views.paymentCancel,
+    views.forget,
+    views.reset,
+    views.resetInvalid,
 ];
 
 const htmlInjector = new HtmlInjector(filesPath, config.ui.brand);
@@ -469,7 +475,7 @@ function startServer() {
         if (req.session && req.session.user) {
             htmlInjector.injectHtml(views.landing, res);
         } else {
-            res.redirect('/signup');
+            res.redirect('/login');
         }
     });
 
@@ -517,6 +523,53 @@ function startServer() {
                 ),
             )
             .catch((err) => log.error(`Error sending verification email to ${email}`, err));
+    });
+
+    app.post('/resend-verification', async (req, res) => {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ message: 'Email is required' });
+        }
+
+        try {
+            const user = await User.findOne({ email });
+
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            if (user.isVerified) {
+                return res.status(400).json({ message: 'User is already verified' });
+            }
+
+            // Generate new verification token
+            const verificationToken = crypto.lib.WordArray.random(32).toString();
+            user.verificationToken = verificationToken;
+            await user.save();
+
+            // Send response immediately
+            res.json({ message: 'Verification email resent successfully.' });
+
+            // Send verification email asynchronously
+            nodemailer
+                .sendEmailVerification(email, verificationToken)
+                .then(() => {
+                    log.log(
+                        `%cVerification email resent to ${email}`,
+                        'font-family:monospace; color: green; font-size: 16px',
+                    );
+                })
+                .catch((err) => {
+                    log.error(`Resend verification email failed for ${email}`, err);
+                });
+        } catch (err) {
+            log.error(`Resend verification error:`, err);
+            // Only send error if response has not been sent yet
+            if (!res.headersSent) {
+                return res.status(500).json({ message: 'Error resending verification email' });
+            }
+        }
     });
 
     app.post('/contact-us', async (req, res) => {
@@ -896,7 +949,7 @@ function startServer() {
         if (!isAuthenticated) {
             // If not authenticated, redirect to signup or login
             log.warn('/join/:roomId: user not logged in');
-            return res.redirect('/signup'); // Or redirect to login page
+            return res.redirect('/login'); // Or redirect to login page
         }
 
         // If user is authenticated, allow them to join the room
@@ -938,6 +991,44 @@ function startServer() {
         res.sendFile(views.about);
     });
 
+    // Forget Password page
+    app.get('/forget', (req, res) => {
+        if (req.session && req.session.user) {
+            htmlInjector.injectHtml(views.landing, res);
+        } else {
+            res.sendFile(views.forget);
+        }
+    });
+
+    // Reset Password page with token
+    app.get('/reset/:token', async (req, res) => {
+        if (req.session && req.session.user) {
+            htmlInjector.injectHtml(views.landing, res);
+            return;
+        }
+
+        const token = req.params.token;
+
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+            const user = await User.findOne({
+                _id: decoded.id,
+                resetPasswordToken: decoded.resetToken, // ✅ use decoded token
+                resetPasswordExpires: { $gt: Date.now() },
+            });
+
+            if (!user) {
+                return res.sendFile(views.resetInvalid);
+            }
+
+            // Token valid → send reset password page
+            return res.sendFile(views.reset);
+        } catch (err) {
+            return res.sendFile(views.resetInvalid);
+        }
+    });
+
     // Get stats endpoint
     app.get('/stats', (req, res) => {
         const stats = config?.features?.stats || defaultStats;
@@ -956,6 +1047,53 @@ function startServer() {
             res.redirect('/');
         } else {
             res.sendFile(views.login);
+        }
+    });
+
+    app.post('/forget', async (req, res) => {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+        if (!user) return res.json({ success: false, message: 'Email not found!' });
+
+        // Generate random token
+        const resetToken = crypto.lib.WordArray.random(32).toString();
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // optional 15 min expiry
+        await user.save();
+
+        // Generate JWT with resetToken
+        const token = jwt.sign({ id: user._id, resetToken }, process.env.JWT_SECRET, { expiresIn: '15m' });
+
+        res.json({ success: true, message: 'Password reset email sent!' });
+
+        // Send email asynchronously
+        nodemailer.sendPasswordReset(user.email, token).catch(console.error);
+    });
+
+    app.post('/reset/:token', async (req, res) => {
+        const { password } = req.body;
+        const token = req.params.token;
+
+        try {
+            // Verify JWT
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const user = await User.findOne({
+                _id: decoded.id,
+                resetPasswordToken: decoded.resetToken,
+                resetPasswordExpires: { $gt: Date.now() },
+            });
+
+            if (!user) return res.json({ success: false, message: 'Invalid or already used token.' });
+
+            // Update password
+            user.password = password; // hashed by pre('save')
+            user.resetPasswordToken = undefined; // invalidate token
+            user.resetPasswordExpires = undefined;
+            await user.save();
+
+            return res.json({ success: true, message: 'Password updated successfully!' });
+        } catch (err) {
+            return res.json({ success: false, message: 'Invalid or expired token.' });
         }
     });
 

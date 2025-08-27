@@ -1915,8 +1915,12 @@ hr {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg) scale(1.25); }
-    100% { transform: rotate(360deg) scale(1.25); }
+    0% {
+        transform: rotate(0deg) scale(1.25);
+    }
+    100% {
+        transform: rotate(360deg) scale(1.25);
+    }
 }
 
 /*

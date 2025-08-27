@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Collab - Forgot Password</title>
+        <link rel="shortcut icon" href="../images/collab.png" />
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    </head>
+    <body class="min-h-screen flex flex-col bg-gray-50 font-sans text-gray-900">
+        <!-- Header -->
+        <div id="header-placeholder"></div>
+
+        <!-- Main content -->
+        <div class="flex-1 flex flex-col justify-center items-center px-4 py-12">
+            <!-- Logo -->
+            <a
+                href="/"
+                class="text-3xl font-bold text-blue-600 mb-10 hover:text-blue-700 transition animate__animated animate__fadeIn"
+            >
+                Collab
+            </a>
+
+            <!-- Card -->
+            <div
+                class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 space-y-6 animate__animated animate__fadeIn"
+            >
+                <h2 class="text-2xl font-semibold text-center text-gray-800">Forgot Password</h2>
+                <p class="text-sm text-gray-500 text-center">Enter your email to receive a password reset link.</p>
+
+                <form id="forgetForm" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input
+                            type="email"
+                            name="email"
+                            required
+                            class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            placeholder="email"
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="w-full py-3 px-4 bg-blue-600 text-white rounded-xl font-semibold text-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
+                    >
+                        Send Reset Link
+                    </button>
+
+                    <!-- Message boxes -->
+                    <div
+                        id="forgetError"
+                        class="hidden text-red-700 bg-red-100 border border-red-400 px-4 py-3 rounded-lg mb-4 text-sm text-center"
+                    ></div>
+                    <div
+                        id="forgetSuccess"
+                        class="hidden text-green-700 bg-green-100 border border-green-400 px-4 py-3 rounded-lg mb-4 text-sm text-center"
+                    ></div>
+                </form>
+
+                <p class="text-sm text-center text-gray-600">
+                    Remembered your password? <a href="/login" class="text-blue-600 hover:underline">Login</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div id="footer-placeholder"></div>
+
+        <!-- Scripts -->
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script defer src="../js/Auth.js"></script>
+        <script defer src="../js/layoutLoader.js"></script>
+        <script defer src="../js/ForgetPassword.js"></script>
+    </body>
+</html>

@@ -273,8 +273,75 @@ async function sendUserMessageToAdmin(userEmail, userName, userMessage) {
         .catch((err) => log.error('sendUserMessageToAdmin Error', err));
 }
 
+async function sendPasswordReset(email, token) {
+    const resetLink = `${config?.server?.hostUrl}/reset/${token}`;
+
+    const subject = 'Password Reset Request - Collab';
+    const body = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Password Reset - Collab</title>
+    </head>
+    <body style="margin:0;padding:0;background-color:#f9fafb;font-family:Segoe UI, Arial, sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+            <tr>
+                <td align="center">
+                    <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:32px;">
+                        <tr>
+                            <td style="padding-bottom:24px;">
+                                <h2 style="margin:0;color:#111827;font-weight:600;font-size:22px;">Password Reset Request</h2>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="font-size:15px;color:#374151;line-height:1.6;padding-bottom:24px;">
+                                We received a request to reset your password for <strong>Collab</strong>.  
+                                If you did not request this, please ignore this email.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="text-align:center;padding-bottom:32px;">
+                                <a href="${resetLink}" style="background-color:#2563eb;color:#ffffff;text-decoration:none;padding:12px 24px;font-size:15px;border-radius:6px;display:inline-block;">
+                                    Reset Password
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="font-size:14px;color:#6b7280;line-height:1.5;">
+                                This link will expire in <strong>15 minutes</strong>.  
+                                For your security, do not share this link with anyone.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="font-size:13px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:24px;">
+                                Regards,<br>
+                                <strong>Collab Support Team</strong>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    `;
+
+    try {
+        return await transport.sendMail({
+            from: `"Collab Support Team" <${EMAIL_USERNAME}>`,
+            to: email,
+            subject,
+            html: body,
+        });
+    } catch (err) {
+        return log.error('sendPasswordReset Error', err);
+    }
+}
+
 module.exports = {
     sendEmailAlert,
     sendEmailVerification,
     sendUserMessageToAdmin,
+    sendPasswordReset,
 };
