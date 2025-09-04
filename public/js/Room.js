@@ -2137,6 +2137,7 @@ function handleButtons() {
     };
     whiteboardObjectBtn.onclick = () => {
         whiteboardIsDrawingMode(false);
+        whiteboardIsEraser(false);
     };
     whiteboardUndoBtn.onclick = () => {
         whiteboardAction(getWhiteboardAction('undo'));
@@ -2758,6 +2759,10 @@ function handleSelects() {
         lS.setSettings(localStorageSettings);
         e.target.blur();
     };
+    wbDrawingColorEl.value = "#000000";
+    wbCanvas.freeDrawingBrush.color = "#000000";
+    wbBackgroundColorEl.value = "#ffffff";
+    setWhiteboardBgColor("#ffffff");
     // whiteboard options
     wbDrawingColorEl.onchange = () => {
         wbCanvas.freeDrawingBrush.color = wbDrawingColorEl.value;
