@@ -1,386 +1,379 @@
-<html>
+<!doctype html>
+<html lang="en">
     <head>
-        <!-- Title and Icon -->
-
-        <title id="title">Collab, Free Video Calls, Messaging and Screen Sharing</title>
-        <link id="icon" rel="shortcut icon" href="../images/collab.png" />
-        <link id="appleTouchIcon" rel="apple-touch-icon" href="../images/collab.png" />
+        <meta charset="UTF-8" />
+        <title>Collab, Free Video Calls, Messaging and Screen Sharing</title>
+        <link rel="shortcut icon" href="../images/collab.png" />
+        <link rel="apple-touch-icon" href="../images/collab.png" />
 
         <!-- Meta Information -->
         <meta
-            id="description"
             name="description"
             content="Collab powered by WebRTC and mediasoup, Real-time Simple Secure Fast video calls, messaging and screen sharing capabilities in the browser."
         />
         <meta
-            id="keywords"
             name="keywords"
             content="webrtc, collab, mediasoup, mediasoup-client, self hosted, voip, sip, real-time communications, chat, messaging, meet, webrtc stun, webrtc turn, webrtc p2p, webrtc sfu, video meeting, video chat, video conference, multi video chat, multi video conference, peer to peer, p2p, sfu, rtc, alternative to, zoom, microsoft teams, google meet, jitsi, meeting"
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        <!-- https://ogp.me -->
-
+        <!-- Open Graph -->
         <meta property="og:type" content="{{OG_TYPE}}" />
         <meta property="og:site_name" content="{{OG_SITE_NAME}}" />
         <meta property="og:title" content="{{OG_TITLE}}" />
         <meta property="og:description" content="{{OG_DESCRIPTION}}" />
         <meta property="og:image" content="{{OG_IMAGE}}" />
         <meta property="og:url" content="{{OG_URL}}" />
+
+        <!-- Stylesheets -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,600" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
-        <link id="icon" rel="shortcut icon" href="../images/collab.png" />
-        <link id="appleTouchIcon" rel="apple-touch-icon" href="../images/collab.png" />
-        <!-- Js scripts -->
+
+        <!-- Scripts -->
         <script defer src="../js/Brand.js"></script>
         <script async src="../js/Umami.js"></script>
-
         <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.8"></script>
         <script src="https://unpkg.com/animejs@3.0.1/lib/anime.min.js"></script>
         <script src="https://unpkg.com/scrollreveal@4.0.0/dist/scrollreveal.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/xss/dist/xss.min.js"></script>
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
-
     <body class="min-h-screen flex flex-col bg-white font-sans antialiased text-gray-900">
-        <!-- Header with Text Logo -->
+        <!-- Header -->
         <div id="header-placeholder"></div>
-        <div class="flex-1">
+
+        <!-- Main Content -->
+        <main class="flex-1">
             <div class="max-w-screen-xl mx-auto px-4 sm:px-10 mt-12">
-                <section class="py-0 sm:py-5">
-                    <div class="text-center max-w-3xl mx-auto">
-                        <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900">
-                            Powerful Features for Seamless Video Communication
-                        </h1>
-                        <p class="mt-4 text-lg text-gray-600">
-                            Enjoy smooth HD video meetings with crystal-clear audio, real-time collaboration, and secure tools like screen sharing, whiteboards, and AI assistance.
-                        </p>
-                    </div>
+                <!-- Hero Section -->
+                <section class="py-0 sm:py-5 text-center max-w-3xl mx-auto">
+                    <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900">
+                        Powerful Features for Seamless Video Communication
+                    </h1>
+                    <p class="mt-4 text-lg text-gray-600">
+                        Enjoy smooth HD video meetings with crystal-clear audio, real-time collaboration, and secure
+                        tools like screen sharing, whiteboards, and AI assistance.
+                    </p>
                 </section>
-                <section class="mt-10 py-16 mt-auto">
-                    <div class="px-2">
-                        <div class="features-grid space-y-16 sm:space-y-20">
-                            <!-- Group 1: Collaboration & Communication -->
-                            <div class="features-group mt-12 sm:mt-14 mb-6">
-                                <div class="mb-8 pl-3 border-l-4 border-blue-500">
-                                    <h3 class="text-lg sm:text-xl font-semibold text-gray-900">Collaboration & Communication</h3>
-                                    <p class="text-sm text-gray-500">Share, chat, and collaborate in real time.</p>
+
+                <!-- Features Section -->
+                <section class="py-16">
+                    <div class="px-2 features-grid space-y-16 sm:space-y-20">
+                        <!-- Group 1: Collaboration & Communication -->
+                        <div class="features-group mt-12 sm:mt-14 mb-6">
+                            <div class="mb-8 pl-3 border-l-4 border-blue-500">
+                                <h3 class="text-lg sm:text-xl font-semibold text-gray-900">
+                                    Collaboration & Communication
+                                </h3>
+                                <p class="text-sm text-gray-500">Share, chat, and collaborate in real time.</p>
+                            </div>
+                            <div class="group-card p-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">01</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        Screen Sharing
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Easily share your full screen, apps or documents for real-time collaboration.
+                                    </p>
                                 </div>
-                                <div class="group-card p-0">
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
-                                    <!-- Screen Sharing -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">01</span>
-                                        <div
-                                            class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"
-                                        >
-                                            <img
-                                                src="../svg/screenSharing.svg"
-                                                alt="Screen Sharing"
-                                                class="w-16 h-16 object-contain invert grayscale"
-                                            />
-                                        </div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">Screen Sharing</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Easily share your full screen, apps or documents for real-time collaboration.</p>
-                                    </div>
-                                    <!-- WebCam Streaming -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">02</span>
-                                        <div
-                                            class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"
-                                        >
-                                            <img
-                                                src="../svg/webcamStreaming.svg"
-                                                alt="WebCam Streaming"
-                                                class="w-16 h-16 object-contain invert grayscale"
-                                            />
-                                        </div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">WebCam Streaming</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Up to 8K video with crystal-clear quality; supports front/rear mobile cameras.</p>
-                                    </div>
-                                    <!-- Audio Streaming -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">03</span>
-                                        <div
-                                            class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"
-                                        >
-                                            <img
-                                                src="../svg/audioStreaming.svg"
-                                                alt="Audio Streaming"
-                                                class="w-16 h-16 object-contain invert grayscale"
-                                            />
-                                        </div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">Audio Streaming</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">High-quality audio with noise cancellation, echo suppression and speaker detection.</p>
-                                    </div>
-                                    <!-- Chat -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">04</span>
-                                        <div
-                                            class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"
-                                        >
-                                            <img
-                                                src="../svg/webcamChat.svg"
-                                                alt="Chat"
-                                                class="w-16 h-16 object-contain invert grayscale"
-                                            />
-                                        </div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">Chat</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Messages with emoji support, clickable links and real-time updates.</p>
-                                    </div>
-                                    <!-- Collaborative Whiteboard -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">05</span>
-                                        <div
-                                            class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"
-                                        >
-                                            <img
-                                                src="../svg/collaborativeWhitboard.svg"
-                                                alt="Collaborative Whiteboard"
-                                                class="w-16 h-16 object-contain invert grayscale"
-                                            />
-                                        </div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">Collaborative Whiteboard</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Draw, annotate and brainstorm together on a shared canvas.</p>
-                                    </div>
-                                    <!-- YouTube & Video Sharing -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">06</span>
-                                        <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"></div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">YouTube & Video Sharing</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Share YouTube embeds and media files (MP4, WebM, OGG, MP3) seamlessly.</p>
-                                    </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">02</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        WebCam Streaming
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Up to 8K video with crystal-clear quality; supports front/rear mobile cameras.
+                                    </p>
+                                </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">03</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        Audio Streaming
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        High-quality audio with noise cancellation, echo suppression and speaker
+                                        detection.
+                                    </p>
+                                </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">04</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        Chat
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Messages with emoji support, clickable links and real-time updates.
+                                    </p>
+                                </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">05</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        Collaborative Whiteboard
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Draw, annotate and brainstorm together on a shared canvas.
+                                    </p>
+                                </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">06</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        YouTube & Video Sharing
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Share YouTube embeds and media files (MP4, WebM, OGG, MP3) seamlessly.
+                                    </p>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Group 2: AI & Smart Tools -->
-                            <div class="features-group mt-16 sm:mt-20">
-                                <div class="mb-8 pl-3 border-l-4 border-purple-500">
-                                    <h3 class="text-lg sm:text-xl font-semibold text-gray-900">AI & Smart Tools</h3>
-                                    <p class="text-sm text-gray-500">Summaries, insights, and automation to boost outcomes.</p>
+                        <!-- Group 2: AI & Smart Tools -->
+                        <div class="features-group mt-16 sm:mt-20">
+                            <div class="mb-8 pl-3 border-l-4 border-purple-500">
+                                <h3 class="text-lg sm:text-xl font-semibold text-gray-900">AI & Smart Tools</h3>
+                                <p class="text-sm text-gray-500">
+                                    Summaries, insights, and automation to boost outcomes.
+                                </p>
+                            </div>
+                            <div class="group-card p-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">01</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        AI Integration
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Real-time AI summaries, suggestions and insights.
+                                    </p>
                                 </div>
-                                <div class="group-card p-0">
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
-                                    <!-- AI Integration -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">01</span>
-                                        <div
-                                            class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"
-                                        >
-                                            <img
-                                                src="../svg/chatgpt.svg"
-                                                alt="AI Integration"
-                                                class="w-16 h-16 object-contain invert grayscale"
-                                            />
-                                        </div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">AI Integration</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Real-time AI summaries, suggestions and insights.</p>
-                                    </div>
-                                    <!-- AI Avatars -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">02</span>
-                                        <div
-                                            class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"
-                                        >
-                                            <img
-                                                src="../svg/aiAvatars.svg"
-                                                alt="AI Avatars"
-                                                class="w-16 h-16 object-contain invert grayscale"
-                                            />
-                                        </div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">AI Avatars</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Customizable avatars to deliver messages or act out scripts.</p>
-                                    </div>
-                                    <!-- Virtual Backgrounds -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">03</span>
-                                        <div
-                                            class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"
-                                        >
-                                            <img
-                                                src="../svg/virtualBackgrounds.svg"
-                                                alt="Virtual Backgrounds"
-                                                class="w-16 h-16 object-contain invert grayscale"
-                                            />
-                                        </div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">Virtual Backgrounds</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Apply custom backgrounds for privacy and a professional look.</p>
-                                    </div>
-                                    <!-- Speech Recognition -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">04</span>
-                                        <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"></div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">Speech Recognition</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Control features and execute commands hands-free by speaking.</p>
-                                    </div>
-                                    <!-- Push-to-Talk -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">05</span>
-                                        <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"></div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">Push-to-Talk</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Walkie-talkie style audio for quick, noise-free interactions.</p>
-                                    </div>
-                                    <!-- Real-Time Polls -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">06</span>
-                                        <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"></div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">Real Time Polls</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Create and vote in live polls to get instant feedback.</p>
-                                    </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">02</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        AI Avatars
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Customizable avatars to deliver messages or act out scripts.
+                                    </p>
+                                </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">03</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        Virtual Backgrounds
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Apply custom backgrounds for privacy and a professional look.
+                                    </p>
+                                </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">04</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        Speech Recognition
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Control features and execute commands hands-free by speaking.
+                                    </p>
+                                </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">05</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        Push-to-Talk
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Walkie-talkie style audio for quick, noise-free interactions.
+                                    </p>
+                                </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">06</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        Real-Time Polls
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Create and vote in live polls to get instant feedback.
+                                    </p>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Group 3: Meeting Management & Productivity -->
-                            <div class="features-group mt-16 sm:mt-20">
-                                <div class="mb-8 pl-3 border-l-4 border-amber-500">
-                                    <h3 class="text-lg sm:text-xl font-semibold text-gray-900">Meeting Management & Productivity</h3>
-                                    <p class="text-sm text-gray-500">Plan, record, and capture action items.</p>
+                        <!-- Group 3: Meeting Management & Productivity -->
+                        <div class="features-group mt-16 sm:mt-20">
+                            <div class="mb-8 pl-3 border-l-4 border-amber-500">
+                                <h3 class="text-lg sm:text-xl font-semibold text-gray-900">
+                                    Meeting Management & Productivity
+                                </h3>
+                                <p class="text-sm text-gray-500">Plan, record, and capture action items.</p>
+                            </div>
+                            <div class="group-card p-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">01</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        Recording Meetings
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Record screen, video and audio locally or on a server.
+                                    </p>
                                 </div>
-                                <div class="group-card p-0">
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
-                                    <!-- Recording Meetings -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">01</span>
-                                        <div
-                                            class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"
-                                        >
-                                            <img
-                                                src="../svg/recordingMeeting.svg"
-                                                alt="Recording Meetings"
-                                                class="w-16 h-16 object-contain invert grayscale"
-                                            />
-                                        </div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">Recording Meetings</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Record screen, video and audio locally or on a server.</p>
-                                    </div>
-                                    <!-- File Sharing -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">02</span>
-                                        <div
-                                            class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"
-                                        >
-                                            <img
-                                                src="../svg/fileSharing.svg"
-                                                alt="File Sharing"
-                                                class="w-16 h-16 object-contain invert grayscale"
-                                            />
-                                        </div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">File Sharing</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Easily share documents, images, and other files with meeting participants.</p>
-                                    </div>
-                                    <!-- Broadcasting & RTMP -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">03</span>
-                                        <div
-                                            class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"
-                                        >
-                                            <img
-                                                src="../svg/broadcasting.svg"
-                                                alt="Broadcasting"
-                                                class="w-16 h-16 object-contain invert grayscale"
-                                            />
-                                        </div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">Broadcasting & RTMP Streaming</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Stream meetings to external platforms using RTMP.</p>
-                                    </div>
-                                    <!-- Snapshot Frames -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">04</span>
-                                        <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"></div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">Snapshot Frames</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Capture key moments as PNGs for notes and highlights.</p>
-                                    </div>
-                                    <!-- Choose Audio/Video Source -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">05</span>
-                                        <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"></div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">Choose Audio/Video Source</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Pick microphones, speakers and cameras for best quality.</p>
-                                    </div>
-                                    <!-- Supports 4K Video -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">06</span>
-                                        <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"></div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">Supports 4K Video</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Deliver high-resolution streams for crystal-clear visuals.</p>
-                                    </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">02</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        File Sharing
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Easily share documents, images, and other files with meeting participants.
+                                    </p>
+                                </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">03</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        Broadcasting & RTMP Streaming
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Stream meetings to external platforms using RTMP.
+                                    </p>
+                                </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">04</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        Meeting Scheduling
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Organize meetings with calendar invites and notifications.
+                                    </p>
+                                </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">05</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        Notes & Annotations
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Keep meeting notes and mark important points for follow-up.
+                                    </p>
+                                </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">06</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        Breakout Rooms
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Split participants into smaller groups for focused discussions.
+                                    </p>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Group 4: Security & Privacy -->
-                            <div class="features-group mt-16 sm:mt-20">
-                                <div class="mb-8 pl-3 border-l-4 border-emerald-500">
-                                    <h3 class="text-lg sm:text-xl font-semibold text-gray-900">Security & Privacy</h3>
-                                    <p class="text-sm text-gray-500">Enterprise-grade protection for teams and guests.</p>
+                        <!-- Group 4: Security & Privacy -->
+                        <div class="features-group mt-16 sm:mt-20">
+                            <div class="mb-8 pl-3 border-l-4 border-green-500">
+                                <h3 class="text-lg sm:text-xl font-semibold text-gray-900">Security & Privacy</h3>
+                                <p class="text-sm text-gray-500">Keep your meetings and data safe and private.</p>
+                            </div>
+                            <div class="group-card p-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">01</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        End-to-End Encryption
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        All calls and messages are encrypted for maximum privacy.
+                                    </p>
                                 </div>
-                                <div class="group-card p-0">
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
-                                    <!-- Total Privacy -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">01</span>
-                                        <div
-                                            class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"
-                                        >
-                                            <img
-                                                src="../svg/totalPrivacy.svg"
-                                                alt="Privacy"
-                                                class="w-16 h-16 object-contain invert grayscale"
-                                            />
-                                        </div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">Total Privacy</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">End-to-end encryption with no data collection or sharing.</p>
-                                    </div>
-                                    <!-- Maximum Security -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">02</span>
-                                        <div
-                                            class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"
-                                        >
-                                            <img
-                                                src="../svg/maximumSecurity.svg"
-                                                alt="Security"
-                                                class="w-16 h-16 object-contain invert grayscale"
-                                            />
-                                        </div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">Maximum Security</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">WebRTC SRTP encryption keeps streams secure.</p>
-                                    </div>
-                                    <!-- Role-Based Access -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">03</span>
-                                        <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"></div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">Role-Based Access</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Assign roles and control who can join, speak or share.</p>
-                                    </div>
-                                    <!-- Host Protection -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">04</span>
-                                        <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"></div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">Host Protection</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Secure host authentication prevents unauthorized access.</p>
-                                    </div>
-                                    <!-- Room Password & Lobby -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">05</span>
-                                        <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"></div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">Room Password & Lobby</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Protect meetings with passwords and a central lobby.</p>
-                                    </div>
-                                    <!-- Spam & Unauthorized Access Mitigation -->
-                                    <div class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 text-left transition hover:-translate-y-0.5 hover:shadow-xl">
-                                        <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">06</span>
-                                        <div class="w-24 h-24 mx-auto mb-6 p-4 bg-gray-100 rounded-full shadow-lg border-4 border-gray-200 flex items-center justify-center hidden"></div>
-                                        <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">Spam & Unauthorized Access</h4>
-                                        <p class="text-gray-600 text-sm leading-6 text-left">Mitigate spam and restrict unwanted participants.</p>
-                                    </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">02</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        Secure File Transfer
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Files shared within meetings are securely transmitted.
+                                    </p>
+                                </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">03</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        Role-Based Access
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Control permissions for participants and moderators.
+                                    </p>
+                                </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">04</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        Private Meeting Links
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Links are unique and hard to guess, ensuring secure entry.
+                                    </p>
+                                </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">05</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        Password Protection
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Meetings can be protected with a secure password.
+                                    </p>
+                                </div>
+                                <div
+                                    class="relative bg-white border border-gray-200 rounded-[16px] shadow-lg p-8 pt-16 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                >
+                                    <span class="absolute top-4 left-6 text-[22px] font-bold text-gray-900">06</span>
+                                    <h4 class="uppercase tracking-wider font-bold text-sm text-gray-900 mb-2 text-left">
+                                        GDPR & Privacy Compliance
+                                    </h4>
+                                    <p class="text-gray-600 text-sm leading-6 text-left">
+                                        Fully compliant with privacy laws to protect user data.
+                                    </p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
             </div>
-        </div>
+        </main>
 
         <!-- Footer -->
         <div id="footer-placeholder"></div>
