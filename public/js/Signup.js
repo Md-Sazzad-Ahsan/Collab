@@ -2,148 +2,51 @@
 
 const usernameInput = document.getElementById('username');
 const emailInput = document.getElementById('email');
+const phoneInput = document.getElementById('phone');
 const passwordInput = document.getElementById('password');
 const signupForm = document.getElementById('signupForm');
 const signupBtn = document.getElementById('signupButton');
 const errorBox = document.getElementById('signupError');
 
+// ---------------- Resend link setup ----------------
 let resendBtn = document.getElementById('resendLink');
+let resendContainer = document.getElementById('resendContainer');
+
 if (!resendBtn) {
     const p = document.createElement('p');
-    p.className = 'text-sm text-center text-gray-600 mt-2';
+    p.id = 'resendContainer';
+    p.className = 'text-sm text-center text-gray-600 mt-2 hidden';
     p.innerHTML = `Didn't receive verification email? <button id="resendLink" class="text-blue-600 hover:underline font-semibold">Resend Link</button>`;
     signupForm.parentElement.appendChild(p);
     resendBtn = document.getElementById('resendLink');
+    resendContainer = document.getElementById('resendContainer');
 }
 
-// Track attempts & cooldown
-const MAX_ATTEMPTS = 1;
+// ---------------- Cooldown & Helpers ----------------
 const COOLDOWN_MS = 2 * 60 * 1000; // 2 minutes
 let cooldownTimeout = null;
 
-// Load last attempt from localStorage
-let lastAttempt = parseInt(localStorage.getItem('resendLastAttempt')) || 0;
-let resendAttempts = parseInt(localStorage.getItem('resendAttempts')) || 0;
+function disableSignup(disable = true) {
+    signupBtn.disabled = disable;
+    if (disable) signupBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    else signupBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+}
 
-// Function to start cooldown based on existing lastAttempt
-function startCooldown() {
-    clearInterval(cooldownTimeout);
+function startResendCooldown() {
     resendBtn.disabled = true;
-
-    const now = Date.now();
-    let elapsed = now - lastAttempt;
-    let remaining = Math.max(Math.ceil((COOLDOWN_MS - elapsed) / 1000), 0);
-
-    if (remaining <= 0) {
-        resendAttempts = 0;
-        localStorage.setItem('resendAttempts', resendAttempts);
-        resendBtn.disabled = false;
-        resendBtn.textContent = 'Resend Link';
-        return;
-    }
-
+    let remaining = COOLDOWN_MS / 1000;
     resendBtn.textContent = `Wait ${remaining}s`;
+
     cooldownTimeout = setInterval(() => {
         remaining--;
         if (remaining <= 0) {
             clearInterval(cooldownTimeout);
-            resendAttempts = 0;
-            localStorage.setItem('resendAttempts', resendAttempts);
             resendBtn.disabled = false;
             resendBtn.textContent = 'Resend Link';
         } else {
             resendBtn.textContent = `Wait ${remaining}s`;
         }
     }, 1000);
-}
-
-// Call this when a new resend/signup attempt happens
-function recordAttempt() {
-    lastAttempt = Date.now();
-    localStorage.setItem('resendLastAttempt', lastAttempt);
-    resendAttempts++;
-    localStorage.setItem('resendAttempts', resendAttempts);
-    startCooldown();
-}
-
-// Initialize cooldown on page load if needed
-if (lastAttempt && Date.now() - lastAttempt < COOLDOWN_MS) {
-    startCooldown();
-}
-
-signupForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    signup();
-});
-
-[usernameInput, emailInput, passwordInput].forEach((input) => {
-    input.addEventListener('keyup', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            signup();
-        }
-    });
-});
-
-resendBtn.addEventListener('click', () => {
-    // if (resendAttempts >= MAX_ATTEMPTS) {
-    //     popup(`Maximum attempts reached. Please wait before trying again.`);
-    //     return;
-    // }
-
-    const email = filterXSS(emailInput.value.trim());
-    if (!email) {
-        popup('Please enter your email to resend verification.');
-        return;
-    }
-
-    resendBtn.disabled = true;
-    resendBtn.textContent = 'Sending...';
-
-    axios
-        .post('/resend-verification', { email })
-        .then((res) => {
-            popup(res.data.message, 'success');
-            recordAttempt();
-        })
-        .catch((err) => {
-            let msg = 'Failed to resend link.';
-            if (err?.response?.data?.message) msg = err.response.data.message;
-            popup(msg);
-            resendBtn.disabled = false;
-            resendBtn.textContent = 'Resend Link';
-        });
-});
-
-function signup() {
-    const username = filterXSS(usernameInput.value.trim());
-    const email = filterXSS(emailInput.value.trim());
-    const password = filterXSS(passwordInput.value.trim());
-
-    if (!username || !email || !password) {
-        popup('All fields are required.');
-        return;
-    }
-
-    axios
-        .post('/signup', { name: username, email, password })
-        .then((response) => {
-            popup(response.data.message || response.data, 'success');
-            recordAttempt(); // Start cooldown after signup email sent
-        })
-        .catch((error) => {
-            console.error('Signup error:', error);
-            let msg = 'Signup failed. Please try again.';
-            if (error?.response?.data) {
-                if (typeof error.response.data === 'string') {
-                    msg = error.response.data;
-                } else if (typeof error.response.data === 'object' && error.response.data.message) {
-                    msg = error.response.data.message;
-                }
-            }
-            popup(msg);
-            passwordInput.value = '';
-        });
 }
 
 function filterXSS(input) {
@@ -168,3 +71,85 @@ function popup(message, type = 'error') {
         errorBox.classList.add('bg-red-100', 'text-red-700', 'border-red-400');
     }
 }
+
+// ---------------- Signup ----------------
+signupForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    signup();
+});
+
+[usernameInput, emailInput, passwordInput].forEach((input) => {
+    input.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            signup();
+        }
+    });
+});
+
+function signup() {
+    const username = filterXSS(usernameInput.value.trim());
+    const email = filterXSS(emailInput.value.trim());
+    const password = filterXSS(passwordInput.value.trim());
+    const phone = filterXSS(phoneInput.value.trim());
+
+    if (!username || !email || !password || !phone) {
+        popup('All fields are required.');
+        return;
+    }
+
+    disableSignup(true);
+
+    axios
+        .post('/send-verification', { name: username, email, password, phone })
+        .then((response) => {
+            popup(response.data.message || response.data, 'success');
+
+            // Show resend link and start 2-min cooldown
+            resendContainer.classList.remove('hidden');
+            startResendCooldown();
+        })
+        .catch((error) => {
+            console.error('Signup error:', error);
+            let msg = 'Signup failed. Please try again.';
+            if (error?.response?.data?.message) msg = error.response.data.message;
+            popup(msg);
+            passwordInput.value = '';
+
+            // Show resend link for existing unverified user and start cooldown
+            if (error?.response?.status === 400 || error?.response?.status === 429) {
+                resendContainer.classList.remove('hidden');
+                startResendCooldown();
+            } else {
+                disableSignup(false);
+            }
+        });
+}
+
+// ---------------- Resend Verification ----------------
+resendBtn.addEventListener('click', () => {
+    const email = filterXSS(emailInput.value.trim());
+    if (!email) {
+        popup('Please enter your email to resend verification.');
+        return;
+    }
+
+    resendBtn.disabled = true;
+    resendBtn.textContent = 'Sending...';
+
+    axios
+        .post('/send-verification', { email })
+        .then((res) => {
+            popup(res.data.message, 'success');
+
+            // Restart 2-min cooldown after manual resend
+            startResendCooldown();
+        })
+        .catch((err) => {
+            let msg = 'Failed to resend link.';
+            if (err?.response?.data?.message) msg = err.response.data.message;
+            popup(msg);
+            resendBtn.disabled = false;
+            resendBtn.textContent = 'Resend Link';
+        });
+});

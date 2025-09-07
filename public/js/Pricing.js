@@ -1,119 +1,116 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    const upgradeBtn = document.getElementById('proPlanBtn');
     const freePlanCard = document.getElementById('freePlanCard');
     const proPlanCard = document.getElementById('proPlanCard');
-    const proMemberBadge = proPlanCard.querySelector('.pro-highlight');
+    const yearlyPlanCard = document.getElementById('yearlyPlanCard');
 
-    try {
-        const userRes = await axios.get('/user-subscription');
-        const { isPremium, expiryDate } = userRes.data;
+    const proBtn = document.getElementById('proPlanBtn');
+    const yearlyBtn = document.getElementById('yearlyPlanBtn');
 
-        if (isPremium) {
-            // Hide Free Plan card
-            if (freePlanCard) freePlanCard.style.display = 'none';
+    const planMap = {
+        monthly: { card: proPlanCard, btn: proBtn },
+        yearly: { card: yearlyPlanCard, btn: yearlyBtn },
+    };
 
-            // Update Pro Plan card to show active badge and styling
-            if (proPlanCard) {
-                proPlanCard.classList.add('border-blue-500');
-            }
+    function setActivePlanUI(duration, expiryDate) {
+        // Hide all non-active plans
+        [freePlanCard, proPlanCard, yearlyPlanCard].forEach((card) => card?.classList.add('hidden'));
 
-            if (proMemberBadge) {
-                proMemberBadge.classList.remove('bg-blue-600');
-                proMemberBadge.classList.add('bg-blue-600');
-                proMemberBadge.textContent = 'ACTIVE';
-            }
+        // Show and highlight active plan
+        const { card, btn } = planMap[duration];
+        card?.classList.remove('hidden');
+        card?.classList.add('border-blue-500');
 
-            // Disable upgrade button and show expiry date
-            if (upgradeBtn) {
-                upgradeBtn.disabled = true;
-                upgradeBtn.textContent = `Active until ${new Date(expiryDate).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                })}`;
-                upgradeBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                upgradeBtn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'cursor-default');
-            }
-        } else {
-            // Free user experience
-            if (upgradeBtn) {
-                upgradeBtn.addEventListener('click', handleUpgradeClick);
-            }
+        const badge = card?.querySelector('.pro-highlight');
+        if (badge) {
+            badge.textContent = 'ACTIVE';
+            badge.classList.add('bg-blue-600', 'text-white');
         }
-    } catch (error) {
-        if (error.response?.status === 401) {
-            // Not logged in
-            if (upgradeBtn) {
-                upgradeBtn.textContent = 'Login to Upgrade';
-                upgradeBtn.addEventListener('click', () => {
-                    window.location.href = '/login?return=/pricing';
-                });
-            }
-        } else {
-            console.error('Error loading subscription:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Failed to load subscription details',
-            });
+
+        if (btn) {
+            btn.disabled = true;
+            btn.classList.add('cursor-default');
+            btn.textContent = `Active until ${new Date(expiryDate).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+            })}`;
         }
     }
 
-    async function handleUpgradeClick() {
-        try {
-            if (!upgradeBtn) return;
-            upgradeBtn.disabled = true;
-            upgradeBtn.innerHTML = `
-                <span class="inline-flex items-center">
-                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Processing...
-                </span>
-            `;
+    // Load subscription status
+    try {
+        const { data } = await axios.get('/user-subscription');
+        const { isPremium, expiryDate, duration } = data;
 
-            const response = await axios.post('/init-payment', {
-                amount: 500,
+        if (isPremium) {
+            setActivePlanUI(duration, expiryDate);
+        } else {
+            // Show free plan
+            freePlanCard?.classList.remove('hidden');
+            proPlanCard?.classList.remove('hidden');
+            yearlyPlanCard?.classList.remove('hidden');
+
+            // Attach upgrade handlers
+            proBtn?.addEventListener('click', () => handleUpgradeClick(10, 'USD', 'monthly'));
+            yearlyBtn?.addEventListener('click', () => handleUpgradeClick(100, 'USD', 'yearly'));
+        }
+    } catch (err) {
+        if (err.response?.status === 401) {
+            [proBtn, yearlyBtn].forEach((btn) => {
+                if (!btn) return;
+                btn.textContent = 'Login to Upgrade';
+                btn.addEventListener('click', () => (window.location.href = '/login?return=/pricing'));
             });
+        } else {
+            console.error('Subscription load error:', err);
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load subscription details' });
+        }
+    }
 
-            if (response.data.url) {
-                window.location.href = response.data.url;
-            } else {
-                throw new Error('Payment gateway URL not returned');
-            }
-        } catch (error) {
-            let message = 'Failed to initiate payment. Please try again.';
+    async function handleUpgradeClick(amount, currency, duration) {
+        const { btn } = planMap[duration] || {};
+        if (!btn) return;
 
-            if (error.response) {
-                if (error.response.status === 401) {
-                    message = 'Please login to continue.';
+        btn.disabled = true;
+        btn.innerHTML = `
+            <span class="inline-flex items-center">
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing...
+            </span>
+        `;
+
+        try {
+            const res = await axios.post('/init-payment', { amount, currency, duration });
+
+            if (res.data.url) {
+                window.location.href = res.data.url;
+            } else throw new Error('Payment URL not returned');
+        } catch (err) {
+            let msg = 'Failed to initiate payment. Please try again.';
+            if (err.response) {
+                if (err.response.status === 401) {
                     await Swal.fire({
                         icon: 'warning',
                         title: 'Login Required',
-                        text: message,
+                        text: 'Please login to continue',
                         confirmButtonText: 'Go to Login',
                     });
-                    window.location.href = '/login?return=/pricing';
-                    return;
-                } else if (error.response.status === 400) {
-                    message = error.response.data?.message || 'You already have an active premium subscription.';
+                    return (window.location.href = '/login?return=/pricing');
+                } else if (err.response.status === 400) {
+                    msg = err.response.data?.message || msg;
                 }
             } else {
-                message = error.message || message;
+                msg = err.message || msg;
             }
 
-            await Swal.fire({
-                icon: 'error',
-                title: 'Payment Error',
-                text: message,
-            });
-
-            if (upgradeBtn) {
-                upgradeBtn.disabled = false;
-                upgradeBtn.textContent = 'Upgrade to Pro';
-            }
+            await Swal.fire({ icon: 'error', title: 'Payment Error', text: msg });
+            btn.disabled = false;
+            btn.textContent = duration === 'monthly' ? 'Upgrade to Premium' : 'Choose Premium Plus';
         }
     }
-    document.getElementById('mainContent').classList.remove('hidden');
+
+    document.getElementById('mainContent')?.classList.remove('hidden');
 });

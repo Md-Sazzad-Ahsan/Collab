@@ -1,115 +1,81 @@
 document.addEventListener('DOMContentLoaded', () => {
     const headerPlaceholder = document.getElementById('header-placeholder');
-    if (headerPlaceholder) {
-        fetch('/views/header.html')
-            .then((res) => res.text())
-            .then((html) => {
-                headerPlaceholder.innerHTML = html;
+    if (!headerPlaceholder) return;
 
-                // Attach logout handler AFTER header is loaded
-                const logoutButton = document.getElementById('logoutButton');
-                if (logoutButton) {
-                    logoutButton.addEventListener('click', () => {
-                        fetch('/logout', {
-                            method: 'GET', // Or POST depending on backend
-                            credentials: 'same-origin',
-                        })
-                            .then((response) => {
-                                if (response.ok) window.location.href = '/login';
-                                else alert('Logout failed, please try again.');
-                            })
-                            .catch(() => alert('An error occurred while logging out.'));
-                    });
-                }
+    fetch('/views/header.html')
+        .then((res) => res.text())
+        .then((html) => {
+            headerPlaceholder.innerHTML = html;
 
-                // Highlight current page link
-                const currentPath = window.location.pathname.replace(/\/$/, ''); // remove trailing slash
-                const navLinks = headerPlaceholder.querySelectorAll('nav a:not(#logoutButton)');
+            // --- Elements ---
+            const profileButton = headerPlaceholder.querySelector('#profileButton');
+            const profileDropdown = headerPlaceholder.querySelector('#profileDropdown');
+            const logoutButton = headerPlaceholder.querySelector('#logoutButton');
+            const headerInitial = headerPlaceholder.querySelector('#profileInitial');
 
-                navLinks.forEach((link) => {
-                    const linkPath = link.getAttribute('href').replace(/\/$/, ''); // use href attribute directly
+            // --- Check server session ---
+            fetch('/session-status', { method: 'GET', credentials: 'same-origin' })
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.loggedIn) {
+                        // Show profile & logout
+                        if (profileButton) profileButton.style.display = 'flex';
+                        if (logoutButton) logoutButton.style.display = 'inline-block';
 
-                    // Treat these paths as "home"
-                    const homePaths = ['', '/', '/login', '/signup', '/landing'];
-                    const isHomeLink = linkPath === '' || linkPath === '/';
+                        // Get initial from localStorage if exists
+                        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+                        const userName = storedUser.name || data.username;
+                        if (headerInitial) headerInitial.textContent = userName.charAt(0).toUpperCase();
 
-                    if ((isHomeLink && homePaths.includes(currentPath)) || currentPath === linkPath) {
-                        link.classList.add('text-blue-600', 'font-semibold');
-                        link.classList.remove('text-gray-900');
-                        link.setAttribute('aria-current', 'page');
+                        // Save username in localStorage if not present
+                        if (!storedUser.name) localStorage.setItem('user', JSON.stringify({ name: data.username }));
                     } else {
-                        link.classList.remove('text-blue-600', 'font-semibold');
-                        link.classList.add('text-gray-900');
-                        link.removeAttribute('aria-current');
+                        // Hide profile & logout
+                        if (profileButton) profileButton.style.display = 'none';
+                        if (logoutButton) logoutButton.style.display = 'none';
+                        localStorage.removeItem('user');
                     }
+                })
+                .catch((err) => {
+                    console.error('Failed to check session:', err);
+                    if (profileButton) profileButton.style.display = 'none';
+                    if (logoutButton) logoutButton.style.display = 'none';
                 });
 
-                // Call checkLoginStatus if defined
-                if (typeof checkLoginStatus === 'function') {
-                    checkLoginStatus();
-                }
+            // --- Profile dropdown toggle ---
+            if (profileButton && profileDropdown) {
+                profileButton.addEventListener('click', () => {
+                    profileDropdown.classList.toggle('hidden');
+                });
+                document.addEventListener('click', (e) => {
+                    if (!profileButton.contains(e.target) && !profileDropdown.contains(e.target)) {
+                        profileDropdown.classList.add('hidden');
+                    }
+                });
+            }
 
-                // Initialize mobile sidebar toggle (since inline scripts in fetched HTML won't execute)
-                const toggleBtn = headerPlaceholder.querySelector('[data-collapse-toggle="navbar-default"]');
-                const sidebar = headerPlaceholder.querySelector('#navbar-default');
-                const overlay = document.getElementById('navbar-overlay');
-                const closeBtn = headerPlaceholder.querySelector('#navbar-close');
+            // --- Logout ---
+            if (logoutButton) {
+                logoutButton.addEventListener('click', () => {
+                    fetch('/logout', { method: 'GET', credentials: 'same-origin' })
+                        .then((res) => {
+                            if (res.ok) {
+                                localStorage.removeItem('user');
+                                window.location.href = '/login';
+                            }
+                        })
+                        .catch(() => alert('Logout failed.'));
+                });
+            }
+        })
+        .catch((err) => console.error('Failed to load header:', err));
 
-                if (toggleBtn && sidebar && overlay) {
-                    const openSidebar = () => {
-                        sidebar.classList.remove('hidden', 'translate-x-full');
-                        overlay.classList.remove('hidden');
-                        document.body.classList.add('overflow-hidden');
-                        toggleBtn.setAttribute('aria-expanded', 'true');
-                    };
-
-                    const closeSidebar = () => {
-                        sidebar.classList.add('translate-x-full');
-                        overlay.classList.add('hidden');
-                        document.body.classList.remove('overflow-hidden');
-                        toggleBtn.setAttribute('aria-expanded', 'false');
-                    };
-
-                    toggleBtn.addEventListener('click', () => {
-                        const isClosed = sidebar.classList.contains('translate-x-full') || sidebar.classList.contains('hidden');
-                        if (isClosed) openSidebar(); else closeSidebar();
-                    });
-
-                    overlay.addEventListener('click', closeSidebar);
-                    if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
-                    sidebar.querySelectorAll('a').forEach((a) => a.addEventListener('click', closeSidebar));
-
-                    // Ensure correct state on resize
-                    const mq = window.matchMedia('(min-width: 768px)');
-                    const handleMq = (e) => {
-                        if (e.matches) {
-                            // Desktop
-                            sidebar.classList.remove('hidden', 'translate-x-full');
-                            overlay.classList.add('hidden');
-                            document.body.classList.remove('overflow-hidden');
-                            toggleBtn.setAttribute('aria-expanded', 'true');
-                        } else {
-                            // Mobile initial state closed
-                            sidebar.classList.add('hidden', 'translate-x-full');
-                            overlay.classList.add('hidden');
-                            document.body.classList.remove('overflow-hidden');
-                            toggleBtn.setAttribute('aria-expanded', 'false');
-                        }
-                    };
-                    handleMq(mq);
-                    mq.addEventListener('change', handleMq);
-                }
-            })
-            .catch((err) => console.error('Failed to load header:', err));
-    }
-
+    // --- Footer ---
     const footerPlaceholder = document.getElementById('footer-placeholder');
     if (footerPlaceholder) {
         fetch('/views/footer.html')
             .then((res) => res.text())
-            .then((html) => {
-                footerPlaceholder.innerHTML = html;
-            })
+            .then((html) => (footerPlaceholder.innerHTML = html))
             .catch((err) => console.error('Failed to load footer:', err));
     }
 });

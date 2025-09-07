@@ -33,7 +33,18 @@ function login() {
 
     axios
         .post('/login', { email, password })
-        .then(() => {
+        .then((res) => {
+            // Assuming login returns minimal user info or just token
+            // Now fetch full profile
+            return axios.post('/profile', { credentials: 'same-origin' });
+        })
+        .then((profileRes) => {
+            const user = profileRes.data;
+
+            // Store full user info in localStorage
+            localStorage.setItem('user', JSON.stringify(user));
+
+            // Redirect to homepage/profile
             window.location.href = '/';
         })
         .catch((error) => {

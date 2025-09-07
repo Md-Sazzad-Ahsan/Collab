@@ -6,6 +6,9 @@ const subscriptionSchema = new mongoose.Schema(
         startDate: { type: Date, required: true },
         endDate: { type: Date, required: true },
         status: { type: String, enum: ['active', 'expired'], default: 'active' },
+        duration: { type: String, enum: ['monthly', 'yearly'], required: true }, // NEW
+        amount: { type: Number, required: true }, // NEW
+        currency: { type: String, required: true, default: 'BDT' }, // NEW
     },
     { timestamps: true },
 );

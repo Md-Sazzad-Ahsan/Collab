@@ -9,6 +9,7 @@ const paymentSchema = new mongoose.Schema(
         val_id: { type: String },
         amount: { type: Number, required: true },
         currency: { type: String, default: 'BDT' },
+        duration: { type: String, enum: ['monthly', 'yearly'], default: 'monthly' }, // NEW
         card_type: { type: String },
         store_amount: { type: Number },
         bank_tran_id: { type: String },

@@ -51,6 +51,9 @@ const { scheduleSubscription, initScheduler } = require('./SubscriptionManager')
 const store_id = process.env.SSLCZ_STORE_ID;
 const store_passwd = process.env.SSLCZ_STORE_PASSWORD;
 const is_live = false;
+const redis = require('./lib/redis');
+const VERIFICATION_TTL = 24 * 60 * 60; // 24 hours
+const RESEND_COOLDOWN = 2 * 60; // 2 minutes in seconds
 
 // Incoming Stream to RTPM
 const { v4: uuidv4 } = require('uuid');
@@ -254,6 +257,7 @@ const views = {
     forget: path.join(__dirname, '../../', 'public/views/forget.html'),
     reset: path.join(__dirname, '../../', 'public/views/reset.html'),
     resetInvalid: path.join(__dirname, '../../', 'public/views/resetinvalid.html'),
+    profile: path.join(__dirname, '../../', 'public/views/profile.html'),
 };
 
 const filesPath = [
@@ -274,6 +278,7 @@ const filesPath = [
     views.forget,
     views.reset,
     views.resetInvalid,
+    views.profile,
 ];
 
 const htmlInjector = new HtmlInjector(filesPath, config.ui.brand);
@@ -488,87 +493,81 @@ function startServer() {
     });
 
     // Handle signup POST
-    app.post('/signup', async (req, res) => {
-        const { name, email, password } = req.body;
-
-        if (!name || !email || !password) {
-            return res.status(400).json({ message: 'All fields are required' });
-        }
-
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
-
-        const verificationToken = crypto.lib.WordArray.random(32).toString();
-
-        const newUser = new User({
-            name,
-            email,
-            password,
-            isVerified: false,
-            verificationToken,
-        });
-
-        await newUser.save();
-
-        res.send('Please check your email to verify your account.');
-
-        nodemailer
-            .sendEmailVerification(email, verificationToken)
-            .then(() =>
-                log.log(
-                    `%cVerification email sent to ${email}`,
-                    'font-family:monospace; color: green; font-size: 16px',
-                ),
-            )
-            .catch((err) => log.error(`Error sending verification email to ${email}`, err));
-    });
-
-    app.post('/resend-verification', async (req, res) => {
-        const { email } = req.body;
+    app.post('/send-verification', async (req, res) => {
+        const { name, email, password, phone } = req.body;
 
         if (!email) {
-            return res.status(400).json({ message: 'Email is required' });
+            return res.status(400).json({ message: 'Email is required.' });
         }
 
+        const isSignup = name && password;
+
         try {
-            const user = await User.findOne({ email });
+            const existingUser = await User.findOne({ email });
 
-            if (!user) {
-                return res.status(404).json({ message: 'User not found' });
+            if (existingUser && existingUser.isVerified) {
+                return res.status(400).json({ message: 'User is already verified.' });
             }
 
-            if (user.isVerified) {
-                return res.status(400).json({ message: 'User is already verified' });
+            // Check resend cooldown
+            const lastSent = await redis.get(`verify:sent:${email}`);
+            if (lastSent) {
+                return res.status(429).json({
+                    message: 'Verification email already sent recently. Please wait before trying again.',
+                });
             }
 
-            // Generate new verification token
+            // Generate verification token
             const verificationToken = crypto.lib.WordArray.random(32).toString();
-            user.verificationToken = verificationToken;
-            await user.save();
+            let pendingUser;
 
-            // Send response immediately
-            res.json({ message: 'Verification email resent successfully.' });
+            if (isSignup) {
+                // New signup
+                const hashedPassword = await bcrypt.hash(password, 10);
+                pendingUser = { name, email, password: hashedPassword, phone, verificationToken }; // include phone
+                res.json({ message: 'Please check your email to verify your account.' });
+            } else {
+                // Resend verification
+                const keys = await redis.keys('verify:*');
+                let oldKey = null;
+                for (const key of keys) {
+                    const data = await redis.get(key);
+                    if (data && JSON.parse(data).email === email) {
+                        oldKey = key;
+                        pendingUser = JSON.parse(data);
+                        break;
+                    }
+                }
 
-            // Send verification email asynchronously
+                if (!pendingUser && existingUser) {
+                    // Create minimal object for resend
+                    pendingUser = {
+                        name: existingUser.name,
+                        email: existingUser.email,
+                        password: existingUser.password,
+                        phone: existingUser.phone, // include phone
+                        verificationToken,
+                    };
+                }
+
+                if (oldKey) await redis.del(oldKey);
+
+                pendingUser.verificationToken = verificationToken;
+                res.json({ message: 'Verification email resent successfully.' });
+            }
+
+            // Store in Redis
+            await redis.setex(`verify:${verificationToken}`, VERIFICATION_TTL, JSON.stringify(pendingUser));
+            await redis.setex(`verify:sent:${email}`, RESEND_COOLDOWN, '1');
+
+            // Send email
             nodemailer
                 .sendEmailVerification(email, verificationToken)
-                .then(() => {
-                    log.log(
-                        `%cVerification email resent to ${email}`,
-                        'font-family:monospace; color: green; font-size: 16px',
-                    );
-                })
-                .catch((err) => {
-                    log.error(`Resend verification email failed for ${email}`, err);
-                });
+                .then(() => console.log(`Verification email sent to ${email}`))
+                .catch((err) => console.error(`Error sending email to ${email}`, err));
         } catch (err) {
-            log.error(`Resend verification error:`, err);
-            // Only send error if response has not been sent yet
-            if (!res.headersSent) {
-                return res.status(500).json({ message: 'Error resending verification email' });
-            }
+            console.error('Send verification error:', err);
+            if (!res.headersSent) res.status(500).json({ message: 'Error sending verification email.' });
         }
     });
 
@@ -624,40 +623,50 @@ function startServer() {
             const sessionUser = req.session.user;
             if (!sessionUser?.id) return res.status(401).send('Unauthorized');
 
-            const { amount } = req.body;
+            const { amount, currency = 'BDT', duration = 'monthly' } = req.body;
+
+            // Validate inputs
             if (!amount || isNaN(amount) || amount <= 0) return res.status(400).send('Invalid amount');
+            if (!currency || typeof currency !== 'string' || currency.length !== 3)
+                return res.status(400).send('Currency must be 3 characters, e.g., BDT, USD');
+            if (!['monthly', 'yearly'].includes(duration))
+                return res.status(400).send('Duration must be "monthly" or "yearly"');
 
             const user = await User.findById(sessionUser.id);
             if (!user) return res.status(404).send('User not found');
 
+            // Check if user already has active subscription
             const activeSub = await Subscription.findOne({
                 user: user._id,
                 status: 'active',
                 endDate: { $gt: new Date() },
             });
-
             if (activeSub) {
                 return res.status(400).json({ error: 'You already have an active premium subscription.' });
             }
 
+            // Generate unique transaction ID
             const now = new Date();
             const datePart = now.toISOString().slice(0, 10).replace(/-/g, '');
             const rand = Math.random().toString(36).slice(2, 8).toUpperCase();
             const tran_id = `tran_${datePart}_${rand}`;
 
+            // Create pending payment
             await Payment.create({
                 user: user._id,
                 transactionId: tran_id,
                 amount,
+                currency,
                 status: 'Pending',
+                duration,
             });
 
-            // Prepare data for SSLCOMMERZ session API
+            // Prepare data for SSLCOMMERZ
             const post_data = {
                 store_id,
                 store_passwd,
                 total_amount: amount,
-                currency: 'BDT',
+                currency,
                 tran_id,
                 success_url: `${host}/payment-success?tran_id=${tran_id}`,
                 fail_url: `${host}/payment-fail?tran_id=${tran_id}`,
@@ -667,12 +676,12 @@ function startServer() {
                 cus_email: user.email,
                 cus_phone: user.phone || '01700000000',
                 shipping_method: 'NO',
-                product_name: 'Monthly Premium Subscription',
+                product_name:
+                    duration === 'monthly' ? 'Monthly Premium Subscription' : 'Yearly Premium Plus Subscription',
                 product_category: 'Subscription',
                 product_profile: 'general',
             };
 
-            // Server-to-server call to SSLCOMMERZ (direct gwprocess)
             const response = await axios.post(
                 process.env.SSLCOMMERZ_SESSION_API,
                 new URLSearchParams(post_data).toString(),
@@ -683,7 +692,6 @@ function startServer() {
             );
 
             const result = response.data;
-
             if (result?.status === 'SUCCESS' && result?.GatewayPageURL) {
                 return res.json({ url: result.GatewayPageURL });
             } else {
@@ -698,9 +706,7 @@ function startServer() {
 
     // 2. SUCCESS PAGE
     app.all('/payment-success', async (req, res) => {
-        if (!req.session.user || !req.session.user.id) {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
+        if (!req.session.user?.id) return res.status(401).json({ error: 'Unauthorized' });
         const { tran_id } = req.query;
         if (!tran_id) return res.status(400).send('Missing transaction ID');
 
@@ -710,7 +716,10 @@ function startServer() {
         if (payment.status !== 'Success') {
             const now = new Date();
             const expiry = new Date(now);
-            expiry.setDate(now.getDate() + 30);
+
+            // Set subscription expiry based on duration
+            if (payment.duration === 'monthly') expiry.setMonth(now.getMonth() + 1);
+            else if (payment.duration === 'yearly') expiry.setFullYear(now.getFullYear() + 1);
 
             payment.status = 'Success';
             payment.payment_date = now;
@@ -721,36 +730,31 @@ function startServer() {
                 startDate: now,
                 endDate: expiry,
                 status: 'active',
+                duration: payment.duration,
+                amount: payment.amount,
+                currency: payment.currency,
             });
 
             await User.findByIdAndUpdate(payment.user, { is_premium: true });
             req.session.user.isPremium = true;
-            scheduleSubscription(newSub);
+
+            scheduleSubscription(newSub); // optional: handle auto-expiry
         }
 
         res.sendFile(views.paymentSuccess);
     });
 
     // 3. FAIL & CANCEL
-    app.all('/payment-fail', async (req, res) => {
-        if (!req.session.user || !req.session.user.id) {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
+    app.all(['/payment-fail', '/payment-cancel'], async (req, res) => {
+        if (!req.session.user?.id) return res.status(401).json({ error: 'Unauthorized' });
         const { tran_id } = req.query;
         if (tran_id) await Payment.deleteOne({ transactionId: tran_id, status: 'Pending' });
-        res.sendFile(views.paymentFail);
+
+        const isCancel = req.path.includes('cancel');
+        res.sendFile(isCancel ? views.paymentCancel : views.paymentFail);
     });
 
-    app.all('/payment-cancel', async (req, res) => {
-        if (!req.session.user || !req.session.user.id) {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
-        const { tran_id } = req.query;
-        if (tran_id) await Payment.deleteOne({ transactionId: tran_id, status: 'Pending' });
-        res.sendFile(views.paymentCancel);
-    });
-
-    // 4. FETCH PAYMENT DETAILS (AUTH REQUIRED)
+    // 4. FETCH PAYMENT DETAILS
     app.get('/payment-details', async (req, res) => {
         if (!req.session.user?.id) return res.status(401).json({ error: 'Unauthorized' });
 
@@ -761,13 +765,12 @@ function startServer() {
         res.json(payment);
     });
 
+    // 5. FETCH USER SUBSCRIPTION
     app.get('/user-subscription', async (req, res) => {
         try {
             if (!req.session.user?.id) return res.status(401).json({ error: 'Unauthorized' });
 
             const userId = req.session.user.id;
-
-            // Find active subscription
             const activeSub = await Subscription.findOne({
                 user: userId,
                 status: 'active',
@@ -778,12 +781,12 @@ function startServer() {
                 return res.json({
                     isPremium: true,
                     expiryDate: activeSub.endDate,
+                    duration: activeSub.duration,
+                    amount: activeSub.amount,
+                    currency: activeSub.currency,
                 });
             } else {
-                return res.json({
-                    isPremium: false,
-                    expiryDate: null,
-                });
+                return res.json({ isPremium: false, expiryDate: null });
             }
         } catch (error) {
             console.error('User subscription error:', error);
@@ -791,25 +794,95 @@ function startServer() {
         }
     });
 
-    // Route to display user information
-    app.get('/profile', OIDCAuth, (req, res) => {
-        if (OIDC.enabled) {
-            const user = { ...req.oidc.user };
-            user.peer_name = {
-                force: OIDC.peer_name?.force || false,
-                email: OIDC.peer_name?.email || false,
-                name: OIDC.peer_name?.name || false,
-            };
-            log.debug('OIDC get Profile', user);
-            return res.json(user);
+    app.put('/profile', async (req, res) => {
+        if (!req.session || !req.session.user?.id) {
+            return res.status(401).json({ message: 'Unauthorized' });
         }
-        // OIDC disabled
-        res.status(201).json({
-            email: false,
-            name: false,
-            peer_name: false,
-            message: 'Profile not found because OIDC is disabled',
-        });
+
+        try {
+            const { name, phone } = req.body; // removed email
+
+            if (!name || !phone) {
+                return res.status(400).json({ message: 'Name and phone are required' });
+            }
+
+            const updatedUser = await User.findByIdAndUpdate(
+                req.session.user.id,
+                { name, phone }, // removed email
+                { new: true, runValidators: true },
+            ).select('-password -resetPasswordToken -resetPasswordExpires -verificationToken');
+
+            // Update session info
+            req.session.user.name = updatedUser.name;
+            req.session.user.phone = updatedUser.phone;
+
+            res.json({ message: 'Profile updated successfully', user: updatedUser });
+        } catch (err) {
+            console.error('Error updating profile:', err);
+            res.status(500).json({ message: 'Server error' });
+        }
+    });
+
+    app.put('/profile/change-password', async (req, res) => {
+        if (!req.session || !req.session.user?.id) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        try {
+            const { currentPassword, newPassword, confirmPassword } = req.body;
+
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                return res.status(400).json({ message: 'All fields are required' });
+            }
+
+            if (newPassword !== confirmPassword) {
+                return res.status(400).json({ message: 'New password and confirm password do not match' });
+            }
+
+            const user = await User.findById(req.session.user.id).select('+password');
+            if (!user) return res.status(404).json({ message: 'User not found' });
+
+            // Check current password
+            const isMatch = await bcrypt.compare(currentPassword, user.password);
+            if (!isMatch) {
+                return res.status(400).json({ message: 'Current password is incorrect' });
+            }
+
+            user.password = newPassword;
+            await user.save();
+
+            res.json({ message: 'Password changed successfully' });
+        } catch (err) {
+            console.error('Error changing password:', err);
+            res.status(500).json({ message: 'Server error' });
+        }
+    });
+
+    // Route to display user information
+    app.post('/profile', async (req, res) => {
+        if (!req.session || !req.session.user?.id) {
+            return res.redirect('/login');
+        }
+
+        try {
+            const user = await User.findById(req.session.user.id) // use .user.id
+                .select('-password -resetPasswordToken -resetPasswordExpires -verificationToken');
+            if (!user) return res.redirect('/login');
+
+            res.json(user);
+        } catch (err) {
+            console.error('Error fetching user profile:', err);
+            res.status(500).json({ message: 'Server error' });
+        }
+    });
+
+    // Route to serve profile page
+    app.get('/profile', (req, res) => {
+        if (!req.session || !req.session.user?.id) {
+            return res.redirect('/login');
+        }
+
+        res.sendFile(views.profile);
     });
 
     // Authentication Callback Route
@@ -1143,7 +1216,9 @@ function startServer() {
             }
             req.session.user = {
                 id: user._id,
+                name: user.name,
                 email: user.email,
+                phone: user.phone,
                 isPremium: user.is_premium || false,
             };
 
@@ -1154,26 +1229,38 @@ function startServer() {
         }
     });
 
+    // ---------------------- VERIFY EMAIL ----------------------
     app.get('/verify-email', async (req, res) => {
-        const { email, token } = req.query;
+        const { token } = req.query;
 
         try {
-            const user = await User.findOne({ email });
+            // Get user data from Redis
+            const data = await redis.get(`verify:${token}`);
 
-            // If user already verified
-            if (user.isVerified) {
-                return res.sendFile(views.emailAlreadyVerified); // create a nice HTML page for this
-            }
-
-            // If user not found or token doesn't match
-            if (!user || user.verificationToken !== token) {
+            if (!data) {
                 return res.status(400).sendFile(views.emailInvalid);
             }
 
-            // Mark user as verified
-            user.isVerified = true;
-            user.verificationToken = undefined; // Invalidate the token
-            await user.save();
+            const { name, email, phone, password } = JSON.parse(data); // include phone
+
+            // Double check user does not already exist
+            const existingUser = await User.findOne({ email });
+            if (existingUser && existingUser.isVerified) {
+                return res.sendFile(views.emailAlreadyVerified);
+            }
+
+            // Save to MongoDB
+            const newUser = new User({
+                name,
+                email,
+                phone, // store phone
+                password, // already hashed
+                isVerified: true,
+            });
+            await newUser.save();
+
+            // Remove from Redis
+            await redis.del(`verify:${token}`);
 
             res.sendFile(views.verifyEmail); // success page
         } catch (err) {

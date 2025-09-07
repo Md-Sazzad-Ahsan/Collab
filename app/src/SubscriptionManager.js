@@ -1,18 +1,12 @@
 // subscriptionScheduler.js
 const { Queue, Worker } = require('bullmq');
-const IORedis = require('ioredis');
+const IORedis = require('./lib/redis');
 const Subscription = require('./models/Subscription');
 const Logger = require('./Logger');
 const log = new Logger('Server');
 
 // Redis connection
-const connection = new IORedis({
-    host: process.env.REDIS_HOST || '127.0.0.1',
-    port: process.env.REDIS_PORT || 6379,
-    password: process.env.REDIS_PASSWORD || undefined,
-    maxRetriesPerRequest: null,
-});
-
+const connection = IORedis;
 // Create the queue
 const subscriptionQueue = new Queue('subscription-expiry', { connection });
 
@@ -51,8 +45,6 @@ async function scheduleSubscription(subscription) {
     } else {
         await subscriptionQueue.add('expire', { subscriptionId: subscription._id }, { delay });
     }
-
-    log.log(`Scheduled subscription expiry for user ${subscription.user} at ${subscription.endDate}`);
 }
 
 // Initialize scheduler on startup

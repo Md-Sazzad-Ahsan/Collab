@@ -42,7 +42,15 @@
                 class="md:hidden block ml-4 mr-4 my-3 p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200"
                 aria-label="Close menu"
             >
-                <svg class="w-5 h-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <svg
+                    class="w-5 h-5 text-gray-600"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                >
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
             </button>
@@ -86,17 +94,27 @@
                     </a>
                 </li>
 
-                <li>
-                    <a
-                        href="#"
-                        id="logoutButton"
-                        class="inline-flex items-center justify-center gap-2 mt-2 md:mt-0 h-10 w-full md:w-auto px-4 py-2 rounded-lg border border-red-200 text-red-600 bg-white hover:bg-red-50 hover:border-red-300 md:bg-transparent md:hover:bg-red-50 font-semibold shadow-sm md:shadow-none focus:outline-none focus:ring-2 focus:ring-red-200 transition"
+                <li class="relative">
+                    <!-- Profile Button -->
+                    <button
+                        id="profileButton"
+                        class="flex items-center justify-center w-8 h-8 rounded-full bg-white text-gray-700 border font-semibold hover:bg-gray-50 focus:outline-none transition"
                     >
-                        Logout
-                    </a>
+                        <span id="profileInitial"></span>
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div
+                        id="profileDropdown"
+                        class="hidden absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                    >
+                        <a href="/profile" class="block px-4 py-2 text-gray-900 hover:bg-gray-100"> Profile </a>
+                        <button id="logoutButton" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50">
+                            Logout
+                        </button>
+                    </div>
                 </li>
             </ul>
         </div>
     </div>
 </nav>
-
