@@ -523,7 +523,7 @@ function startServer() {
 
             if (isSignup) {
                 // New signup
-                const hashedPassword = await bcrypt.hash(password, 10);
+                // const hashedPassword = await bcrypt.hash(password, 10);
                 pendingUser = { name, email, password: hashedPassword, phone, verificationToken }; // include phone
                 res.json({ message: 'Please check your email to verify your account.' });
             } else {
