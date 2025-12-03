@@ -33,7 +33,7 @@ let survey = {
 
 let redirect = {
     enabled: true,
-    url: '/newroom',
+    url: '/',
 };
 
 let recCodecs = null;
@@ -3562,7 +3562,7 @@ function leaveFeedback() {
 }
 
 function redirectOnLeave() {
-    redirect && redirect.enabled ? openURL(redirect.url) : openURL('/newroom');
+    redirect && redirect.enabled ? openURL(redirect.url) : openURL('/');
 }
 
 function userLog(icon, message, position, timer = 3000) {
