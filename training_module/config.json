@@ -1,0 +1,12 @@
+{
+  "model_name": "meta-llama/Llama-3.2-3B-Instruct",
+  "batch_size": 1,
+  "gradient_accumulation_steps": 4,
+  "learning_rate": 0.0002,
+  "num_train_epochs": 3,
+  "fp16": true,
+  "max_seq_length": 512,
+  "lora_r": 16,
+  "lora_alpha": 32,
+  "target_modules": ["q_proj", "v_proj"]
+}
