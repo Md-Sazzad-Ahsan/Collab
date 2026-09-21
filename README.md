@@ -15,7 +15,7 @@ Before running the project, make sure you have the following installed:
 1. **Clone the repository:**
 
     ```bash
-    git clone https://github.com/AkibHossainOmi/collab.git
+    git clone https://github.com/Md-Sazzad-Ahsan/Collab.git
     cd collab
     ```
 
